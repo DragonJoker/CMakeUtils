@@ -8,7 +8,7 @@ FIND_PATH(Ogre_ROOT_DIR include/OGRE/Ogre.h include/Ogre.h
 
 FIND_PATH(Ogre_INCLUDE_DIR Ogre.h
 	HINTS
-	PATH_SUFFIXES OGRE
+	PATH_SUFFIXES include/OGRE include
 	PATHS
 	${Ogre_ROOT_DIR}
 )
