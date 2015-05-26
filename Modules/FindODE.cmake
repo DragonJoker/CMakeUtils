@@ -1,5 +1,6 @@
 FIND_PATH(ODE_ROOT_DIR include/ode/ode.h ode/ode.h
 	HINTS
+	PATH_SUFFIXES include ode
 	PATHS
 	/usr/local
 	/usr
