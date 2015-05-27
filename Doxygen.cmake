@@ -5,7 +5,7 @@ option( PROJECTS_GENERATE_DOC "Generate Doxygen documentation" FALSE )
 #	Function :	add_target_doc
 #	Generates doc for given target
 #--------------------------------------------------------------------------------------------------
-function( add_target_doc TARGET_NAME LANGUAGE EXT_LIST EXCLUDED )
+function( add_target_doc TARGET_NAME LANGUAGE EXT_LIST )
 	find_package( HTMLHelp )
 	if ( "${LANGUAGE}" STREQUAL "" )
 		set( CHM_NAME ${TARGET_NAME}.chm )
