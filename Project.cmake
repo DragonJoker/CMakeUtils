@@ -85,6 +85,10 @@ msg_debug(	"CMAKE_ARCHIVE_OUTPUT_DIRECTORY_RELEASE     ${CMAKE_ARCHIVE_OUTPUT_DI
 msg_debug(	"CMAKE_LIBRARY_OUTPUT_DIRECTORY_RELEASE     ${CMAKE_LIBRARY_OUTPUT_DIRECTORY_RELEASE}" )
 msg_debug(	"CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE     ${CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE}" )
 
+if (NOT WIN32 )
+  set( CMAKE_INSTALL_RPATH "$ORIGIN/:$ORIGIN/../lib" )
+endif ()
+
 #--------------------------------------------------------------------------------------------------
 #	Function :	add_target
 #	Main function, used to create a target of given type, with it's dependencies and libraries
