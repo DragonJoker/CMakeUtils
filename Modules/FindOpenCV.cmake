@@ -114,6 +114,7 @@ if(EXISTS "${OpenCV_DIR}")
 				"libopencv_${__CVLIB}d.a"
 				"libopencv_${__CVLIB}d.so"
 			PATHS
+				"${OpenCV_LIBRARY_DIR}"
 				"${OpenCV_DIR}/lib"
 			NO_DEFAULT_PATH
 		)
@@ -130,6 +131,7 @@ if(EXISTS "${OpenCV_DIR}")
 				"libopencv_${__CVLIB}.a"
 				"libopencv_${__CVLIB}.so"
 			PATHS
+				"${OpenCV_LIBRARY_DIR}"
 				"${OpenCV_DIR}/lib"
 			NO_DEFAULT_PATH
 		)
