@@ -43,9 +43,8 @@ function( copy_dll _TARGET _LIB_FULL_PATH_NAME _CONFIGURATION )#ARGV3 _POSTFIX
 			TARGET ${_TARGET}
 			POST_BUILD
 			COMMAND ${CMAKE_COMMAND} -E copy_if_different 
-				"${_DllPath}/${_DllName}${_POSTFIX}.dll"
-				$<$<CONFIG:${_CONFIGURATION}>:"${PROJECTS_BINARIES_OUTPUT_DIR}/${_CONFIGURATION}/bin/${_DllName}${_POSTFIX}.dll">
-				$<$<NOT:$<CONFIG:${_CONFIGURATION}>>:"${CMAKE_CURRENT_BINARY_DIR}/${_DllName}${_POSTFIX}.dll">
+				${_DllPath}/${_DllName}${_POSTFIX}.dll
+				${PROJECTS_BINARIES_OUTPUT_DIR}/$<CONFIG>/bin/${_DllName}${_POSTFIX}.dll
 		)
 	else ()
 		get_filename_component( _DllPath ${_DllPath} PATH )
@@ -59,9 +58,8 @@ function( copy_dll _TARGET _LIB_FULL_PATH_NAME _CONFIGURATION )#ARGV3 _POSTFIX
 				TARGET ${_TARGET}
 				POST_BUILD
 				COMMAND ${CMAKE_COMMAND} -E copy_if_different 
-					"${_DllPath}/lib/${_CONFIG}${_DllName}${_POSTFIX}.dll"
-					$<$<CONFIG:${_CONFIGURATION}>:"${PROJECTS_BINARIES_OUTPUT_DIR}/${_CONFIGURATION}/bin/${_DllName}${_POSTFIX}.dll">
-					$<$<NOT:$<CONFIG:${_CONFIGURATION}>>:"${CMAKE_CURRENT_BINARY_DIR}/${_DllName}${_POSTFIX}.dll">
+					${_DllPath}/lib/${_CONFIG}${_DllName}${_POSTFIX}.dll
+					${PROJECTS_BINARIES_OUTPUT_DIR}/$<CONFIG>/bin/${_DllName}${_POSTFIX}.dll
 			)
 		elseif ( EXISTS ${_DllPath}/bin/${_CONFIG}${_DllName}${_POSTFIX}.dll )
 			message( STATUS "${_DllPath}/bin/${_CONFIG}${_DllName}${_POSTFIX}.dll" )
@@ -69,9 +67,8 @@ function( copy_dll _TARGET _LIB_FULL_PATH_NAME _CONFIGURATION )#ARGV3 _POSTFIX
 				TARGET ${_TARGET}
 				POST_BUILD
 				COMMAND ${CMAKE_COMMAND} -E copy_if_different 
-					"${_DllPath}/bin/${_CONFIG}${_DllName}${_POSTFIX}.dll"
-					$<$<CONFIG:${_CONFIGURATION}>:"${PROJECTS_BINARIES_OUTPUT_DIR}/${_CONFIGURATION}/bin/${_DllName}${_POSTFIX}.dll">
-					$<$<NOT:$<CONFIG:${_CONFIGURATION}>>:"${CMAKE_CURRENT_BINARY_DIR}/${_DllName}${_POSTFIX}.dll">
+					${_DllPath}/bin/${_CONFIG}${_DllName}${_POSTFIX}.dll
+					${PROJECTS_BINARIES_OUTPUT_DIR}/$<CONFIG>/bin/${_DllName}${_POSTFIX}.dll
 			)
 		elseif ( EXISTS ${_DllPath}/${_CONFIG}${_DllName}${_POSTFIX}.dll )
 			message( STATUS "${_DllPath}/${_CONFIG}${_DllName}${_POSTFIX}.dll" )
@@ -79,9 +76,8 @@ function( copy_dll _TARGET _LIB_FULL_PATH_NAME _CONFIGURATION )#ARGV3 _POSTFIX
 				TARGET ${_TARGET}
 				POST_BUILD
 				COMMAND ${CMAKE_COMMAND} -E copy_if_different 
-					"${_DllPath}/${_CONFIG}${_DllName}${_POSTFIX}.dll"
-					$<$<CONFIG:${_CONFIGURATION}>:"${PROJECTS_BINARIES_OUTPUT_DIR}/${_CONFIGURATION}/bin/${_DllName}${_POSTFIX}.dll">
-					$<$<NOT:$<CONFIG:${_CONFIGURATION}>>:"${CMAKE_CURRENT_BINARY_DIR}/${_DllName}${_POSTFIX}.dll">
+					${_DllPath}/${_CONFIG}${_DllName}${_POSTFIX}.dll
+					${PROJECTS_BINARIES_OUTPUT_DIR}/$<CONFIG>/bin/${_DllName}${_POSTFIX}.dll
 			)
 		endif ()
 	endif ()
