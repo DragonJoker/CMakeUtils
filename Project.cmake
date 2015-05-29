@@ -2,6 +2,7 @@ include( Languages )
 include( Logging )
 include( CompilerVersion )
 include( ComputeAbi )
+include( FileUtils )
 
 if( MSVC )
 	find_package( VLD )
