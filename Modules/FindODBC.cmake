@@ -43,7 +43,7 @@ endif( NOT ODBC_INCLUDE_DIR )
 # Find ODBC libraries
 # -----------------------------------------------------------------------
 find_library( ODBC_LIBRARIES
-    NAMES   odbc32
+    NAMES   odbc32 odbc
     PATHS   ${ODBC_ROOT_DIR}/Lib/win8/um/${ODBC_ARCH}
     DOC     "The ODBC libraries."
 )
