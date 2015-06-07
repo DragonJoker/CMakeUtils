@@ -2,6 +2,9 @@
 #	Macro :	msg_debug
 #	Used to print debug messages
 #--------------------------------------------------------------------------------------------------
+set( SHOW_DEBUG_LOGS FALSE )
 macro( msg_debug msg )
-#	message( STATUS "[DEBUG] ${msg}")
+	if (${SHOW_DEBUG_LOGS} )
+		message( STATUS "[DEBUG] ${msg}")
+	endif ()
 endmacro( msg_debug )
