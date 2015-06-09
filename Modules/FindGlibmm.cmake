@@ -7,14 +7,9 @@
 
 include(LibFindMacros)
 
-message(STATUS "searching for Glibmm")
-message(STATUS "    checking for dependencies:")
-
 # Dependencies
 libfind_package(Glibmm Glib)
 libfind_package(Glibmm SigC++)
-
-message(STATUS "    trying pkg-config:")
 
 # Use pkg-config to get hints about paths
 libfind_pkg_check_modules(Glibmm_PKGCONF glibmm-2.4)
@@ -29,17 +24,12 @@ find_path(Glibmm_INCLUDE_DIR
   PATH_SUFFIXES glibmm-2.4
 )
 
-
-message(STATUS "    searching for config include directory")
-
 # Glib-related libraries also use a separate config header, which is in lib dir
 find_path(GlibmmConfig_INCLUDE_DIR
   NAMES glibmmconfig.h
   HINTS ${Glibmm_PKGCONF_INCLUDE_DIRS} 
   PATH_SUFFIXES lib/glibmm-2.4/include
 )
-
-message(STATUS "    using libfind library")
 
 libfind_library(Glibmm glibmm 2.4)
 
