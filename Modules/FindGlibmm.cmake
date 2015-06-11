@@ -14,9 +14,6 @@ libfind_package(Glibmm SigC++)
 # Use pkg-config to get hints about paths
 libfind_pkg_check_modules(Glibmm_PKGCONF glibmm-2.4)
 
-message(STATUS "        PKGCONF_INCLUDE_DIRS: ${Glibmm_PKGCONF_INCLUDE_DIRS}")
-message(STATUS "    searching for include directory")
-
 # Main include dir
 find_path(Glibmm_INCLUDE_DIR
   NAMES glibmm.h
