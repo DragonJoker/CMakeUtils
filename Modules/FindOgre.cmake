@@ -99,11 +99,13 @@ else()
 				${Ogre_LIBRARY_DIR}
 				${Ogre_PLUGINS_DIR}
 		)
-		SET( Ogre_LIBRARIES
-			${Ogre_${_COMPONENT}_LIBRARY}
-		)
+		if ( Ogre_${_COMPONENT}_LIBRARY )
+			SET( Ogre_LIBRARIES
+				${Ogre_LIBRARIES}
+				${Ogre_${_COMPONENT}_LIBRARY}
+			)
+		endif ()
 	endforeach ()
-	SET( Ogre_LIBRARIES ${Ogre_LIBRARY})
 	MARK_AS_ADVANCED(${Ogre_LIBRARY_DIR})
 endif()
 
