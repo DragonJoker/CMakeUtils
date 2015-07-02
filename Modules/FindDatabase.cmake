@@ -33,19 +33,25 @@ if (Database_ROOT_DIR)
 				set( _Database_LIBRARY_DIR "${Database_ROOT_DIR}/lib")
 			endif ()
 		endif ()
-
-		set( Database_LIBRARY_DIR ${_Database_LIBRARY_DIR} CACHE FILEPATH "Database library directory")
-		
+	
 		if(NOT (MSVC OR BORLAND))
 			set( Database_LIBRARY_NAME "lib${Database_LIBRARY_NAME}")
 		endif()
-		
-		find_library( Database_LIBRARY_DEBUG
-			NAMES ${Database_LIBRARY_NAME}d
-			PATHS
-				${Database_LIBRARY_DIR}
-		)
-		
+	else ()
+		if (NOT Database_LIBRARY_DIR)
+			set( _Database_LIBRARY_DIR "${Database_ROOT_DIR}/lib")
+		endif ()
+	endif ()
+
+	set( Database_LIBRARY_DIR ${_Database_LIBRARY_DIR} CACHE FILEPATH "Database library directory")
+
+	find_library( Database_LIBRARY_DEBUG
+		NAMES ${Database_LIBRARY_NAME}d
+		PATHS
+			${Database_LIBRARY_DIR}
+	)
+	
+	if ( WIN32 OR Database_LIBRARY_DEBUG )
 		find_library( Database_LIBRARY_RELEASE
 			NAMES ${Database_LIBRARY_NAME}
 			PATHS
@@ -54,33 +60,21 @@ if (Database_ROOT_DIR)
 
 		if ( Database_LIBRARY_DEBUG AND Database_LIBRARY_RELEASE )
 			set( Database_LIBRARIES optimized ${Database_LIBRARY_RELEASE} debug ${Database_LIBRARY_DEBUG} CACHE STRING "Database libraries" )
+		elseif ( Database_LIBRARY_RELEASE )
+			set( Database_LIBRARIES ${Database_LIBRARY_RELEASE} CACHE STRING "Database libraries" FORCE )
+		elseif ( Database_LIBRARY_DEBUG )
+			set( Database_LIBRARIES ${Database_LIBRARY_DEBUG} CACHE STRING "Database libraries" FORCE )
 		endif ()
 		MARK_AS_ADVANCED( Database_LIBRARY_DEBUG Database_LIBRARY_RELEASE )
 	else ()
-		if (NOT Database_LIBRARY_DIR)
-			set( _Database_LIBRARY_DIR "${Database_ROOT_DIR}/lib")
-		endif ()
-
-		set( Database_LIBRARY_DIR ${_Database_LIBRARY_DIR} CACHE FILEPATH "Database library directory")
-		
-		find_library( Database_LIBRARY_DEBUG
-			NAMES ${Database_LIBRARY_NAME}d
-			PATHS
-				${Database_LIBRARY_DIR}
-		)
-		
-		find_library( Database_LIBRARY_RELEASE
+		find_library( Database_LIBRARY
 			NAMES ${Database_LIBRARY_NAME}
 			PATHS
 				${Database_LIBRARY_DIR}
 		)
 
-		if ( Database_LIBRARY_DEBUG AND Database_LIBRARY_RELEASE )
-			set( Database_LIBRARIES optimized ${Database_LIBRARY_RELEASE} debug ${Database_LIBRARY_DEBUG} CACHE STRING "Database libraries" FORCE )
-		elseif ( Database_LIBRARY_RELEASE )
-			set( Database_LIBRARIES ${Database_LIBRARY_RELEASE} CACHE STRING "Database libraries" FORCE )
-		elseif ( Database_LIBRARY_DEBUG )
-			set( Database_LIBRARIES ${Database_LIBRARY_DEBUG} CACHE STRING "Database libraries" FORCE )
+		if ( Database_LIBRARY )
+			set( Database_LIBRARIES ${Database_LIBRARY} CACHE STRING "Database libraries" FORCE )
 		endif ()
 		MARK_AS_ADVANCED( Database_LIBRARY )
 	endif ()

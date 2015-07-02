@@ -87,7 +87,7 @@ msg_debug(	"CMAKE_LIBRARY_OUTPUT_DIRECTORY_RELEASE     ${CMAKE_LIBRARY_OUTPUT_DI
 msg_debug(	"CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE     ${CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE}" )
 
 if (NOT WIN32 )
-  set( CMAKE_INSTALL_RPATH "$ORIGIN/:$ORIGIN/../lib" )
+  #set( CMAKE_INSTALL_RPATH "$ORIGIN/:$ORIGIN/../lib" )
 endif ()
 
 #--------------------------------------------------------------------------------------------------
