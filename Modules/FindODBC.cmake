@@ -16,23 +16,28 @@ endif()
 # Find ODBC root directory
 # -----------------------------------------------------------------------
 find_path( ODBC_ROOT_DIR 
-    NAMES   Include/um/sql.h
-    PATHS   "$ENV{PROGRAMFILES}/Windows Kits/8.0"
-            "$ENV{ProgramW6432}/Windows Kits/8.0"
-    DOC     "The ODBC root directory"
+	NAMES
+    	Include/um/sql.h
+    	include/sql.h
+	PATHS
+    	"$ENV{PROGRAMFILES}/Windows Kits/8.0"
+		"$ENV{ProgramW6432}/Windows Kits/8.0"
+	DOC
+		"The ODBC root directory"
 )
 
 if( NOT ODBC_ROOT_DIR )
-    message( STATUS "ODBC root directory not found!" )
+	message( STATUS "ODBC root directory not found!" )
 endif( NOT ODBC_ROOT_DIR )
 
 # -----------------------------------------------------------------------
 # Find ODBC include directory
 # -----------------------------------------------------------------------
-find_path( ODBC_INCLUDE_DIR 
-    NAMES   sql.h
-    PATHS   ${ODBC_ROOT_DIR}/Include/um
-    DOC     "The ODBC include directory"
+find_path( ODBC_INCLUDE_DIR sql.h
+	PATHS
+		${ODBC_ROOT_DIR}/Include/um
+	DOC
+		"The ODBC include directory"
 )
 
 if( NOT ODBC_INCLUDE_DIR )
@@ -43,9 +48,13 @@ endif( NOT ODBC_INCLUDE_DIR )
 # Find ODBC libraries
 # -----------------------------------------------------------------------
 find_library( ODBC_LIBRARIES
-    NAMES   odbc32 odbc
-    PATHS   ${ODBC_ROOT_DIR}/Lib/win8/um/${ODBC_ARCH}
-    DOC     "The ODBC libraries."
+	NAMES
+		odbc32
+		odbc
+	PATHS
+		${ODBC_ROOT_DIR}/Lib/win8/um/${ODBC_ARCH}
+	DOC
+		"The ODBC libraries."
 )
 
 if( NOT ODBC_LIBRARIES )

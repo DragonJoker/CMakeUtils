@@ -14,7 +14,13 @@
 # *************************************************************************
 # Contributors :
 #    Version 1.0: 29/01/13, Author: sdoremus, Original hack
-# *********************************<+>**************************************
+# *********************************<+>*************************************
+
+if ( MYSQL_STATIC )
+	set( _LIBTYPE STATIC )
+else ()
+	set( _LIBTYPE DYNAMIC )
+endif ()
 
 set( SUPPORTED_MySQL_SERVERS "5.2" "5.3" "5.4" "5.5" "5.6" )
 set( CONFIGURATION x86 )
@@ -69,90 +75,77 @@ foreach( _COMPONENT ${MySQL_FIND_COMPONENTS} )
 				PATH
 				"Path to search for MySQL Client." )
 		else ()
-			set( MySQL_${_COMPONENT}_ROOT_DIR
-				"${MySQL_${_COMPONENT}_ROOT_DIR}"
-				CACHE
-				PATH
-				"Path to search for MySQL Client." )
-			find_path( MySQL_${_COMPONENT}_ROOT_DIR
-				NAMES   include/mysql.h
-				DOC     "The MySQL Client include directory"
+			find_path( MySQL_${_COMPONENT}_ROOT_DIR include/mysql/mysql.h
+				HINTS
+				PATHS
+					/usr/local
+					/usr
 			)
 		endif ()
 
-		find_path( MySQL_${_COMPONENT}_INCLUDE_DIR 
-			NAMES   mysql.h
-			HINTS   ${MySQL_${_COMPONENT}_ROOT_DIR}/include
-			DOC     "The MySQL Client include directory"
+		find_path( MySQL_${_COMPONENT}_INCLUDE_DIR mysql.h
+			HINTS
+				${MySQL_${_COMPONENT}_ROOT_DIR}/include
+				${MySQL_${_COMPONENT}_ROOT_DIR}/include/mysql
+			DOC
+				"The MySQL Client include directory"
 		)
 
 		if ( NOT MySQL_${_COMPONENT}_INCLUDE_DIR )
 			message( STATUS "MySQL Client include directory not found!" )
 		endif ()
 	endif ()
-	find_library( MySQL_${_COMPONENT}_LIBRARY_DYNAMIC_RELEASE
-		NAMES
-			mysql${_COMPONENT}
-		PATHS
-			${MySQL_${_COMPONENT}_ROOT_DIR}/lib
-			${MySQL_${_COMPONENT}_ROOT_DIR}/lib/opt
-		DOC "The MySQL ${_COMPONENT} dynamic library release"
-	)
-	find_library( MySQL_${_COMPONENT}_LIBRARY_STATIC_RELEASE
-		NAMES
-			mysql${_COMPONENT}-static
-		PATHS
-			${MySQL_${_COMPONENT}_ROOT_DIR}/lib
-			${MySQL_${_COMPONENT}_ROOT_DIR}/lib/opt
-		DOC "The MySQL ${_COMPONENT} static library release"
-	)
-	find_library( MySQL_${_COMPONENT}_LIBRARY_DYNAMIC_DEBUG
-		NAME
-			mysql${_COMPONENT}d
-		PATHS
-			${MySQL_${_COMPONENT}_ROOT_DIR}/lib
-			${MySQL_${_COMPONENT}_ROOT_DIR}/lib/opt
-		DOC "The MySQL ${_COMPONENT} dynamic library debug"
-	)
-	find_library( MySQL_${_COMPONENT}_LIBRARY_STATIC_DEBUG
-		NAMES
-			mysql${_COMPONENT}-staticd
-			mysql${_COMPONENT}d-static
-		PATHS
-			${MySQL_${_COMPONENT}_ROOT_DIR}/lib
-			${MySQL_${_COMPONENT}_ROOT_DIR}/lib/opt
-		DOC "The MySQL ${_COMPONENT} static library debug"
-	)
-	mark_as_advanced(
-		MySQL_${_COMPONENT}_LIBRARY_DYNAMIC_RELEASE
-		MySQL_${_COMPONENT}_LIBRARY_STATIC_RELEASE
-		MySQL_${_COMPONENT}_LIBRARY_DYNAMIC_DEBUG
-		MySQL_${_COMPONENT}_LIBRARY_STATIC_DEBUG
-	)
-	if( MySQL_${_COMPONENT}_LIBRARY_DYNAMIC_RELEASE )
-		if( MySQL_${_COMPONENT}_LIBRARY_DYNAMIC_DEBUG )
-			set( MySQL_${_COMPONENT}_LIBRARIES_DYNAMIC optimized;${MySQL_${_COMPONENT}_LIBRARY_DYNAMIC_RELEASE};debug;${MySQL_${_COMPONENT}_LIBRARY_DYNAMIC_DEBUG} )
-		else()
-			set( MySQL_${_COMPONENT}_LIBRARIES_DYNAMIC ${MySQL_${_COMPONENT}_LIBRARY_DYNAMIC_RELEASE} )
-		endif()
-	endif()
-	if( MySQL_${_COMPONENT}_LIBRARY_STATIC_RELEASE )
-		if( MySQL_${_COMPONENT}_LIBRARY_STATIC_DEBUG )
-			set( MySQL_${_COMPONENT}_LIBRARIES_STATIC optimized;${MySQL_${_COMPONENT}_LIBRARY_STATIC_RELEASE};debug;${MySQL_${_COMPONENT}_LIBRARY_STATIC_DEBUG} )
-		else()
-			set( MySQL_${_COMPONENT}_LIBRARIES_STATIC ${MySQL_${_COMPONENT}_LIBRARY_STATIC_RELEASE} )
-		endif()
-	endif()
-	if ( MySQL_${_COMPONENT}_LIBRARIES_STATIC )
-		set( MySQL_STATIC_LIBRARIES
-			${MySQL_STATIC_LIBRARIES}
-			${MySQL_${_COMPONENT}_LIBRARIES_STATIC}
+	if ( ${_LIBTYPE} STREQUAL "DYNAMIC" )
+		find_library( MySQL_${_COMPONENT}_LIBRARY_RELEASE
+			NAMES
+				mysql${_COMPONENT}
+			PATHS
+				${MySQL_${_COMPONENT}_ROOT_DIR}/lib
+				${MySQL_${_COMPONENT}_ROOT_DIR}/lib/opt
+			DOC "The MySQL ${_COMPONENT} dynamic library release"
+		)
+		find_library( MySQL_${_COMPONENT}_LIBRARY_DEBUG
+			NAME
+				mysql${_COMPONENT}d
+			PATHS
+				${MySQL_${_COMPONENT}_ROOT_DIR}/lib
+				${MySQL_${_COMPONENT}_ROOT_DIR}/lib/opt
+			DOC "The MySQL ${_COMPONENT} dynamic library debug"
+		)
+	else ()
+		find_library( MySQL_${_COMPONENT}_LIBRARY_RELEASE
+			NAMES
+				mysql${_COMPONENT}-static
+			PATHS
+				${MySQL_${_COMPONENT}_ROOT_DIR}/lib
+				${MySQL_${_COMPONENT}_ROOT_DIR}/lib/opt
+			DOC "The MySQL ${_COMPONENT} static library release"
+		)
+		find_library( MySQL_${_COMPONENT}_LIBRARY_DEBUG
+			NAMES
+				mysql${_COMPONENT}-staticd
+				mysql${_COMPONENT}d-static
+			PATHS
+				${MySQL_${_COMPONENT}_ROOT_DIR}/lib
+				${MySQL_${_COMPONENT}_ROOT_DIR}/lib/opt
+			DOC "The MySQL ${_COMPONENT} static library debug"
 		)
 	endif ()
-	if ( MySQL_${_COMPONENT}_LIBRARIES_DYNAMIC )
-		set( MySQL_DYNAMIC_LIBRARIES
-			${MySQL_DYNAMIC_LIBRARIES}
-			${MySQL_${_COMPONENT}_LIBRARIES_DYNAMIC}
+	mark_as_advanced(
+		MySQL_${_COMPONENT}_LIBRARY_RELEASE
+		MySQL_${_COMPONENT}_LIBRARY_DEBUG
+	)
+	if( MySQL_${_COMPONENT}_LIBRARY_RELEASE )
+		if( MySQL_${_COMPONENT}_LIBRARY_DEBUG )
+			set( MySQL_${_COMPONENT}_LIBRARIES optimized;${MySQL_${_COMPONENT}_LIBRARY_RELEASE};debug;${MySQL_${_COMPONENT}_LIBRARY_DEBUG} )
+		else()
+			set( MySQL_${_COMPONENT}_LIBRARIES ${MySQL_${_COMPONENT}_LIBRARY_RELEASE} )
+		endif()
+	endif()
+	if ( MySQL_${_COMPONENT}_LIBRARIES )
+		set( MySQL_LIBRARIES
+			${MySQL_LIBRARIES}
+			${MySQL_${_COMPONENT}_LIBRARIES}
 		)
 	endif ()
 	set( MySQL_INCLUDE_DIRS
@@ -166,4 +159,4 @@ endforeach()
 # if all listed variables are TRUE
 # ---------------------------------------------------------------------
 include( FindPackageHandleStandardArgs )
-find_package_handle_standard_args( MYSQL DEFAULT_MSG MySQL_STATIC_LIBRARIES MySQL_DYNAMIC_LIBRARIES MySQL_INCLUDE_DIRS )
+find_package_handle_standard_args( MYSQL DEFAULT_MSG MySQL_LIBRARIES MySQL_INCLUDE_DIRS )
