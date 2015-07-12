@@ -38,6 +38,17 @@ if ( NOT MySQL_FIND_COMPONENTS )
 	set( MySQL_FIND_COMPONENTS client cppconn )
 endif ()
 
+if ( WIN32 )
+	foreach( SERVER ${SUPPORTED_MySQL_SERVERS} )
+		if ( NOT ACTUAL_MySQL_SERVER )
+			set( DIR "${MySQL_SERVER_DIR} ${SERVER}" )
+			if( EXISTS "${DIR}" AND IS_DIRECTORY "${DIR}" )
+				set( ACTUAL_MySQL_SERVER ${DIR} )
+			endif()
+		endif()
+	endforeach()
+endif ()
+
 foreach( _COMPONENT ${MySQL_FIND_COMPONENTS} )
 	if ( "cppconn" STREQUAL "${_COMPONENT}" )
 		set( MySQL_${_COMPONENT}_ROOT_DIR
@@ -61,14 +72,6 @@ foreach( _COMPONENT ${MySQL_FIND_COMPONENTS} )
 	else ()
 		if ( WIN32 )
 			set( MySQL_LINK_FLAGS "/NODEFAULTLIB:libcmt.lib /NODEFAULTLIB:libcmtd.lib" )
-			foreach( SERVER ${SUPPORTED_MySQL_SERVERS} )
-				if ( NOT ACTUAL_MySQL_SERVER )
-					set( DIR "${MySQL_SERVER_DIR} ${SERVER}" )
-					if( EXISTS "${DIR}" AND IS_DIRECTORY "${DIR}" )
-						set( ACTUAL_MySQL_SERVER ${DIR} )
-					endif()
-				endif()
-			endforeach()
 			set( MySQL_${_COMPONENT}_ROOT_DIR
 				"${ACTUAL_MySQL_SERVER}"
 				CACHE
@@ -153,6 +156,13 @@ foreach( _COMPONENT ${MySQL_FIND_COMPONENTS} )
 		${MySQL_${_COMPONENT}_INCLUDE_DIR}
 	)
 endforeach()
+
+find_program( MySQL_COMMAND mysql
+	PATHS
+		/usr/bin
+		/usr/local/bin
+		${ACTUAL_MySQL_SERVER}/bin
+)
 
 # -----------------------------------------------------------------------
 # handle the QUIETLY and REQUIRED arguments and set MySQL_FOUND to true
