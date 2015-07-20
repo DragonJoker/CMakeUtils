@@ -162,6 +162,16 @@ if (PostgreSQL_INCLUDE_DIR)
     endif()
   endforeach()
   unset(pgsql_version_str)
+
+  find_path(PostgreSQL_PORT_OS_INCLUDE_DIR
+    NAMES netdb.h
+    PATHS
+     ${PostgreSQL_TYPE_INCLUDE_DIR}
+    PATH_SUFFIXES
+    port/win32
+    # Help the user find it if we cannot.
+    DOC "The ${PostgreSQL_PORT_OS_INCLUDE_DIR}"
+  )
 endif()
 
 # Did we find anything?
@@ -174,7 +184,7 @@ set( PostgreSQL_FOUND  ${POSTGRESQL_FOUND})
 # Now try to get the include and library path.
 if(PostgreSQL_FOUND)
 
-  set(PostgreSQL_INCLUDE_DIRS ${PostgreSQL_INCLUDE_DIR} ${PostgreSQL_TYPE_INCLUDE_DIR} )
+  set(PostgreSQL_INCLUDE_DIRS ${PostgreSQL_INCLUDE_DIR} ${PostgreSQL_TYPE_INCLUDE_DIR} ${PostgreSQL_PORT_OS_INCLUDE_DIR} )
   set(PostgreSQL_LIBRARY_DIRS ${PostgreSQL_LIBRARY_DIR} )
   set(PostgreSQL_LIBRARIES ${PostgreSQL_LIBRARY_TO_FIND})
 
