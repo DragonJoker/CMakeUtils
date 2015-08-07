@@ -87,8 +87,16 @@ set(PostgreSQL_KNOWN_VERSIONS ${PostgreSQL_ADDITIONAL_VERSIONS}
 
 # Define additional search paths for root directories.
 if ( WIN32 )
+  set( ADDITIONAL_DIR "C:/Program Files (x86)/PostgreSQL/${suffix}" )
+
+  if ( CMAKE_CL_64 )
+    set( ADDITIONAL_DIR "C:/Program Files/PostgreSQL/${suffix}" )
+  elseif ( CMAKE_COMPILER_IS_GNUCXX AND CMAKE_SIZEOF_VOID_P EQUAL 8 )
+    set( ADDITIONAL_DIR "C:/Program Files/PostgreSQL/${suffix}" )
+  endif ()
+
   foreach (suffix ${PostgreSQL_KNOWN_VERSIONS} )
-    set(PostgreSQL_ADDITIONAL_SEARCH_PATHS ${PostgreSQL_ADDITIONAL_SEARCH_PATHS} "C:/Program Files/PostgreSQL/${suffix}" )
+    set(PostgreSQL_ADDITIONAL_SEARCH_PATHS ${PostgreSQL_ADDITIONAL_SEARCH_PATHS} ${ADDITIONAL_DIR} )
   endforeach()
 endif()
 set( PostgreSQL_ROOT_DIRECTORIES

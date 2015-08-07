@@ -23,16 +23,20 @@ else ()
 endif ()
 
 set( SUPPORTED_MySQL_SERVERS "5.2" "5.3" "5.4" "5.5" "5.6" )
+set( SUPPORTED_MySQL_C_CONNECTORS "5.2" "5.3" "5.4" "5.5" "5.6" "5.7" "5.8" "5.9" "6.0" "6.1" )
 set( CONFIGURATION x86 )
-set( MySQL_SERVER_DIR "C:/Program Files (x86)/MySQL/MySQL Server" )
+set( MySQL_DIR "C:/Program Files (x86)/MySQL" )
 
 if ( CMAKE_CL_64 )
 	set( CONFIGURATION x64 )
-	set( MySQL_SERVER_DIR "C:/Program Files/MySQL/MySQL Server" )
+	set( MySQL_DIR "C:/Program Files/MySQL" )
 elseif ( CMAKE_COMPILER_IS_GNUCXX AND CMAKE_SIZEOF_VOID_P EQUAL 8 )
 	set( CONFIGURATION x64 )
-	set( MySQL_SERVER_DIR "C:/Program Files/MySQL/MySQL Server" )
+	set( MySQL_DIR "C:/Program Files/MySQL" )
 endif ()
+
+set( MySQL_SERVER_DIR "${MySQL_DIR}/MySQL Server" )
+set( MySQL_C_CONNECTOR_DIR "${MySQL_DIR}/MySQL Connector C" )
 
 if ( NOT MySQL_FIND_COMPONENTS )
 	set( MySQL_FIND_COMPONENTS client cppconn )
@@ -42,8 +46,16 @@ if ( WIN32 )
 	foreach( SERVER ${SUPPORTED_MySQL_SERVERS} )
 		if ( NOT ACTUAL_MySQL_SERVER )
 			set( DIR "${MySQL_SERVER_DIR} ${SERVER}" )
-			if( EXISTS "${DIR}" AND IS_DIRECTORY "${DIR}" )
-				set( ACTUAL_MySQL_SERVER ${DIR} )
+			if( EXISTS "${DIR}/" )
+				set( ACTUAL_MySQL_DIR ${DIR} )
+			endif()
+		endif()
+	endforeach()
+	foreach( SERVER ${SUPPORTED_MySQL_C_CONNECTORS} )
+		if ( NOT ACTUAL_MySQL_DIR )
+			set( DIR "${MySQL_C_CONNECTOR_DIR} ${SERVER}" )
+			if( EXISTS "${DIR}/" )
+				set( ACTUAL_MySQL_DIR ${DIR} )
 			endif()
 		endif()
 	endforeach()
@@ -51,6 +63,7 @@ endif ()
 
 foreach( _COMPONENT ${MySQL_FIND_COMPONENTS} )
 	if ( "cppconn" STREQUAL "${_COMPONENT}" )
+		set( STATIC_LIB_SUFFIX "-static" )
 		set( MySQL_${_COMPONENT}_ROOT_DIR
 			"${MySQL_${_COMPONENT}_ROOT_DIR}"
 			CACHE
@@ -70,13 +83,28 @@ foreach( _COMPONENT ${MySQL_FIND_COMPONENTS} )
 			message( STATUS "MySQL Connector C++ include directory not found!" )
 		endif ()
 	else ()
+		if ( "client" STREQUAL "${_COMPONENT}" )
+			set( ADDITIONAL_LIB_NAME libmysql )
+			if ( MSVC10 )
+				set( FOLDER_SUFFIX "vs10" )
+			elseif ( MSVC11 )
+				set( FOLDER_SUFFIX "vs11" )
+			elseif ( MSVC12 )
+				set( FOLDER_SUFFIX "vs12" )
+			endif ()
+		endif ()
+		set( STATIC_LIB_SUFFIX "" )
 		if ( WIN32 )
 			set( MySQL_LINK_FLAGS "/NODEFAULTLIB:libcmt.lib /NODEFAULTLIB:libcmtd.lib" )
-			set( MySQL_${_COMPONENT}_ROOT_DIR
-				"${ACTUAL_MySQL_SERVER}"
-				CACHE
-				PATH
-				"Path to search for MySQL Client." )
+			if ( ACTUAL_MySQL_DIR )
+				set( MySQL_${_COMPONENT}_ROOT_DIR
+					"${ACTUAL_MySQL_DIR}"
+					CACHE
+					PATH
+					"Path to search for MySQL Client."
+					FORCE
+				)
+			endif ()
 		else ()
 			find_path( MySQL_${_COMPONENT}_ROOT_DIR include/mysql/mysql.h
 				HINTS
@@ -101,36 +129,45 @@ foreach( _COMPONENT ${MySQL_FIND_COMPONENTS} )
 	if ( ${_LIBTYPE} STREQUAL "DYNAMIC" )
 		find_library( MySQL_${_COMPONENT}_LIBRARY_RELEASE
 			NAMES
+				${ADDITIONAL_LIB_NAME}
 				mysql${_COMPONENT}
 			PATHS
 				${MySQL_${_COMPONENT}_ROOT_DIR}/lib
 				${MySQL_${_COMPONENT}_ROOT_DIR}/lib/opt
+				${MySQL_${_COMPONENT}_ROOT_DIR}/lib/${FOLDER_SUFFIX}
 			DOC "The MySQL ${_COMPONENT} dynamic library release"
 		)
 		find_library( MySQL_${_COMPONENT}_LIBRARY_DEBUG
 			NAME
+				${ADDITIONAL_LIB_NAME}d
 				mysql${_COMPONENT}d
 			PATHS
 				${MySQL_${_COMPONENT}_ROOT_DIR}/lib
 				${MySQL_${_COMPONENT}_ROOT_DIR}/lib/opt
+				${MySQL_${_COMPONENT}_ROOT_DIR}/lib/${FOLDER_SUFFIX}
 			DOC "The MySQL ${_COMPONENT} dynamic library debug"
 		)
 	else ()
 		find_library( MySQL_${_COMPONENT}_LIBRARY_RELEASE
 			NAMES
-				mysql${_COMPONENT}-static
+				${ADDITIONAL_LIB_NAME}${STATIC_LIB_SUFFIX}
+				mysql${_COMPONENT}${STATIC_LIB_SUFFIX}
 			PATHS
 				${MySQL_${_COMPONENT}_ROOT_DIR}/lib
 				${MySQL_${_COMPONENT}_ROOT_DIR}/lib/opt
+				${MySQL_${_COMPONENT}_ROOT_DIR}/lib/${FOLDER_SUFFIX}
 			DOC "The MySQL ${_COMPONENT} static library release"
 		)
 		find_library( MySQL_${_COMPONENT}_LIBRARY_DEBUG
 			NAMES
-				mysql${_COMPONENT}-staticd
-				mysql${_COMPONENT}d-static
+				${ADDITIONAL_LIB_NAME}${STATIC_LIB_SUFFIX}d
+				${ADDITIONAL_LIB_NAME}d${STATIC_LIB_SUFFIX}
+				mysql${_COMPONENT}${STATIC_LIB_SUFFIX}d
+				mysql${_COMPONENT}d${STATIC_LIB_SUFFIX}
 			PATHS
 				${MySQL_${_COMPONENT}_ROOT_DIR}/lib
 				${MySQL_${_COMPONENT}_ROOT_DIR}/lib/opt
+				${MySQL_${_COMPONENT}_ROOT_DIR}/lib/${FOLDER_SUFFIX}
 			DOC "The MySQL ${_COMPONENT} static library debug"
 		)
 	endif ()
