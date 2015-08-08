@@ -136,6 +136,10 @@ function( add_target TARGET_NAME TARGET_TYPE TARGET_DEPENDENCIES TARGET_LINKS )#
 		else ()
 			set( TARGET_ABI_NAME_DEBUG "d" )
 		endif ()
+		#Additional definition, for X64 builds
+		if ( NOT "x86" STREQUAL ${PROJECTS_PLATFORM} )
+			add_definitions( -D_X64 )
+		endif ()
 		#We then retrieve target files (located in include/${TARGET_NAME}, source/${TARGET_NAME} and resource/${TARGET_NAME}
 		file(
 			GLOB_RECURSE
