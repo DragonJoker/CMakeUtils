@@ -1,6 +1,7 @@
 function( copy_target_files _TARGET _DESTINATION )# ARGN: The files
 	if ( NOT "${_DESTINATION}" STREQUAL "" )
 		make_directory( ${PROJECTS_BINARIES_OUTPUT_DIR}/$<CONFIG>/share/${_TARGET}/${_DESTINATION} )
+		set( _DESTINATION ${_DESTINATION}/ )
 	endif ()
 	foreach ( _FILE ${ARGN} )
 		get_filename_component( _FILE_NAME ${_FILE} NAME )
