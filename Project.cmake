@@ -116,18 +116,20 @@ function( add_target TARGET_NAME TARGET_TYPE TARGET_DEPENDENCIES TARGET_LINKS )#
 		msg_debug( "OPT_C_FLAGS           [${OPT_C_FLAGS}]" )
 		msg_debug( "OPT_CXX_FLAGS         [${OPT_CXX_FLAGS}]" )
 		#First we retrieve the kind of target we will build
-		string( COMPARE EQUAL ${TARGET_TYPE} 	"api_dll" 	IS_API_DLL )	#A dll will be installed in <install_dir>/bin, an API dll will also have its includes installed in <install_dir>/include/<TARGET_NAME>
-		string( COMPARE EQUAL ${TARGET_TYPE} 	"dll" 		IS_DLL )		#A dll will be installed in <install_dir>/bin
-		string( COMPARE EQUAL ${TARGET_TYPE} 	"lib" 		IS_LIB )		#A lib will be installed in <install_dir>/lib
-		string( COMPARE EQUAL ${TARGET_TYPE} 	"bin" 		IS_BIN )		#A binary will be installed in <install_dir>/bin
-		string( COMPARE EQUAL ${TARGET_TYPE}	"bin_dos"	IS_BIN_DOS )	#A dos binary will be installed in <install_dir>/bin and will have a console
-		string( COMPARE EQUAL ${TARGET_TYPE}	"plugin"	IS_PLUGIN )		#A plugin will be installed in <install_dir>/lib/<project_name>
+		string( COMPARE EQUAL ${TARGET_TYPE} 	"api_dll" 		IS_API_DLL )	#A dll will be installed in <install_dir>/bin, an API dll will also have its includes installed in <install_dir>/include/<TARGET_NAME>
+		string( COMPARE EQUAL ${TARGET_TYPE} 	"dll" 			IS_DLL )		#A dll will be installed in <install_dir>/bin
+		string( COMPARE EQUAL ${TARGET_TYPE} 	"lib" 			IS_LIB )		#A lib will be installed in <install_dir>/lib
+		string( COMPARE EQUAL ${TARGET_TYPE} 	"bin" 			IS_BIN )		#A binary will be installed in <install_dir>/bin
+		string( COMPARE EQUAL ${TARGET_TYPE}	"bin_dos"		IS_BIN_DOS )	#A dos binary will be installed in <install_dir>/bin and will have a console
+		string( COMPARE EQUAL ${TARGET_TYPE}	"plugin"		IS_PLUGIN )		#A plugin will be installed in <install_dir>/lib/<project_name>
+		string( COMPARE EQUAL ${TARGET_TYPE}	"api_plugin"	IS_API_PLUGIN )	#A plugin will be installed in <install_dir>/lib/<project_name>, API plugin will also have its includes installed in <install_dir>/include/<TARGET_NAME>
 		msg_debug( "IS_API_DLL            [${IS_API_DLL}]" )
 		msg_debug( "IS_DLL                [${IS_DLL}]" )
 		msg_debug( "IS_LIB                [${IS_LIB}]" )
 		msg_debug( "IS_BIN                [${IS_BIN}]" )
 		msg_debug( "IS_BIN_DOS            [${IS_BIN_DOS}]" )
 		msg_debug( "IS_PLUGIN             [${IS_PLUGIN}]" )
+		msg_debug( "IS_API_PLUGIN         [${IS_API_PLUGIN}]" )
 		set( BIN_FOLDER bin )
 		if ( IS_LIB )
 			#We compute the extended name of the target (libs only)
@@ -136,7 +138,7 @@ function( add_target TARGET_NAME TARGET_TYPE TARGET_DEPENDENCIES TARGET_LINKS )#
 			msg_debug( "TARGET_ABI_NAME_DEBUG ${TARGET_ABI_NAME_DEBUG}" )
 		else ()
 			set( TARGET_ABI_NAME_DEBUG "d" )
-			if ( IS_PLUGIN )
+			if ( IS_PLUGIN OR IS_API_PLUGIN )
 				set( SUB_FOLDER "/${MAIN_PROJECT_NAME}" )
 				set( BIN_FOLDER lib )
 			endif ()
@@ -154,7 +156,7 @@ function( add_target TARGET_NAME TARGET_TYPE TARGET_DEPENDENCIES TARGET_LINKS )#
 			set( RC_IN_FILE "Executable.rc.in" )
 		elseif ( IS_BIN_DOS )
 			set( RC_IN_FILE "Executable.rc.in" )
-		elseif ( IS_PLUGIN )
+		elseif ( IS_PLUGIN OR IS_API_PLUGIN )
 			set( RC_IN_FILE "Plugin.rc.in" )
 		endif ()
 		#Additional definition, for X64 builds
@@ -251,9 +253,8 @@ function( add_target TARGET_NAME TARGET_TYPE TARGET_DEPENDENCIES TARGET_LINKS )#
 		set( CMAKE_LIBRARY_OUTPUT_DIRECTORY_RELWITHDEBINFO "${PROJECTS_BINARIES_OUTPUT_DIR_RELWITHDEBINFO}/lib${SUB_FOLDER}/" )
 		set( CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELWITHDEBINFO "${PROJECTS_BINARIES_OUTPUT_DIR_RELWITHDEBINFO}/${BIN_FOLDER}${SUB_FOLDER}/" )
 		#We now effectively create the target
-		if ( IS_API_DLL OR IS_DLL OR IS_PLUGIN )
+		if ( IS_API_DLL OR IS_DLL OR IS_PLUGIN OR IS_API_PLUGIN )
 			add_library( ${TARGET_NAME} SHARED ${TARGET_SOURCE_CPP} ${TARGET_SOURCE_C} ${TARGET_SOURCE_H} ${OPT_FILES} )
-			#add_library( ${TARGET_NAME} MODULE ${TARGET_SOURCE_CPP} ${TARGET_SOURCE_C} ${TARGET_SOURCE_H} ${OPT_FILES} )
 			set_target_properties( ${TARGET_NAME}
 				PROPERTIES
 					VERSION ${PROJECTS_VERSION}
@@ -280,13 +281,21 @@ function( add_target TARGET_NAME TARGET_TYPE TARGET_DEPENDENCIES TARGET_LINKS )#
 					COMPONENT ${TARGET_NAME}
 				)
 			endif()
-			if ( IS_API_DLL )
+			if ( IS_API_DLL OR IS_API_PLUGIN )
 				#For API DLLs, we install headers to <install_dir>/include/${TARGET_NAME}
 				install(
 					FILES ${TARGET_SOURCE_H_ONLY}
 					DESTINATION include/${TARGET_NAME}
 					COMPONENT ${TARGET_NAME}_dev
 				)
+				if ( IS_API_PLUGIN AND WIN32 )
+					add_custom_command(
+						TARGET ${TARGET_NAME}
+						POST_BUILD
+						COMMAND ${CMAKE_COMMAND} -E copy_if_different ${PROJECTS_BINARIES_OUTPUT_DIR}/$<CONFIG>/${BIN_FOLDER}${SUB_FOLDER}/${TARGET_NAME}$<$<CONFIG:Debug>:d>.dll ${PROJECTS_BINARIES_OUTPUT_DIR}/$<CONFIG>/bin
+						VERBATIM
+					)
+				endif ()
 			endif ()
 		elseif ( IS_BIN OR IS_BIN_DOS )
 			if ( WIN32 AND NOT IS_BIN_DOS )
