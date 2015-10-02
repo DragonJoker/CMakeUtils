@@ -14,6 +14,10 @@ function( compute_abi_name ABI_Name ABI_Name_Debug )
             set( _ABI_Name "-il")
         endif()
         set( _ABI_Name_Debug "-d")
+    elseif (MSVC14)
+        #Visual Studio 2015
+        set( _ABI_Name "-vc140")
+        set( _ABI_Name_Debug "-d")
     elseif (MSVC12)
         #Visual Studio 2013
         set( _ABI_Name "-vc120")
