@@ -58,15 +58,17 @@ get_filename_component( CMAKE_PARENT_DIR ${CMAKE_CURRENT_SOURCE_DIR} PATH )
 
 set( PROJECTS_TEMPLATES_DIR ${CMAKE_CURRENT_SOURCE_DIR}/CMake/Templates )
 
-if("${PROJECTS_BINARIES_OUTPUT_DIR}" STREQUAL "")
-	set( PROJECTS_BINARIES_OUTPUT_DIR "${CMAKE_PARENT_DIR}/binaries/${PROJECTS_PLATFORM}" CACHE PATH "The path to the built binaries" )
-endif()
-if("${PROJECTS_SETUP_OUTPUT_DIR}" STREQUAL "")
-	set( PROJECTS_SETUP_OUTPUT_DIR "${CMAKE_PARENT_DIR}/setup/${PROJECTS_PLATFORM}" CACHE PATH "The path to the built setup packages" )
-endif()
-if("${PROJECTS_DOCUMENTATION_OUTPUT_DIR}" STREQUAL "")
-	set( PROJECTS_DOCUMENTATION_OUTPUT_DIR "${CMAKE_PARENT_DIR}/doc/${PROJECTS_PLATFORM}" CACHE PATH "The path to the built documentation" )
-endif()
+if ( "${PROJECTS_OUTPUT_DIR}" STREQUAL "" )
+	get_filename_component( _PROJECTS_DIR ${CMAKE_SOURCE_DIR} PATH )
+	set( PROJECTS_OUTPUT_DIR "${_PROJECTS_DIR}" CACHE PATH "The path to the output directory" )
+	message( STATUS "PROJECTS_OUTPUT_DIR not defined, defaulting to ${PROJECTS_OUTPUT_DIR}" )
+else ()
+	set( PROJECTS_OUTPUT_DIR "${PROJECTS_OUTPUT_DIR}" CACHE PATH "The path to the output directory" )
+endif ()
+
+set( PROJECTS_BINARIES_OUTPUT_DIR "${PROJECTS_OUTPUT_DIR}/binaries/${PROJECTS_PLATFORM}" CACHE PATH "The path to the built binaries" FORCE )
+set( PROJECTS_SETUP_OUTPUT_DIR "${PROJECTS_OUTPUT_DIR}/setup/${PROJECTS_PLATFORM}" CACHE PATH "The path to the built setup packages" FORCE )
+set( PROJECTS_DOCUMENTATION_OUTPUT_DIR "${PROJECTS_OUTPUT_DIR}/doc/${PROJECTS_PLATFORM}" CACHE PATH "The path to the built documentation" FORCE )
 
 set( PROJECTS_BINARIES_OUTPUT_DIR_RELWITHDEBINFO ${PROJECTS_BINARIES_OUTPUT_DIR}/RelWithDebInfo )
 set( PROJECTS_BINARIES_OUTPUT_DIR_RELEASE ${PROJECTS_BINARIES_OUTPUT_DIR}/Release )
@@ -98,33 +100,65 @@ if (NOT WIN32 )
 endif ()
 
 #--------------------------------------------------------------------------------------------------
-#	Function :	add_target
+#\function
+#	add_target
+#\brief
 #	Main function, used to create a target of given type, with it's dependencies and libraries
+#\param[in] TARGET_NAME
+#	The target name.
+#\param[in] TARGET_TYPE
+#	Can be one of the following:
+#		dll: A dll will be installed in <install_dir>/bin.
+#		api_dll: Like a dll, an API dll will additionally have its includes installed in <install_dir>/include/<TARGET_NAME>.
+#		lib: A lib will be installed in <install_dir>/lib.
+#		bin: A binary will be installed in <install_dir>/bin.
+#		bin_dos: A dos binary will be installed in <install_dir>/bin and will have a console.
+#		plugin: A plugin will be installed in <install_dir>/lib/<project_name>.
+#		api_plugin: Like a plugin, API plugin will additionally have its includes installed in <install_dir>/include/<TARGET_NAME>.
+#\param[in] TARGET_DEPENDENCIES
+#	String containing the target dependencies (not libraries), separated by ';'.
+#\param[in] TARGET_LINKED_LIBRARIES
+#	String containing the target linked libraries, separated by '|': NOT ';'.
+#	Note that for MSVC build the form "optimized;ReleaseLib.lib;debug;DebugLib.lib" must remain untouched.
+#	In fact, that '|' separator is used to make sure they are different libraries, and not the MSVC form.
+#\param[in,opt] PCH_HEADER
+#	The precompiled headers header file.
+#\param[in,opt] PCH_SOURCE
+#	The precompiled headers source file.
+#\param[in,opt] OPT_C_FLAGS
+#	Optional C compile flags.
+#\param[in,opt] OPT_CXX_FLAGS
+#	String containing the optional CXX compile flags.
+#\param[in,opt] OPT_LINK_FLAGS
+#	String containing the optional link flags.
+#\param[in,opt] OPT_FILES
+#	String containing the optional files to add to the target.
 #--------------------------------------------------------------------------------------------------
-function( add_target TARGET_NAME TARGET_TYPE TARGET_DEPENDENCIES TARGET_LINKS )# ARGV4=PCH_HEADER ARGV5=PCH_CPP ARGV6=OPT_C_FLAGS ARGV7=OPT_CXX_FLAGS ARGV8=OPT_LINK_FLAGS ARGV9=OPT_FILES
+function( add_target TARGET_NAME TARGET_TYPE TARGET_DEPENDENCIES TARGET_LINKED_LIBRARIES )# ARGV4=PCH_HEADER ARGV5=PCH_SOURCE ARGV6=OPT_C_FLAGS ARGV7=OPT_CXX_FLAGS ARGV8=OPT_LINK_FLAGS ARGV9=OPT_FILES
 	set( PCH_HEADER "${ARGV4}" )
-	set( PCH_CPP "${ARGV5}" )
+	set( PCH_SOURCE "${ARGV5}" )
 	set( OPT_C_FLAGS "${ARGV6}" )
 	set( OPT_CXX_FLAGS "${ARGV7}" )
 	set( OPT_LINK_FLAGS "${ARGV8}" )
 	set( OPT_FILES "${ARGV9}" )
 	if((NOT "${CMAKE_BUILD_TYPE}" STREQUAL "") OR MSVC)
+		#First we retrieve the kind of target we will build
+		string( COMPARE EQUAL ${TARGET_TYPE} "dll" IS_DLL )
+		string( COMPARE EQUAL ${TARGET_TYPE} "api_dll" IS_API_DLL )
+		string( COMPARE EQUAL ${TARGET_TYPE} "lib" IS_LIB )
+		string( COMPARE EQUAL ${TARGET_TYPE} "bin" IS_BIN )
+		string( COMPARE EQUAL ${TARGET_TYPE} "bin_dos" IS_BIN_DOS )
+		string( COMPARE EQUAL ${TARGET_TYPE} "plugin" IS_PLUGIN )
+		string( COMPARE EQUAL ${TARGET_TYPE} "api_plugin" IS_API_PLUGIN )
 		msg_debug( "----------------------------------------------------------------------------------------------------" )
-		msg_debug( "Type : 	${TARGET_TYPE} 	- Target : 	${TARGET_NAME}" )
+		msg_debug( "Target    ${TARGET_NAME}" )
+		msg_debug( "Type      ${TARGET_TYPE}" )
 		msg_debug( "PCH_HEADER            [${PCH_HEADER}]" )
-		msg_debug( "PCH_CPP               [${PCH_CPP}]" )
+		msg_debug( "PCH_SOURCE            [${PCH_SOURCE}]" )
 		msg_debug( "OPT_C_FLAGS           [${OPT_C_FLAGS}]" )
 		msg_debug( "OPT_CXX_FLAGS         [${OPT_CXX_FLAGS}]" )
-		#First we retrieve the kind of target we will build
-		string( COMPARE EQUAL ${TARGET_TYPE} 	"api_dll" 		IS_API_DLL )	#A dll will be installed in <install_dir>/bin, an API dll will also have its includes installed in <install_dir>/include/<TARGET_NAME>
-		string( COMPARE EQUAL ${TARGET_TYPE} 	"dll" 			IS_DLL )		#A dll will be installed in <install_dir>/bin
-		string( COMPARE EQUAL ${TARGET_TYPE} 	"lib" 			IS_LIB )		#A lib will be installed in <install_dir>/lib
-		string( COMPARE EQUAL ${TARGET_TYPE} 	"bin" 			IS_BIN )		#A binary will be installed in <install_dir>/bin
-		string( COMPARE EQUAL ${TARGET_TYPE}	"bin_dos"		IS_BIN_DOS )	#A dos binary will be installed in <install_dir>/bin and will have a console
-		string( COMPARE EQUAL ${TARGET_TYPE}	"plugin"		IS_PLUGIN )		#A plugin will be installed in <install_dir>/lib/<project_name>
-		string( COMPARE EQUAL ${TARGET_TYPE}	"api_plugin"	IS_API_PLUGIN )	#A plugin will be installed in <install_dir>/lib/<project_name>, API plugin will also have its includes installed in <install_dir>/include/<TARGET_NAME>
-		msg_debug( "IS_API_DLL            [${IS_API_DLL}]" )
 		msg_debug( "IS_DLL                [${IS_DLL}]" )
+		msg_debug( "IS_API_DLL            [${IS_API_DLL}]" )
 		msg_debug( "IS_LIB                [${IS_LIB}]" )
 		msg_debug( "IS_BIN                [${IS_BIN}]" )
 		msg_debug( "IS_BIN_DOS            [${IS_BIN_DOS}]" )
@@ -146,18 +180,15 @@ function( add_target TARGET_NAME TARGET_TYPE TARGET_DEPENDENCIES TARGET_LINKS )#
 		if ( NOT ${PROJECT_NAME}_WXWIDGET )
 			set( ${PROJECT_NAME}_WXWIDGET 0 )
 		endif ()
-		if ( IS_API_DLL )
+		if ( IS_DLL OR IS_API_DLL )
 			set( RC_IN_FILE "SharedLibrary.rc.in" )
-		elseif ( IS_DLL )
-			set( RC_IN_FILE "SharedLibrary.rc.in" )
-		elseif ( IS_LIB )
-			set( RC_IN_FILE "StaticLibrary.rc.in" )
-		elseif ( IS_BIN )
-			set( RC_IN_FILE "Executable.rc.in" )
-		elseif ( IS_BIN_DOS )
+		elseif ( IS_BIN OR IS_BIN_DOS )
 			set( RC_IN_FILE "Executable.rc.in" )
 		elseif ( IS_PLUGIN OR IS_API_PLUGIN )
 			set( RC_IN_FILE "Plugin.rc.in" )
+		else ()
+			set( IS_LIB TRUE )
+			set( RC_IN_FILE "StaticLibrary.rc.in" )
 		endif ()
 		#Additional definition, for X64 builds
 		if ( NOT "x86" STREQUAL ${PROJECTS_PLATFORM} )
@@ -359,10 +390,10 @@ function( add_target TARGET_NAME TARGET_TYPE TARGET_DEPENDENCIES TARGET_LINKS )#
 			add_dependencies( ${TARGET_NAME} ${TARGET_DEPENDENCY} )
 		endforeach()
 		#We scan libraries to add it to the linker
-		foreach( TARGET_LINK ${TARGET_LINKS} )
-			string( REPLACE "|" ";" TARGET_LINK ${TARGET_LINK})
-			msg_debug( "TARGET_LINK           ${TARGET_LINK}" )
-			target_link_libraries( ${TARGET_NAME} ${TARGET_LINK} )
+		foreach( TARGET_LIB ${TARGET_LINKED_LIBRARIES} )
+			string( REPLACE "|" ";" TARGET_LIB ${TARGET_LIB})
+			msg_debug( "TARGET_LIB            ${TARGET_LIB}" )
+			target_link_libraries( ${TARGET_NAME} ${TARGET_LIB} )
 		endforeach()
 		
 		set_source_files_properties( ${TARGET_SOURCE_C} PROPERTIES COMPILE_FLAGS "${TARGET_C_FLAGS}")
@@ -372,7 +403,7 @@ function( add_target TARGET_NAME TARGET_TYPE TARGET_DEPENDENCIES TARGET_LINKS )#
 			msg_debug( "PRECOMPILED HEADERS   No" )
 		else ()
 			msg_debug( "PRECOMPILED HEADERS   Yes" )
-			add_target_precompiled_header( ${TARGET_NAME} ${PCH_HEADER} ${PCH_CPP} ${TARGET_CXX_FLAGS} ${TARGET_SOURCE_CPP} )
+			add_target_precompiled_header( ${TARGET_NAME} ${PCH_HEADER} ${PCH_SOURCE} ${TARGET_CXX_FLAGS} ${TARGET_SOURCE_CPP} )
 		endif ()
 		if ( MSVC )
 			if ( ${PROJECTS_PROFILING} )
