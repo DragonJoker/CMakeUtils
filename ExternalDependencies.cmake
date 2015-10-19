@@ -6,10 +6,10 @@ function( _copy_and_install _TARGET _PATH _FILE _CONFIGURATION )
 	else ()
 		set( _FOLDER lib )
 	endif ()
-	
+
 	file( GLOB _LIBRARIES ${_PATH}/${_FILE}* )
-  
-  foreach ( _LIBRARY ${_LIBRARIES} )
+
+	foreach ( _LIBRARY ${_LIBRARIES} )
 		get_filename_component( _LIB_NAME ${_LIBRARY} NAME )
 		add_custom_command(
 			TARGET ${_TARGET}
@@ -33,38 +33,47 @@ function( copy_dll _TARGET _LIB_FULL_PATH_NAME _CONFIGURATION )# ARG4 _WIN32_SUF
 		get_filename_component( _DllPath ${_LIB_FULL_PATH_NAME} PATH )
 		get_filename_component( _DllName ${_LIB_FULL_PATH_NAME} NAME_WE )
 		string( SUBSTRING ${_DllName} 0 3 _DllPrefix )
-	
+
 		if ( "${_DllPrefix}" STREQUAL "lib" )
 			string( SUBSTRING ${_DllName} 3 -1 _DllName )
 		else ()
 			set( _DllPrefix "" )
 		endif ()
-	
+
 		if ( WIN32 )
 		  set( _DllSuffix "${ARGV3}.dll" )
 		else ()
 		  set( _DllSuffix ".so" )
 		endif ()
-	
+
 		if ( EXISTS ${_DllPath}/${_DllPrefix}${_DllName}${_DllSuffix} )
 			_copy_and_install( ${_TARGET} ${_DllPath} ${_DllPrefix}${_DllName}${_DllSuffix} ${_CONFIGURATION} )
 		elseif ( EXISTS ${_DllPath}/${_DllName}${_DllSuffix} )
 			_copy_and_install( ${_TARGET} ${_DllPath} ${_DllName}${_DllSuffix} ${_CONFIGURATION} )
 		else ()
+			get_filename_component( _PathLeaf ${_DllPath} NAME )
+
+			if ( NOT "${PROJECTS_PLATFORM}" STREQUAL "${_PathLeaf}" )
+				set( _PathLeaf "" )
+			else ()
+				set( _PathLeaf "/${_PathLeaf}" )
+				get_filename_component( _DllPath ${_DllPath} PATH )
+			endif ()
+
 			get_filename_component( _DllPath ${_DllPath} PATH )
-		
-			if ( EXISTS ${_DllPath}/lib/${_DllPrefix}${_DllName}${_DllSuffix} )
-				_copy_and_install( ${_TARGET} ${_DllPath}/lib ${_DllPrefix}${_DllName}${_DllSuffix} ${_CONFIGURATION} )
-			elseif ( EXISTS ${_DllPath}/bin/${_DllPrefix}${_DllName}${_DllSuffix} )
-				_copy_and_install( ${_TARGET} ${_DllPath}/bin ${_DllPrefix}${_DllName}${_DllSuffix} ${_CONFIGURATION} )
-			elseif ( EXISTS ${_DllPath}/${_DllPrefix}${_DllName}${_DllSuffix} )
-				_copy_and_install( ${_TARGET} ${_DllPath} ${_DllPrefix}${_DllName}${_DllSuffix} ${_CONFIGURATION} )
-			elseif ( EXISTS ${_DllPath}/lib/${_DllName}${_DllSuffix} )
-				_copy_and_install( ${_TARGET} ${_DllPath}/lib ${_DllName}${_DllSuffix} ${_CONFIGURATION} )
-			elseif ( EXISTS ${_DllPath}/bin/${_DllName}${_DllSuffix} )
-				_copy_and_install( ${_TARGET} ${_DllPath}/bin ${_DllName}${_DllSuffix} ${_CONFIGURATION} )
-			elseif ( EXISTS ${_DllPath}/${_DllName}${_DllSuffix} )
-				_copy_and_install( ${_TARGET} ${_DllPath} ${_DllName}${_DllSuffix} ${_CONFIGURATION} )
+
+			if ( EXISTS ${_DllPath}/lib${_PathLeaf}/${_DllPrefix}${_DllName}${_DllSuffix} )
+				_copy_and_install( ${_TARGET} ${_DllPath}/lib${_PathLeaf} ${_DllPrefix}${_DllName}${_DllSuffix} ${_CONFIGURATION} )
+			elseif ( EXISTS ${_DllPath}/bin${_PathLeaf}/${_DllPrefix}${_DllName}${_DllSuffix} )
+				_copy_and_install( ${_TARGET} ${_DllPath}/bin${_PathLeaf} ${_DllPrefix}${_DllName}${_DllSuffix} ${_CONFIGURATION} )
+			elseif ( EXISTS ${_DllPath}${_PathLeaf}/${_DllPrefix}${_DllName}${_DllSuffix} )
+				_copy_and_install( ${_TARGET} ${_DllPath}${_PathLeaf} ${_DllPrefix}${_DllName}${_DllSuffix} ${_CONFIGURATION} )
+			elseif ( EXISTS ${_DllPath}/lib${_PathLeaf}/${_DllName}${_DllSuffix} )
+				_copy_and_install( ${_TARGET} ${_DllPath}/lib${_PathLeaf} ${_DllName}${_DllSuffix} ${_CONFIGURATION} )
+			elseif ( EXISTS ${_DllPath}/bin${_PathLeaf}/${_DllName}${_DllSuffix} )
+				_copy_and_install( ${_TARGET} ${_DllPath}/bin${_PathLeaf} ${_DllName}${_DllSuffix} ${_CONFIGURATION} )
+			elseif ( EXISTS ${_DllPath}${_PathLeaf}/${_DllName}${_DllSuffix} )
+				_copy_and_install( ${_TARGET} ${_DllPath}${_PathLeaf} ${_DllName}${_DllSuffix} ${_CONFIGURATION} )
 			endif ()
 		endif ()
 	endif ()
