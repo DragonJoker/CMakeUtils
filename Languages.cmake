@@ -26,7 +26,7 @@ macro( copy_languages TARGET_NAME SRC_FOLDER DST_FOLDER LANGUAGES )
 		add_custom_command(
 			TARGET ${TARGET_NAME}
 			POST_BUILD
-			COMMAND ${CMAKE_COMMAND} -E copy_if_different ${_FILE} ${PROJECTS_BINARIES_OUTPUT_DIR}/$<CONFIG>/share/${DST_FOLDER}/${LANGUAGE}/
+			COMMAND ${CMAKE_COMMAND} -E copy_if_different ${_FILE} ${PROJECTS_BINARIES_OUTPUT_DIR}/$<CONFIGURATION>/share/${DST_FOLDER}/${LANGUAGE}/
 			COMMENT "Copying ${LANGUAGE} translation file"
 		)
 		install(
