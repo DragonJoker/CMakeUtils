@@ -44,10 +44,6 @@ else ()
 	endif ()
 endif ()
 
-message( STATUS "FreeImage_LIB_SUBDIR: ${FreeImage_LIB_SUBDIR}" )
-message( STATUS "FreeImage_PLATFORM:   ${FreeImage_PLATFORM}" )
-message( STATUS "Dist/${FreeImage_LIB_SUBDIR}/${FreeImage_PLATFORM}" )
-
 if ( WIN32 )
 	find_path( FreeImage_ROOT_DIR Dist/FreeImage.h
 		HINTS
