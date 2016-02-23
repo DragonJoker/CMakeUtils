@@ -113,6 +113,7 @@ if(EXISTS "${OpenCV_DIR}")
 				"libopencv_${__CVLIB}${CVLIB_SUFFIX}d"
 				"libopencv_${__CVLIB}d"
 			PATHS
+				"${OpenCV_LIBRARY_DIR}/Debug"
 				"${OpenCV_LIBRARY_DIR}"
 				"${OpenCV_DIR}/lib"
 			NO_DEFAULT_PATH
@@ -129,6 +130,7 @@ if(EXISTS "${OpenCV_DIR}")
 				"libopencv_${__CVLIB}${CVLIB_SUFFIX}"
 				"libopencv_${__CVLIB}"
 			PATHS
+				"${OpenCV_LIBRARY_DIR}/Release"
 				"${OpenCV_LIBRARY_DIR}"
 				"${OpenCV_DIR}/lib"
 			NO_DEFAULT_PATH
