@@ -12,6 +12,8 @@
 #   VULKAN_INCLUDE_DIR, where to find headers.
 #
 
+FIND_PACKAGE( PackageHandleStandardArgs )
+
 FIND_PATH(VULKAN_ROOT_DIR include/vulkan/vulkan.h 
 	HINTS
 	PATH_SUFFIXES
