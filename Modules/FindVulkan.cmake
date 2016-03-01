@@ -39,6 +39,7 @@ if (CMAKE_CL_64 OR CMAKE_GENERATOR MATCHES Win64)
 			HINTS
 			PATH_SUFFIXES
 				lib/x64
+				bin/x64
 			PATHS
 				${VULKAN_ROOT_DIR}
 		)
@@ -74,6 +75,8 @@ else()
 		HINTS
 		PATH_SUFFIXES
 			lib/x86
+			bin/x86
+			bin
 		PATHS
 			${VULKAN_ROOT_DIR}
 		)
