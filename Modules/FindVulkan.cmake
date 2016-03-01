@@ -15,7 +15,6 @@
 FIND_PACKAGE( PackageHandleStandardArgs )
 
 FIND_PATH(VULKAN_ROOT_DIR include/vulkan/vulkan.h 
-	HINTS
 	PATH_SUFFIXES
 		vulkan
 	PATHS
@@ -24,22 +23,19 @@ FIND_PATH(VULKAN_ROOT_DIR include/vulkan/vulkan.h
 )
 
 FIND_PATH(VULKAN_INCLUDE_DIR vulkan/vulkan.h 
-	HINTS
 	PATH_SUFFIXES
 		include
 	PATHS
 		${VULKAN_ROOT_DIR}
-		/usr/local/include
-		/usr/include
 )
 
 if (CMAKE_CL_64 OR CMAKE_GENERATOR MATCHES Win64)
 	if( WIN32 )
 		FIND_PATH(VULKAN_LIBRARY_DIR vulkan-1.lib
-			HINTS
+			NO_DEFAULT_PATH
 			PATH_SUFFIXES
 				lib/x64
-				bin/x64
+				bin
 			PATHS
 				${VULKAN_ROOT_DIR}
 		)
@@ -47,13 +43,11 @@ if (CMAKE_CL_64 OR CMAKE_GENERATOR MATCHES Win64)
 		FIND_LIBRARY(VULKAN_LIBRARY
 			NAMES
 				vulkan-1.lib
-			HINTS
 			PATHS
 				${VULKAN_LIBRARY_DIR}
 		)
 	else()
 		FIND_PATH(VULKAN_LIBRARY_DIR libvulkan-1.so
-			HINTS
 			PATH_SUFFIXES
 				lib64
 				lib
@@ -64,7 +58,6 @@ if (CMAKE_CL_64 OR CMAKE_GENERATOR MATCHES Win64)
 		FIND_LIBRARY(VULKAN_LIBRARY_RELEASE
 			NAMES
 				libvulkan-1.so
-			HINTS
 			PATHS
 				${VULKAN_LIBRARY_DIR}
 		)
@@ -72,25 +65,23 @@ if (CMAKE_CL_64 OR CMAKE_GENERATOR MATCHES Win64)
 else()
 	if( WIN32 )
 		FIND_PATH(VULKAN_LIBRARY_DIR vulkan-1.lib
-		HINTS
-		PATH_SUFFIXES
-			lib/x86
-			bin/x86
-			bin
-		PATHS
-			${VULKAN_ROOT_DIR}
+			NO_DEFAULT_PATH
+			PATH_SUFFIXES
+				lib/x86
+				bin32
+			PATHS
+				${VULKAN_ROOT_DIR}
 		)
 
 		FIND_LIBRARY(VULKAN_LIBRARY
 			NAMES
 				vulkan-1.lib
-			HINTS
+			NO_DEFAULT_PATH
 			PATHS
 				${VULKAN_LIBRARY_DIR}
 		)
 	else()
 		FIND_PATH(VULKAN_LIBRARY_DIR libvulkan-1.so
-			HINTS
 			PATH_SUFFIXES
 				lib
 			PATHS
@@ -100,7 +91,6 @@ else()
 		FIND_LIBRARY(VULKAN_LIBRARY
 			NAMES
 				libvulkan-1.so
-			HINTS
 			PATHS
 				${VULKAN_LIBRARY_DIR}
 		)
