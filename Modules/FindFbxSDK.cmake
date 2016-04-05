@@ -69,6 +69,40 @@ if (CMAKE_CL_64 OR CMAKE_GENERATOR MATCHES Win64)
 			PATHS
 				${FbxSDK_LIBRARY_DEBUG_DIR}
 		)
+	elseif ( CMAKE_COMPILER_IS_GNUCXX )
+		FIND_PATH(FbxSDK_LIBRARY_RELEASE_DIR libfbxsdk.so libfbxsdk.lib
+			HINTS
+			PATH_SUFFIXES
+				lib/gcc4/x64/debug
+			PATHS
+				${FbxSDK_ROOT_DIR}
+		)
+
+		FIND_PATH(FbxSDK_LIBRARY_DEBUG_DIR libfbxsdk.so libfbxsdk.lib
+			HINTS
+			PATH_SUFFIXES
+				lib/gcc4/x64/release
+			PATHS
+				${FbxSDK_ROOT_DIR}
+		)
+
+		FIND_LIBRARY(FbxSDK_LIBRARY_RELEASE
+			NAMES
+				libfbxsdk.so
+				libfbxsdk.lib
+			HINTS
+			PATHS
+				${FbxSDK_LIBRARY_RELEASE_DIR}
+		)
+
+		FIND_LIBRARY(FbxSDK_LIBRARY_DEBUG
+			NAMES
+				libfbxsdk.so
+				libfbxsdk.lib
+			HINTS
+			PATHS
+				${FbxSDK_LIBRARY_DEBUG_DIR}
+		)
 	else()
 		FIND_PATH(FbxSDK_LIBRARY_RELEASE_DIR libfbxsdk.so libfbxsdk.lib
 			HINTS
@@ -176,6 +210,74 @@ else()
 
 		FIND_LIBRARY(FbxSDK_LIBRARY_DEBUG
 			NAMES
+				libfbxsdk.lib
+			HINTS
+			PATHS
+				${FbxSDK_LIBRARY_DEBUG_DIR}
+		)
+	elseif ( CMAKE_COMPILER_IS_GNUCXX AND (${CMAKE_SIZEOF_VOID_P} EQUAL 8) )
+		FIND_PATH(FbxSDK_LIBRARY_RELEASE_DIR libfbxsdk.so libfbxsdk.lib
+			HINTS
+			PATH_SUFFIXES
+				lib/gcc4/x64/release
+			PATHS
+				${FbxSDK_ROOT_DIR}
+		)
+
+		FIND_PATH(FbxSDK_LIBRARY_DEBUG_DIR libfbxsdk.so libfbxsdk.lib
+			HINTS
+			PATH_SUFFIXES
+				lib/gcc4/x64/debug
+			PATHS
+				${FbxSDK_ROOT_DIR}
+		)
+
+		FIND_LIBRARY(FbxSDK_LIBRARY_RELEASE
+			NAMES
+				libfbxsdk.so
+				libfbxsdk.lib
+			HINTS
+			PATHS
+				${FbxSDK_LIBRARY_RELEASE_DIR}
+		)
+
+		FIND_LIBRARY(FbxSDK_LIBRARY_DEBUG
+			NAMES
+				libfbxsdk.so
+				libfbxsdk.lib
+			HINTS
+			PATHS
+				${FbxSDK_LIBRARY_DEBUG_DIR}
+		)
+	elseif ( CMAKE_COMPILER_IS_GNUCXX )
+		FIND_PATH(FbxSDK_LIBRARY_RELEASE_DIR libfbxsdk.so libfbxsdk.lib
+			HINTS
+			PATH_SUFFIXES
+				lib/gcc4/x86/release
+			PATHS
+				${FbxSDK_ROOT_DIR}
+		)
+
+		FIND_PATH(FbxSDK_LIBRARY_DEBUG_DIR libfbxsdk.so libfbxsdk.lib
+			HINTS
+			PATH_SUFFIXES
+				lib/gcc4/x86/debug
+			PATHS
+				${FbxSDK_ROOT_DIR}
+		)
+
+		FIND_LIBRARY(FbxSDK_LIBRARY_RELEASE
+			NAMES
+				libfbxsdk.so
+				libfbxsdk.lib
+			HINTS
+			PATHS
+				${FbxSDK_LIBRARY_RELEASE_DIR}
+		)
+
+		FIND_LIBRARY(FbxSDK_LIBRARY_DEBUG
+			NAMES
+				libfbxsdk.so
 				libfbxsdk.lib
 			HINTS
 			PATHS
