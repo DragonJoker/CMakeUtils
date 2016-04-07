@@ -297,27 +297,27 @@ function( add_target TARGET_NAME TARGET_TYPE TARGET_DEPENDENCIES TARGET_LINKED_L
 				#We install each .dll in <install_dir>/bin folder
 				install(
 					TARGETS ${TARGET_NAME}
+					COMPONENT ${TARGET_NAME}
 					EXPORT ${TARGET_NAME}
 					RUNTIME DESTINATION ${BIN_FOLDER}${SUB_FOLDER}
 					ARCHIVE DESTINATION lib${SUB_FOLDER}
 					LIBRARY DESTINATION lib${SUB_FOLDER}
-					COMPONENT ${TARGET_NAME}
 				)
 			else ()
 				#We install each .so in <install_dir>/lib folder
 				install(
 					TARGETS ${TARGET_NAME}
+					COMPONENT ${TARGET_NAME}
 					EXPORT ${TARGET_NAME}
 					LIBRARY DESTINATION lib${SUB_FOLDER}
-					COMPONENT ${TARGET_NAME}
 				)
 			endif()
 			if ( IS_API_DLL OR IS_API_PLUGIN )
 				#For API DLLs, we install headers to <install_dir>/include/${TARGET_NAME}
 				install(
 					FILES ${TARGET_SOURCE_H_ONLY}
-					DESTINATION include/${TARGET_NAME}
 					COMPONENT ${TARGET_NAME}_dev
+					DESTINATION include/${TARGET_NAME}
 				)
 				if ( IS_API_PLUGIN AND WIN32 )
 					add_custom_command(
@@ -325,6 +325,18 @@ function( add_target TARGET_NAME TARGET_TYPE TARGET_DEPENDENCIES TARGET_LINKED_L
 						POST_BUILD
 						COMMAND ${CMAKE_COMMAND} -E copy_if_different ${PROJECTS_BINARIES_OUTPUT_DIR}/$<CONFIGURATION>/${BIN_FOLDER}${SUB_FOLDER}/${TARGET_NAME}$<$<CONFIG:Debug>:d>.dll ${PROJECTS_BINARIES_OUTPUT_DIR}/$<CONFIGURATION>/bin
 						VERBATIM
+					)
+					install(
+						FILES ${CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG}${TARGET_NAME}d.dll
+						COMPONENT ${TARGET_NAME}
+						CONFIGURATIONS Debug
+						DESTINATION bin
+					)
+					install(
+						FILES ${CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE}${TARGET_NAME}.dll
+						COMPONENT ${TARGET_NAME}
+						CONFIGURATIONS Release
+						DESTINATION bin
 					)
 				endif ()
 			endif ()
@@ -342,9 +354,9 @@ function( add_target TARGET_NAME TARGET_TYPE TARGET_DEPENDENCIES TARGET_LINKED_L
 			#We copy each exe in <install_dir>/bin folder
 			install(
 				TARGETS ${TARGET_NAME}
+				COMPONENT ${TARGET_NAME}
 				EXPORT ${TARGET_NAME}
 				RUNTIME DESTINATION bin
-				COMPONENT ${TARGET_NAME}
 			)
 		elseif ( IS_LIB )
 			add_library( ${TARGET_NAME} STATIC ${TARGET_SOURCE_CPP} ${TARGET_SOURCE_C} ${TARGET_SOURCE_H} ${OPT_FILES} )
@@ -359,15 +371,15 @@ function( add_target TARGET_NAME TARGET_TYPE TARGET_DEPENDENCIES TARGET_LINKED_L
 			#We copy each lib in <install_dir>/lib folder
 			install(
 				TARGETS ${TARGET_NAME}
+				COMPONENT ${TARGET_NAME}_dev
 				EXPORT ${TARGET_NAME}
 				ARCHIVE DESTINATION lib
-				COMPONENT ${TARGET_NAME}_dev
 			)
 			#For libs, we install headers to <install_dir>/include/${TARGET_NAME}
 			install(
 				FILES ${TARGET_SOURCE_H_ONLY}
-				DESTINATION include/${TARGET_NAME}
 				COMPONENT ${TARGET_NAME}_dev
+				DESTINATION include/${TARGET_NAME}
 			)
 		else()
 			message( FATAL_ERROR " Unknown target type : [${TARGET_TYPE}]" )
