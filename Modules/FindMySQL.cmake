@@ -5,10 +5,11 @@
 #
 # Description : Find the native MySQL Client and MySQL Connector C++ includes and library.
 #               This modules defines the following variables:
-#                   MySQL_ROOT_DIR          : The MySQL root directory.
-#                   MySQL_INCLUDE_DIR       : MySQL include directory.
-#                   MySQL_LIBRARIES_DYNAMIC : Contains the libraries.
-#                   MySQL_LIBRARIES_STATIC  : Contains the static libraries.
+#                   MySQL_ROOT_DIR                 : The MySQL root directory.
+#                   MySQL_INCLUDE_DIR              : MySQL include directory.
+#                   MySQL_LIBRARIIES               : Contains the libraries.
+#                   MySQL_client_LIBRARY_DEBUG     : Contains the client debug library.
+#                   MySQL_client_LIBRARY_RELEASE   : Contains the client release library.
 #
 #
 # *************************************************************************
@@ -44,7 +45,7 @@ endif ()
 
 if ( WIN32 )
 	foreach( SERVER ${SUPPORTED_MySQL_SERVERS} )
-		if ( NOT ACTUAL_MySQL_SERVER )
+		if ( NOT ACTUAL_MySQL_DIR )
 			set( DIR "${MySQL_SERVER_DIR} ${SERVER}" )
 			if( EXISTS "${DIR}/" )
 				set( ACTUAL_MySQL_DIR ${DIR} )
@@ -183,7 +184,7 @@ foreach( _COMPONENT ${MySQL_FIND_COMPONENTS} )
 		endif()
 	endif()
 	if ( MySQL_${_COMPONENT}_LIBRARIES )
-		set( MySQL_LIBRARIES
+		set( _MySQL_LIBRARIES
 			${MySQL_LIBRARIES}
 			${MySQL_${_COMPONENT}_LIBRARIES}
 		)
@@ -194,11 +195,18 @@ foreach( _COMPONENT ${MySQL_FIND_COMPONENTS} )
 	)
 endforeach()
 
+if ( _MySQL_LIBRARIES )
+	set( MySQL_LIBRARIES "${_MySQL_LIBRARIES}" CACHE STRING "" )
+	mark_as_advanced(
+		MySQL_LIBRARIES
+	)
+endif ()
+
 find_program( MySQL_COMMAND mysql
 	PATHS
 		/usr/bin
 		/usr/local/bin
-		${ACTUAL_MySQL_SERVER}/bin
+		${ACTUAL_MySQL_DIR}/bin
 )
 
 # -----------------------------------------------------------------------
