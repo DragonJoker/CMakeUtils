@@ -30,7 +30,7 @@ else (FFMPEG_LIBRARIES AND FFMPEG_INCLUDE_DIR)
 		pkg_check_modules(_FFMPEG_SWSCALE libswscale)
 	endif (PKG_CONFIG_FOUND)
 
-	find_path(FFMPEG_AVCODEC_INCLUDE_DIR
+	find_path(FFMPEG_INCLUDE_DIR
 		NAMES libavcodec/avcodec.h
 		PATHS ${_FFMPEG_AVCODEC_INCLUDE_DIRS} /usr/include /usr/local/include /opt/local/include /sw/include
 		PATH_SUFFIXES ffmpeg libav
@@ -61,8 +61,6 @@ else (FFMPEG_LIBRARIES AND FFMPEG_INCLUDE_DIR)
 	endif()
 
 	if (FFMPEG_FOUND)
-		set(FFMPEG_INCLUDE_DIR ${FFMPEG_AVCODEC_INCLUDE_DIR})
-
 		set(FFMPEG_LIBRARIES
 			${FFMPEG_LIBAVCODEC}
 			${FFMPEG_LIBAVFORMAT}
