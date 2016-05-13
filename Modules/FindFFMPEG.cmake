@@ -14,51 +14,67 @@
 #
 # Redistribution and use is allowed according to the terms of the New
 # BSD license.
-#
 
 if (FFMPEG_LIBRARIES AND FFMPEG_INCLUDE_DIR)
 	# in cache already
 	set(FFMPEG_FOUND TRUE)
-else (FFMPEG_LIBRARIES AND FFMPEG_INCLUDE_DIR)
-	# use pkg-config to get the directories and then use these values
-	# in the FIND_PATH() and FIND_LIBRARY() calls
-	find_package(PkgConfig)
-	if (PKG_CONFIG_FOUND)
-		pkg_check_modules(_FFMPEG_AVCODEC libavcodec)
-		pkg_check_modules(_FFMPEG_AVFORMAT libavformat)
-		pkg_check_modules(_FFMPEG_AVUTIL libavutil)
-		pkg_check_modules(_FFMPEG_SWSCALE libswscale)
-	endif (PKG_CONFIG_FOUND)
+else ()
+	if ( NOT FFMPEG_FIND_COMPONENTS )
+		set( FFMPEG_FIND_COMPONENTS avcodec avutil avformat swscale swresample )
+	endif ()
 
-	find_path(FFMPEG_INCLUDE_DIR
+	find_package( PkgConfig )
+
+	if ( PKG_CONFIG_FOUND )
+		pkg_check_modules( _FFMPEG_AVCODEC libavcodec )
+	endif ( PKG_CONFIG_FOUND )
+
+	find_path( FFMPEG_INCLUDE_DIR
 		NAMES libavcodec/avcodec.h
 		PATHS ${_FFMPEG_AVCODEC_INCLUDE_DIRS} /usr/include /usr/local/include /opt/local/include /sw/include
 		PATH_SUFFIXES ffmpeg libav
 	)
 
-	find_library(FFMPEG_LIBAVCODEC
-		NAMES avcodec
-		PATHS ${_FFMPEG_AVCODEC_LIBRARY_DIRS} /usr/lib /usr/local/lib /opt/local/lib /sw/lib
-	)
+	foreach ( FIND_COMPONENT ${FFMPEG_FIND_COMPONENTS} )
+		string( TOUPPER ${FIND_COMPONENT} FIND_COMPONENT_UPPER )
+		# use pkg-config to get the directories and then use these values
+		# in the FIND_PATH() and FIND_LIBRARY() calls
+		if ( PKG_CONFIG_FOUND )
+			pkg_check_modules(_FFMPEG_${FIND_COMPONENT_UPPER} lib${FIND_COMPONENT})
+		endif ()
 
-	find_library(FFMPEG_LIBAVFORMAT
-		NAMES avformat
-		PATHS ${_FFMPEG_AVFORMAT_LIBRARY_DIRS} /usr/lib /usr/local/lib /opt/local/lib /sw/lib
-	)
+		find_library( FFMPEG_LIB${FIND_COMPONENT_UPPER}
+			NAMES
+				avcodec
+			PATHS
+				${_FFMPEG_${FIND_COMPONENT_UPPER}_LIBRARY_DIRS}
+				/usr/lib
+				/usr/local/lib
+				/opt/local/lib
+				/sw/lib
+		)
 
-	find_library(FFMPEG_LIBAVUTIL
-		NAMES avutil
-		PATHS ${_FFMPEG_AVUTIL_LIBRARY_DIRS} /usr/lib /usr/local/lib /opt/local/lib /sw/lib
-	)
+		if ( FFMPEG_INCLUDE_DIR )
+			file( STRINGS "${FFMPEG_INCLUDE_DIR}/lib${FIND_COMPONENT}/version.h" FFMPEG_VERSION_STR REGEX "^#[\t ]*define[\t ]+LIB${FIND_COMPONENT_UPPER}_VERSION_(MAJOR|MINOR|MICRO)[\t ]+[0-9]+$" )
+			unset( FFMPEG_${FIND_COMPONENT_UPPER}_VERSION_STRING )
+			foreach ( VPART MAJOR MINOR MICRO )
+				foreach ( VLINE ${FFMPEG_VERSION_STR} )
+					if ( VLINE MATCHES "^#[\t ]*define[\t ]+LIB${FIND_COMPONENT_UPPER}_VERSION_${VPART}" )
+						string( REGEX REPLACE "^#[\t ]*define[\t ]+LIB${FIND_COMPONENT_UPPER}_VERSION_${VPART}[\t ]+([0-9]+)$" "\\1" FFMPEG_${FIND_COMPONENT_UPPER}_VERSION_${VPART} "${VLINE}" )
+						if ( FFMPEG_${FIND_COMPONENT_UPPER}_VERSION_STRING )
+							set( FFMPEG_${FIND_COMPONENT_UPPER}_VERSION_STRING "${FFMPEG_${FIND_COMPONENT_UPPER}_VERSION_STRING}.${FFMPEG_${FIND_COMPONENT_UPPER}_VERSION_${VPART}}" )
+						else ()
+							set( FFMPEG_${FIND_COMPONENT_UPPER}_VERSION_STRING "${FFMPEG_${FIND_COMPONENT_UPPER}_VERSION_${VPART}}" )
+						endif ()
+					endif ()
+				endforeach ()
+			endforeach ()
+		endif ()
+	endforeach ()
 
-	find_library(FFMPEG_LIBSWSCALE
-		NAMES swscale
-		PATHS ${_FFMPEG_SWSCALE_LIBRARY_DIRS} /usr/lib /usr/local/lib /opt/local/lib /sw/lib
-	)
-
-	if (FFMPEG_LIBAVCODEC AND FFMPEG_LIBAVFORMAT)
-		set(FFMPEG_FOUND TRUE)
-	endif()
+	if ( FFMPEG_LIBAVCODEC AND FFMPEG_LIBAVFORMAT )
+		set( FFMPEG_FOUND TRUE )
+	endif ()
 
 	if (FFMPEG_FOUND)
 		set(FFMPEG_LIBRARIES
@@ -66,6 +82,7 @@ else (FFMPEG_LIBRARIES AND FFMPEG_INCLUDE_DIR)
 			${FFMPEG_LIBAVFORMAT}
 			${FFMPEG_LIBAVUTIL}
 			${FFMPEG_LIBSWSCALE}
+			${FFMPEG_LIBSWRESAMPLE}
 		)
 	endif (FFMPEG_FOUND)
 
