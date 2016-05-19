@@ -1,5 +1,11 @@
-# - Try to find ffmpeg libraries (libavcodec, libavformat and libavutil)
-# Once done this will define
+# FindFFMPEG
+# ------------
+#
+# Locate ffmpeg libraries
+#
+# This module defines
+#
+# ::
 #
 # FFMPEG_FOUND - system has ffmpeg or libav
 # FFMPEG_INCLUDE_DIR - the ffmpeg include directory
@@ -7,13 +13,9 @@
 # FFMPEG_LIBAVCODEC
 # FFMPEG_LIBAVFORMAT
 # FFMPEG_LIBAVUTIL
+# FFMPEG_LIBSWSCALE
+# FFMPEG_LIBSWRESAMPLE
 #
-# Copyright (c) 2008 Andreas Schneider <mail@cynapses.org>
-# Modified for other libraries by Lasse Kärkkäinen <tronic>
-# Modified for Hedgewars by Stepik777
-#
-# Redistribution and use is allowed according to the terms of the New
-# BSD license.
 
 if (FFMPEG_LIBRARIES AND FFMPEG_INCLUDE_DIR)
 	# in cache already
@@ -31,7 +33,13 @@ else ()
 
 	find_path( FFMPEG_INCLUDE_DIR
 		NAMES libavcodec/avcodec.h
-		PATHS ${_FFMPEG_AVCODEC_INCLUDE_DIRS} /usr/include /usr/local/include /opt/local/include /sw/include
+		PATHS
+			${_FFMPEG_AVCODEC_INCLUDE_DIRS}
+			/usr/include
+			/usr/local/include
+			/opt/local/include
+			/sw/include
+			${FFMPEG_DIR}/include
 		PATH_SUFFIXES ffmpeg libav
 	)
 
@@ -45,13 +53,14 @@ else ()
 
 		find_library( FFMPEG_LIB${FIND_COMPONENT_UPPER}
 			NAMES
-				avcodec
+				${FIND_COMPONENT}
 			PATHS
 				${_FFMPEG_${FIND_COMPONENT_UPPER}_LIBRARY_DIRS}
 				/usr/lib
 				/usr/local/lib
 				/opt/local/lib
 				/sw/lib
+				${FFMPEG_DIR}/lib
 		)
 
 		if ( FFMPEG_INCLUDE_DIR )
@@ -88,7 +97,7 @@ else ()
 
 	if (FFMPEG_FOUND)
 		if (NOT FFMPEG_FIND_QUIETLY)
-			message(STATUS "Found FFMPEG or Libav: ${FFMPEG_LIBRARIES}, ${FFMPEG_INCLUDE_DIR}")
+			message(STATUS "Found FFMPEG or Libav:")
 		endif (NOT FFMPEG_FIND_QUIETLY)
 	else (FFMPEG_FOUND)
 		if (FFMPEG_FIND_REQUIRED)
