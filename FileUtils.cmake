@@ -5,6 +5,7 @@ function( copy_target_files _TARGET _DESTINATION )# ARGN: The files
 		set( _DESTINATION ${_DESTINATION}/ )
 	endif ()
 	foreach ( _FILE ${ARGN} )
+		get_filename_component( _FILE ${_FILE} REALPATH )
 		get_filename_component( _FILE_NAME ${_FILE} NAME )
 		add_custom_command(
 			TARGET ${_TARGET}
