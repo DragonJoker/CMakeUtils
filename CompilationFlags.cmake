@@ -63,6 +63,8 @@ function( compute_compilation_flags TARGET_NAME TARGET_TYPE OPT_C_FLAGS OPT_CXX_
 				set( _CXX_FLAGS "${_CXX_FLAGS} -fPIC -std=c++1y -msse2 -fdiagnostics-color=auto" )
 			endif ()
 		endif ()
+		set( _C_FLAGS "${_C_FLAGS} -pedantic" )
+		set( _CXX_FLAGS "${_CXX_FLAGS} -pedantic" )
 	elseif ( ${CMAKE_CXX_COMPILER_ID} MATCHES "Clang" )
 		DumpCompilerVersion( COMPILER_VERSION )
 		set( _C_FLAGS "${_C_FLAGS} -fPIC" )
