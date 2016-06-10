@@ -33,7 +33,18 @@ FIND_PATH(ASSIMP_INCLUDE_DIR assimp/ai_assert.h
 
 if (CMAKE_CL_64 OR CMAKE_GENERATOR MATCHES Win64)
 	if( MSVC )
-		FIND_PATH(ASSIMP_LIBRARY_RELEASE_DIR assimp.lib
+		if ( MSVC14 )
+			set( VC_NUM 130 )
+		elseif ( MSVC12 )
+			set( VC_NUM 120 )
+		elseif ( MSVC11 )
+			set( VC_NUM 110 )
+		elseif ( MSVC10 )
+			set( VC_NUM 100 )
+		else ()
+			message( SEND_ERROR "Unsupported MSVC version" )
+		endif ()
+		FIND_PATH( ASSIMP_LIBRARY_RELEASE_DIR assimp.lib assimp-vc${VC_NUM}-mt.lib
 			HINTS
 			PATH_SUFFIXES
 				lib/x64
@@ -45,7 +56,7 @@ if (CMAKE_CL_64 OR CMAKE_GENERATOR MATCHES Win64)
 				${ASSIMP_ROOT_DIR}
 		)
 
-		FIND_PATH(ASSIMP_LIBRARY_DEBUG_DIR assimpD.lib assimpd.lib
+		FIND_PATH(ASSIMP_LIBRARY_DEBUG_DIR assimpD.lib assimpd.lib assimp-vc${VC_NUM}-mtd.lib
 			HINTS
 			PATH_SUFFIXES
 				lib/x64
@@ -60,6 +71,7 @@ if (CMAKE_CL_64 OR CMAKE_GENERATOR MATCHES Win64)
 
 		FIND_LIBRARY(ASSIMP_LIBRARY_RELEASE
 			NAMES
+				assimp-vc${VC_NUM}-mt.lib
 				assimp.lib
 			HINTS
 			PATHS
@@ -68,6 +80,7 @@ if (CMAKE_CL_64 OR CMAKE_GENERATOR MATCHES Win64)
 
 		FIND_LIBRARY(ASSIMP_LIBRARY_DEBUG
 			NAMES
+				assimp-vc${VC_NUM}-mtd.lib
 				assimpD.lib
 				assimpd.lib
 			HINTS
