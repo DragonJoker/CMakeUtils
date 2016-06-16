@@ -34,7 +34,7 @@ FIND_PATH(ASSIMP_INCLUDE_DIR assimp/ai_assert.h
 if (CMAKE_CL_64 OR CMAKE_GENERATOR MATCHES Win64)
 	if( MSVC )
 		if ( MSVC14 )
-			set( VC_NUM 130 )
+			set( VC_NUM 140 )
 		elseif ( MSVC12 )
 			set( VC_NUM 120 )
 		elseif ( MSVC11 )
