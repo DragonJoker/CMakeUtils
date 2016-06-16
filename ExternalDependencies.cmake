@@ -1,3 +1,5 @@
+include( Logging )
+
 function( _copy_and_install _TARGET _PATH _FILE _CONFIGURATION )
 	msg_debug( "copy_and_install ${_PATH}/${_FILE}" )
 	
@@ -16,7 +18,7 @@ function( _copy_and_install _TARGET _PATH _FILE _CONFIGURATION )
 			POST_BUILD
 			COMMAND ${CMAKE_COMMAND} -E copy_if_different
 				${_LIBRARY}
-				${PROJECTS_BINARIES_OUTPUT_DIR}/${_CONFIGURATION}/${_FOLDER}/${_LIB_NAME}
+				${PROJECTS_BINARIES_OUTPUT_DIR}/${_LIB_NAME}
 			COMMENT "Copying ${_FILE} into ${_FOLDER} folder"
 		)
 		install(
@@ -47,10 +49,21 @@ function( copy_dll _TARGET _LIB_FULL_PATH_NAME _CONFIGURATION )# ARG4 _WIN32_SUF
 		  set( _DllSuffix ".so" )
 		endif ()
 
+		string( REPLACE "lib" "bin" _DllBinPath ${_DllPath} )
+
+		msg_debug( "First try  ${_DllPath}/${_DllPrefix}${_DllName}${_DllSuffix}" )
+		msg_debug( "           ${_DllPath}/${_DllName}${_DllSuffix}" )
+		msg_debug( "           ${_DllBinPath}/${_DllPrefix}${_DllName}${_DllSuffix}" )
+		msg_debug( "           ${_DllBinPath}/${_DllName}${_DllSuffix}" )
+
 		if ( EXISTS ${_DllPath}/${_DllPrefix}${_DllName}${_DllSuffix} )
 			_copy_and_install( ${_TARGET} ${_DllPath} ${_DllPrefix}${_DllName}${_DllSuffix} ${_CONFIGURATION} )
 		elseif ( EXISTS ${_DllPath}/${_DllName}${_DllSuffix} )
 			_copy_and_install( ${_TARGET} ${_DllPath} ${_DllName}${_DllSuffix} ${_CONFIGURATION} )
+		elseif ( EXISTS ${_DllBinPath}/${_DllPrefix}${_DllName}${_DllSuffix} )
+			_copy_and_install( ${_TARGET} ${_DllBinPath} ${_DllPrefix}${_DllName}${_DllSuffix} ${_CONFIGURATION} )
+		elseif ( EXISTS ${_DllBinPath}/${_DllName}${_DllSuffix} )
+			_copy_and_install( ${_TARGET} ${_DllBinPath} ${_DllName}${_DllSuffix} ${_CONFIGURATION} )
 		else ()
 			get_filename_component( _PathLeaf ${_DllPath} NAME )
 
@@ -62,6 +75,12 @@ function( copy_dll _TARGET _LIB_FULL_PATH_NAME _CONFIGURATION )# ARG4 _WIN32_SUF
 			endif ()
 
 			get_filename_component( _DllPath ${_DllPath} PATH )
+			msg_debug( "Second try ${_DllPath}/lib${_PathLeaf}/${_DllPrefix}${_DllName}${_DllSuffix}" )
+			msg_debug( "           ${_DllPath}/bin${_PathLeaf}/${_DllPrefix}${_DllName}${_DllSuffix}" )
+			msg_debug( "           ${_DllPath}${_PathLeaf}/${_DllPrefix}${_DllName}${_DllSuffix}" )
+			msg_debug( "           ${_DllPath}/lib${_PathLeaf}/${_DllName}${_DllSuffix}" )
+			msg_debug( "           ${_DllPath}/bin${_PathLeaf}/${_DllName}${_DllSuffix}" )
+			msg_debug( "           ${_DllPath}${_PathLeaf}/${_DllName}${_DllSuffix}" )
 
 			if ( EXISTS ${_DllPath}/lib${_PathLeaf}/${_DllPrefix}${_DllName}${_DllSuffix} )
 				_copy_and_install( ${_TARGET} ${_DllPath}/lib${_PathLeaf} ${_DllPrefix}${_DllName}${_DllSuffix} ${_CONFIGURATION} )
@@ -88,6 +107,9 @@ function( copy_dll _TARGET _LIB_FULL_PATH_NAME _CONFIGURATION )# ARG4 _WIN32_SUF
 					${_PathLeaf2}
 					${_PathLeaf1}
 				)
+				msg_debug( "Third try  _PathLeaf3 ${_PathLeaf3}" )
+				msg_debug( "           _PathLeaf2 ${_PathLeaf2}" )
+				msg_debug( "           _PathLeaf1 ${_PathLeaf1}" )
 
 				foreach( _Leaf ${_PathLeafs} )
 					if ( ( ${_Leaf} STREQUAL "lib" ) OR ( ${_Leaf} STREQUAL "bin" ) )
@@ -112,6 +134,9 @@ function( copy_dll _TARGET _LIB_FULL_PATH_NAME _CONFIGURATION )# ARG4 _WIN32_SUF
 					endif ()
 				endforeach ()
 
+				msg_debug( "           _LibDir    ${_LibDir}" )
+				msg_debug( "           _BinDir    ${_BinDir}" )
+
 				if ( NOT _Leaf3Used )
 					set( _DllPath ${_DllPath}/${_PathLeaf3} )
 				endif ()
@@ -125,8 +150,17 @@ function( copy_dll _TARGET _LIB_FULL_PATH_NAME _CONFIGURATION )# ARG4 _WIN32_SUF
 				endif ()
 
 				set( _ConfigDir /${_CONFIGURATION} )
+				msg_debug( "           _Leaf1Used  ${_Leaf1Used}" )
+				msg_debug( "           _Leaf2Used  ${_Leaf2Used}" )
+				msg_debug( "           _Leaf3Used  ${_Leaf3Used}" )
 
 				macro( _check_exists _DLL_NAME )
+					msg_debug( "Trying     ${_DllPath}${_BinDir}/${_DLL_NAME}" )
+					msg_debug( "           ${_DllPath}${_LibDir}/${_DLL_NAME}" )
+					msg_debug( "           ${_DllPath}${_BinDir}${_ConfigDir}/${_DLL_NAME}" )
+					msg_debug( "           ${_DllPath}${_LibDir}${_ConfigDir}/${_DLL_NAME}" )
+					msg_debug( "           ${_DllPath}${_ConfigDir}${_BinDir}/${_DLL_NAME}" )
+					msg_debug( "           ${_DllPath}${_ConfigDir}${_LibDir}/${_DLL_NAME}" )
 					unset( _INSTALLED )
 					if ( EXISTS ${_DllPath}${_BinDir}/${_DLL_NAME} )
 						_copy_and_install( ${_TARGET} ${_DllPath}${_BinDir} ${_DLL_NAME} ${_CONFIGURATION} )
