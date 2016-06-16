@@ -18,7 +18,7 @@ function( _copy_and_install _TARGET _PATH _FILE _CONFIGURATION )
 			POST_BUILD
 			COMMAND ${CMAKE_COMMAND} -E copy_if_different
 				${_LIBRARY}
-				${PROJECTS_BINARIES_OUTPUT_DIR}/${_LIB_NAME}
+				${PROJECTS_BINARIES_OUTPUT_DIR}/${_CONFIGURATION}/${_FOLDER}/${_LIB_NAME}
 			COMMENT "Copying ${_FILE} into ${_FOLDER} folder"
 		)
 		install(
