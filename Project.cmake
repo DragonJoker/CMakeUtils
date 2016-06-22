@@ -259,6 +259,18 @@ function( add_target TARGET_NAME TARGET_TYPE TARGET_DEPENDENCIES TARGET_LINKED_L
 					${CMAKE_CURRENT_BINARY_DIR}/Src/Win32/resource.h
 				)
 			endif ()
+			if ( EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/Src/Win32/${TARGET_NAME}.rc" )
+				set( TARGET_RSC
+					${TARGET_RSC}
+					${CMAKE_CURRENT_SOURCE_DIR}/Src/Win32/${TARGET_NAME}.rc
+				)
+			endif()
+			if ( EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/Src/Win32/${TARGET_NAME}.rc2" )
+				set( TARGET_RSC
+					${TARGET_RSC}
+					${CMAKE_CURRENT_SOURCE_DIR}/Src/Win32/${TARGET_NAME}.rc2
+				)
+			endif()
 			include_directories( Src/Win32 )
 			set( TARGET_SOURCE_H
 				${TARGET_SOURCE_H_ONLY}
