@@ -7,6 +7,9 @@ option( PROJECTS_GENERATE_DOC "Generate Doxygen documentation" FALSE )
 #--------------------------------------------------------------------------------------------------
 function( add_target_doc TARGET_NAME LANGUAGE EXT_LIST )
 	find_package( HTMLHelp )
+	set( PROJECT_VERSION_MAJOR ${${PROJECT_NAME}_VERSION_MAJOR} )
+	set( PROJECT_VERSION_MINOR ${${PROJECT_NAME}_VERSION_MINOR} )
+	set( PROJECT_VERSION_BUILD ${${PROJECT_NAME}_VERSION_BUILD} )
 	if ( "${LANGUAGE}" STREQUAL "" )
 		set( CHM_NAME ${TARGET_NAME}.chm )
 		configure_file(
@@ -23,8 +26,10 @@ function( add_target_doc TARGET_NAME LANGUAGE EXT_LIST )
 			add_custom_target(
 				${DOXYGEN_TARGET_NAME}
 				COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYGEN_INPUT}
-				COMMENT "Building Doxygen documentation for ${TARGET_NAME}" VERBATIM
+				COMMENT "Building Doxygen documentation for ${TARGET_NAME}"
+				VERBATIM
 			)
+			message( STATUS "${DOXYGEN_TARGET_NAME} ${DOXYGEN_EXECUTABLE} ${DOXYGEN_INPUT}" )
 			set_property( TARGET ${DOXYGEN_TARGET_NAME} PROPERTY FOLDER "Documentation/${TARGET_NAME}" )
 			set( _DOC_FILE ${PROJECTS_DOCUMENTATION_OUTPUT_DIR}/${TARGET_NAME}/${CHM_NAME} )
 			if ( EXISTS ${_DOC_FILE} )
@@ -51,7 +56,8 @@ function( add_target_doc TARGET_NAME LANGUAGE EXT_LIST )
 			add_custom_target(
 				${DOXYGEN_TARGET_NAME}
 				COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYGEN_INPUT}
-				COMMENT "Building Doxygen ${LANGUAGE} documentation for ${TARGET_NAME}" VERBATIM
+				COMMENT "Building Doxygen ${LANGUAGE} documentation for ${TARGET_NAME}"
+				VERBATIM
 			)
 			set_property( TARGET ${DOXYGEN_TARGET_NAME} PROPERTY FOLDER "Documentation/${TARGET_NAME}" )
 			set( _DOC_FILE ${PROJECTS_DOCUMENTATION_OUTPUT_DIR}/${TARGET_NAME}/${LANGUAGE}/${CHM_NAME} )
