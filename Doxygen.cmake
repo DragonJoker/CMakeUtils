@@ -2,22 +2,41 @@ find_package( Doxygen )
 option( PROJECTS_GENERATE_DOC "Generate Doxygen documentation" FALSE )
 
 #--------------------------------------------------------------------------------------------------
-#	Function :	add_target_doc
+#	Function :	target_add_doc
 #	Generates doc for given target
 #--------------------------------------------------------------------------------------------------
-function( add_target_doc TARGET_NAME LANGUAGE EXT_LIST )
+function( target_add_doc TARGET_NAME LANGUAGE EXT_LIST )
 	find_package( HTMLHelp )
-	set( PROJECT_VERSION_MAJOR ${${PROJECT_NAME}_VERSION_MAJOR} )
-	set( PROJECT_VERSION_MINOR ${${PROJECT_NAME}_VERSION_MINOR} )
-	set( PROJECT_VERSION_BUILD ${${PROJECT_NAME}_VERSION_BUILD} )
+	set( TARGET_VERSION_MAJOR ${${PROJECT_NAME}_VERSION_MAJOR} )
+	set( TARGET_VERSION_MINOR ${${PROJECT_NAME}_VERSION_MINOR} )
+	set( TARGET_VERSION_BUILD ${${PROJECT_NAME}_VERSION_BUILD} )
+	if ( EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/Doc/${TARGET_NAME}Doxygen.css )
+		set( TARGET_STYLESHEET ${CMAKE_CURRENT_SOURCE_DIR}/Doc/${TARGET_NAME}Doxygen.css )
+	endif ()
 	if ( "${LANGUAGE}" STREQUAL "" )
 		set( CHM_NAME ${TARGET_NAME}.chm )
-		configure_file(
-			${CMAKE_CURRENT_SOURCE_DIR}/Doc/${TARGET_NAME}.Doxyfile.in
-			${CMAKE_CURRENT_BINARY_DIR}/${TARGET_NAME}.Doxyfile
-			@ONLY
-			NEWLINE_STYLE LF
-		)
+		if ( EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/Doc/${TARGET_NAME}.Doxyfile )
+			file( COPY
+				${CMAKE_CURRENT_SOURCE_DIR}/Doc/${TARGET_NAME}.Doxyfile
+				DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/${TARGET_NAME}.Doxyfile
+			)
+		elseif ( EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/Doc/${TARGET_NAME}.Doxyfile.in )
+			configure_file(
+				${CMAKE_CURRENT_SOURCE_DIR}/Doc/${TARGET_NAME}.Doxyfile.in
+				${CMAKE_CURRENT_BINARY_DIR}/${TARGET_NAME}.Doxyfile
+				@ONLY
+				NEWLINE_STYLE LF
+			)
+		elseif ( EXISTS ${CMAKE_TEMPLATES_DIR}/Doxyfile.in )
+			configure_file(
+				${CMAKE_TEMPLATES_DIR}/Doxyfile.in
+				${CMAKE_CURRENT_BINARY_DIR}/${TARGET_NAME}.Doxyfile
+				@ONLY
+				NEWLINE_STYLE LF
+			)
+		else ()
+			message( SEND_ERROR "Couldn't find a doxyfile or a template doxyfile" )
+		endif ()
 		if ( DOXYGEN_FOUND AND PROJECTS_GENERATE_DOC )
 			set( DOXYGEN_INPUT ${CMAKE_CURRENT_BINARY_DIR}/${TARGET_NAME}.Doxyfile )
 			set( DOXYGEN_OUTPUT ${PROJECTS_DOCUMENTATION_OUTPUT_DIR}/${TARGET_NAME} )
@@ -29,7 +48,6 @@ function( add_target_doc TARGET_NAME LANGUAGE EXT_LIST )
 				COMMENT "Building Doxygen documentation for ${TARGET_NAME}"
 				VERBATIM
 			)
-			message( STATUS "${DOXYGEN_TARGET_NAME} ${DOXYGEN_EXECUTABLE} ${DOXYGEN_INPUT}" )
 			set_property( TARGET ${DOXYGEN_TARGET_NAME} PROPERTY FOLDER "Documentation/${TARGET_NAME}" )
 			set( _DOC_FILE ${PROJECTS_DOCUMENTATION_OUTPUT_DIR}/${TARGET_NAME}/${CHM_NAME} )
 			if ( EXISTS ${_DOC_FILE} )
@@ -70,4 +88,12 @@ function( add_target_doc TARGET_NAME LANGUAGE EXT_LIST )
 			endif ()
 		endif ()
 	endif ()
-endfunction( add_target_doc )
+endfunction( target_add_doc )
+
+#--------------------------------------------------------------------------------------------------
+#	Macro :	add_doc
+#	Generates doc for current project
+#--------------------------------------------------------------------------------------------------
+macro( add_doc LANGUAGE EXT_LIST )
+	target_add_doc( ${PROJECT_NAME} "${LANGUAGE}" "${EXT_LIST}" )
+endmacro( add_doc )
