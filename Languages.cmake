@@ -8,6 +8,7 @@ macro( copy_languages TARGET_NAME SRC_FOLDER DST_FOLDER LANGUAGES )
 		set( FOLDERS
 			"${PROJECTS_BINARIES_OUTPUT_DIR}/Debug/share/${DST_FOLDER}"
 			"${PROJECTS_BINARIES_OUTPUT_DIR}/Release/share/${DST_FOLDER}"
+			"${PROJECTS_BINARIES_OUTPUT_DIR}/RelWithDebInfo/share/${DST_FOLDER}"
 		)
 	else ()
 		set( FOLDERS
