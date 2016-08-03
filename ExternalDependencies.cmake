@@ -1,4 +1,3 @@
-cmake_policy( SET CMP0054 OLD )
 include( Logging )
 
 function( _copy_and_install _TARGET _DLL_PATH_DEBUG _DLL_PATH_RELEASE _DLL_PATH_RELWITHDEBINFO )
