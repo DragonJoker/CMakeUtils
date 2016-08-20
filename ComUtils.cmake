@@ -70,23 +70,23 @@ endmacro( add_interface )
 #******************************************************************************
 function( register_target _TARGET_NAME )
 	if ( WIN32 )
-		set( _PATH_DEBUG "${PROJECTS_BINARIES_OUTPUT_DIR_RELEASE}/${_TARGET_NAME}.dll" )
-		set( _PATH_RELEASE "${PROJECTS_BINARIES_OUTPUT_DIR}/${_TARGET_NAME}d.dll" )
+		set( _PATH_DEBUG "${PROJECTS_BINARIES_OUTPUT_DIR_DEBUG}/bin/${_TARGET_NAME}d.dll" )
+		set( _PATH_RELEASE "${PROJECTS_BINARIES_OUTPUT_DIR_RELEASE}/bin/${_TARGET_NAME}.dll" )
+		set( _PATH_RELWITHDEBINFO "${PROJECTS_BINARIES_OUTPUT_DIR_RELWITHDEBINFO}/bin/${_TARGET_NAME}.dll" )
 		file( TO_NATIVE_PATH ${_PATH_DEBUG} _PATH_DEBUG )
 		file( TO_NATIVE_PATH ${_PATH_RELEASE} _PATH_RELEASE )
+		file( TO_NATIVE_PATH ${_PATH_RELWITHDEBINFO} _PATH_RELWITHDEBINFO )
+		set( _COMMAND_DEBUG "regsvr32 /s ${_PATH_DEBUG}" )
+		set( _COMMAND_RELEASE "regsvr32 /s ${_PATH_RELEASE}" )
+		set( _COMMAND_RELWITHDEBINFO "regsvr32 /s ${_PATH_RELWITHDEBINFO}" )
 
 		add_custom_command(
 			TARGET ${_TARGET_NAME}
 			POST_BUILD
-			COMMAND runas /trustlevel:0x20000 regsvr32 /s "${_PATH_DEBUG}"
-			VERBATIM
-		)
-
-		add_custom_command(
-			TARGET ${_TARGET_NAME}
-			POST_BUILD
-			COMMAND runas /trustlevel:0x20000 regsvr32 /s "${_PATH_RELEASE}"
-			VERBATIM
+			COMMAND runas /trustlevel:0x20000
+				$<$<CONFIG:Debug>:"${_COMMAND_DEBUG}">
+				$<$<CONFIG:Release>:"${_COMMAND_RELEASE}">
+				$<$<CONFIG:RelWithDebInfo>:"${_COMMAND_RELWITHDEBINFO}">
 		)
 	endif ()
 endfunction( register_target )
