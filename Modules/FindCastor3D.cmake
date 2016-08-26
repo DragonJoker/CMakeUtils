@@ -9,7 +9,7 @@
 #
 #   Castor3D_LIBRARIES, the libraries to link against
 #   Castor3D_FOUND, if false, do not try to link to Castor3D
-#   Castor3D_INCLUDE_DIR, where to find headers.
+#   Castor3D_INCLUDE_DIRS, where to find headers.
 #
 
 find_package( PackageHandleStandardArgs )
@@ -84,6 +84,9 @@ function( compute_abi_name ABI_Name ABI_Name_Debug )
 endfunction( compute_abi_name )
 
 set( Castor3D_FOUND TRUE )
+
+set( Castor3D_INCLUDE_DIRS "" CACHE STRING "Castor3D include directories" FORCE )
+set( Castor3D_LIBRARIES "" CACHE STRING "Castor3D libraries" FORCE )
 
 foreach( COMPONENT ${Castor3D_FIND_COMPONENTS} )
 	set( ABI_Name )
@@ -195,13 +198,23 @@ foreach( COMPONENT ${Castor3D_FIND_COMPONENTS} )
 			endif ()
 		else ()
 			if ( Castor3D_LIBRARY_DEBUG )
-				set( Castor3D_LIBRARIES optimized ${Castor3D_${COMPONENT}_LIBRARY_RELEASE} debug ${Castor3D_${COMPONENT}_LIBRARY_DEBUG} CACHE STRING "Castor3D ${COMPONENT} library" )
-				set( Castor3D_LIBRARY_DIRS ${Castor3D_${COMPONENT}_LIBRARY_RELEASE_DIR} ${Castor3D_${COMPONENT}_LIBRARY_DEBUG_DIR} )
+				set( Castor3D_${COMPONENT}_LIBRARIES optimized ${Castor3D_${COMPONENT}_LIBRARY_RELEASE} debug ${Castor3D_${COMPONENT}_LIBRARY_DEBUG} CACHE STRING "Castor3D ${COMPONENT} library" )
+				set( Castor3D_${COMPONENT}_LIBRARY_DIRS ${Castor3D_${COMPONENT}_LIBRARY_RELEASE_DIR} ${Castor3D_${COMPONENT}_LIBRARY_DEBUG_DIR} )
 			else ()
-				set( Castor3D_LIBRARIES ${Castor3D_${COMPONENT}_LIBRARY_RELEASE} CACHE STRING "Castor3D ${COMPONENT} library" )
-				set( Castor3D_LIBRARY_DIRS ${Castor3D_${COMPONENT}_LIBRARY_RELEASE_DIR})
+				set( Castor3D_${COMPONENT}_LIBRARIES ${Castor3D_${COMPONENT}_LIBRARY_RELEASE} CACHE STRING "Castor3D ${COMPONENT} library" )
+				set( Castor3D_${COMPONENT}_LIBRARY_DIRS ${Castor3D_${COMPONENT}_LIBRARY_RELEASE_DIR})
 			endif ()
 		endif ()
+		set( Castor3D_INCLUDE_DIRS
+			${Castor3D_INCLUDE_DIRS}
+			${Castor3D_${COMPONENT}_INCLUDE_DIR}
+			CACHE STRING "Castor3D include directories" FORCE
+		)
+		set( Castor3D_LIBRARIES
+			${Castor3D_LIBRARIES}
+			${Castor3D_${COMPONENT}_LIBRARIES}
+			CACHE STRING "Castor3D libraries" FORCE
+		)
 	endif ()
 
 	if ( Castor3D_FOUND AND NOT Castor3D_${COMPONENT}_FOUND )
