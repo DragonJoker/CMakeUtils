@@ -310,18 +310,35 @@ function( add_target TARGET_NAME TARGET_TYPE TARGET_DEPENDENCIES TARGET_LINKED_L
 				install(
 					TARGETS ${TARGET_NAME}
 					COMPONENT ${TARGET_NAME}
+					CONFIGURATIONS Release RelWithDebInfo
 					EXPORT ${TARGET_NAME}
 					RUNTIME DESTINATION ${BIN_FOLDER}${SUB_FOLDER}
 					ARCHIVE DESTINATION lib${SUB_FOLDER}
 					LIBRARY DESTINATION lib${SUB_FOLDER}
+				)
+				install(
+					TARGETS ${TARGET_NAME}
+					COMPONENT ${TARGET_NAME}
+					CONFIGURATIONS Debug
+					EXPORT ${TARGET_NAME}
+					RUNTIME DESTINATION ${BIN_FOLDER}/Debug${SUB_FOLDER}
+					ARCHIVE DESTINATION lib/Debug${SUB_FOLDER}
+					LIBRARY DESTINATION lib/Debug${SUB_FOLDER}
 				)
 			else ()
 				#We install each .so in <install_dir>/lib folder
 				install(
 					TARGETS ${TARGET_NAME}
 					COMPONENT ${TARGET_NAME}
+					CONFIGURATIONS Release RelWithDebInfo
 					EXPORT ${TARGET_NAME}
 					LIBRARY DESTINATION lib${SUB_FOLDER}
+				)
+				install(
+					TARGETS ${TARGET_NAME}
+					COMPONENT ${TARGET_NAME}
+					CONFIGURATIONS Debug
+					LIBRARY DESTINATION lib/Debug${SUB_FOLDER}
 				)
 			endif()
 			if ( IS_API_DLL OR IS_API_PLUGIN )
@@ -342,12 +359,12 @@ function( add_target TARGET_NAME TARGET_TYPE TARGET_DEPENDENCIES TARGET_LINKED_L
 						FILES ${CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG}${TARGET_NAME}d.dll
 						COMPONENT ${TARGET_NAME}
 						CONFIGURATIONS Debug
-						DESTINATION bin
+						DESTINATION bin/Debug
 					)
 					install(
 						FILES ${CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE}${TARGET_NAME}.dll
 						COMPONENT ${TARGET_NAME}
-						CONFIGURATIONS Release
+						CONFIGURATIONS Release RelWithDebInfo
 						DESTINATION bin
 					)
 				endif ()
@@ -367,8 +384,15 @@ function( add_target TARGET_NAME TARGET_TYPE TARGET_DEPENDENCIES TARGET_LINKED_L
 			install(
 				TARGETS ${TARGET_NAME}
 				COMPONENT ${TARGET_NAME}
+				CONFIGURATIONS Release RelWithDebInfo
 				EXPORT ${TARGET_NAME}
 				RUNTIME DESTINATION bin
+			)
+			install(
+				TARGETS ${TARGET_NAME}
+				COMPONENT ${TARGET_NAME}
+				CONFIGURATIONS Debug
+				RUNTIME DESTINATION bin/Debug
 			)
 		elseif ( IS_LIB )
 			add_library( ${TARGET_NAME} STATIC ${TARGET_SOURCE_CPP} ${TARGET_SOURCE_C} ${TARGET_SOURCE_H} ${OPT_FILES} )
@@ -384,13 +408,21 @@ function( add_target TARGET_NAME TARGET_TYPE TARGET_DEPENDENCIES TARGET_LINKED_L
 			install(
 				TARGETS ${TARGET_NAME}
 				COMPONENT ${TARGET_NAME}_dev
+				CONFIGURATIONS Release RelWithDebInfo
 				EXPORT ${TARGET_NAME}
 				ARCHIVE DESTINATION lib
+			)
+			install(
+				TARGETS ${TARGET_NAME}
+				COMPONENT ${TARGET_NAME}_dev
+				CONFIGURATIONS Debug
+				ARCHIVE DESTINATION lib/Debug
 			)
 			#For libs, we install headers to <install_dir>/include/${TARGET_NAME}
 			install(
 				FILES ${TARGET_SOURCE_H_ONLY}
 				COMPONENT ${TARGET_NAME}_dev
+				CONFIGURATIONS Release RelWithDebInfo
 				DESTINATION include/${TARGET_NAME}
 			)
 		else()
