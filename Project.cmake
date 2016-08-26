@@ -99,28 +99,45 @@ if (NOT WIN32 )
   #set( CMAKE_INSTALL_RPATH "$ORIGIN/:$ORIGIN/../lib" )
 endif ()
 
-macro( install_headers _TARGET )
-	file(
-		GLOB
-			_CHILDREN
-			RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}/Src
-			${CMAKE_CURRENT_SOURCE_DIR}/Src/* )
+macro( list_subdirs RESULT CURDIR )
+	file( GLOB _CHILDREN RELATIVE ${CURDIR} ${CURDIR}/* )
+	set( _SUBFOLDERS "" )
 
 	foreach( _CHILD ${_CHILDREN} )
-		if ( IS_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Src/${_CHILD} )
-			file(
-				GLOB
-					_${_CHILD}_HEADERS
-					Src/${_CHILD}/*.h
-					Src/${_CHILD}/*.hpp
-					Src/${_CHILD}/*.inl
-			)
-			install(
-				FILES ${_${_CHILD}_HEADERS}
-				COMPONENT ${_TARGET}_dev
-				DESTINATION include/${_TARGET}/${_CHILD}
-			)
+		if ( IS_DIRECTORY ${CURDIR}/${_CHILD} )
+			list( APPEND _SUBFOLDERS ${_CHILD} )
 		endif ()
+	endforeach()
+	set( ${RESULT} ${_SUBFOLDERS} )
+endmacro()
+
+macro( install_subdir_headers TARGET SUBDIR CURDIR )
+	file(
+		GLOB
+			_HEADERS
+			Src/${CURDIR}${SUBDIR}/*.h
+			Src/${CURDIR}${SUBDIR}/*.hpp
+			Src/${CURDIR}${SUBDIR}/*.inl
+	)
+	install(
+		FILES ${_HEADERS}
+		COMPONENT ${TARGET}_dev
+		DESTINATION include/${TARGET}/${CURDIR}${SUBDIR}
+	)
+endmacro()
+
+macro( install_headers TARGET )
+	list_subdirs( _SUBDIRS ${CMAKE_CURRENT_SOURCE_DIR}/Src )
+	foreach( _SUBDIR ${_SUBDIRS} )
+		install_subdir_headers( ${TARGET} ${_SUBDIR} "" )
+		list_subdirs( _SUBSUBDIRS ${CMAKE_CURRENT_SOURCE_DIR}/Src/${_SUBDIR} )
+		foreach( _SUBSUBDIR ${_SUBSUBDIRS} )
+			install_subdir_headers( ${TARGET} ${_SUBSUBDIR} "${_SUBDIR}/" )
+			list_subdirs( _SUBSUBSUBDIRS ${CMAKE_CURRENT_SOURCE_DIR}/Src/${_SUBDIR}/${_SUBSUBDIR} )
+			foreach( _SUBSUBSUBDIR ${_SUBSUBSUBDIRS} )
+				install_subdir_headers( ${TARGET} ${_SUBSUBSUBDIR} "${_SUBDIR}/${_SUBSUBDIR}/" )
+			endforeach()
+		endforeach()
 	endforeach()
 
 	file(
@@ -135,8 +152,8 @@ macro( install_headers _TARGET )
 	)
 	install(
 		FILES ${TARGET_HEADERS}
-		COMPONENT ${_TARGET}_dev
-		DESTINATION include/${_TARGET}
+		COMPONENT ${TARGET}_dev
+		DESTINATION include/${TARGET}
 	)
 endmacro()
 #--------------------------------------------------------------------------------------------------
