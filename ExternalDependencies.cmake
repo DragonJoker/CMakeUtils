@@ -1,7 +1,6 @@
 include( Logging )
 
 function( _copy_and_install _TARGET _DLL_PATH_DEBUG _DLL_PATH_RELEASE _DLL_PATH_RELWITHDEBINFO )
-	message( STATUS "copy_and_install ${_TARGET} ${_DLL_PATH_DEBUG} ${_DLL_PATH_RELEASE} ${_DLL_PATH_RELWITHDEBINFO}" )
 	get_filename_component( _FILE ${_DLL_PATH_RELEASE} NAME_WE )
 	get_filename_component( _LIB_NAME_DEBUG ${_DLL_PATH_DEBUG} NAME )
 	get_filename_component( _LIB_NAME_RELEASE ${_DLL_PATH_RELEASE} NAME )

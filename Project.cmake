@@ -99,6 +99,46 @@ if (NOT WIN32 )
   #set( CMAKE_INSTALL_RPATH "$ORIGIN/:$ORIGIN/../lib" )
 endif ()
 
+macro( install_headers _TARGET )
+	file(
+		GLOB
+			_CHILDREN
+			RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}/Src
+			${CMAKE_CURRENT_SOURCE_DIR}/Src/* )
+
+	foreach( _CHILD ${_CHILDREN} )
+		if ( IS_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Src/${_CHILD} )
+			file(
+				GLOB
+					_${_CHILD}_HEADERS
+					Src/${_CHILD}/*.h
+					Src/${_CHILD}/*.hpp
+					Src/${_CHILD}/*.inl
+			)
+			install(
+				FILES ${_${_CHILD}_HEADERS}
+				COMPONENT ${_TARGET}_dev
+				DESTINATION include/${_TARGET}/${_CHILD}
+			)
+		endif ()
+	endforeach()
+
+	file(
+		GLOB
+			TARGET_HEADERS
+			${CMAKE_CURRENT_SOURCE_DIR}/Src/*.h
+			${CMAKE_CURRENT_SOURCE_DIR}/Src/*.hpp
+			${CMAKE_CURRENT_SOURCE_DIR}/Src/*.inl
+			${CMAKE_CURRENT_BINARY_DIR}/Src/*.h
+			${CMAKE_CURRENT_BINARY_DIR}/Src/*.hpp
+			${CMAKE_CURRENT_BINARY_DIR}/Src/*.inl
+	)
+	install(
+		FILES ${TARGET_HEADERS}
+		COMPONENT ${_TARGET}_dev
+		DESTINATION include/${_TARGET}
+	)
+endmacro()
 #--------------------------------------------------------------------------------------------------
 #\function
 #	add_target
@@ -343,11 +383,7 @@ function( add_target TARGET_NAME TARGET_TYPE TARGET_DEPENDENCIES TARGET_LINKED_L
 			endif()
 			if ( IS_API_DLL OR IS_API_PLUGIN )
 				#For API DLLs, we install headers to <install_dir>/include/${TARGET_NAME}
-				install(
-					FILES ${TARGET_SOURCE_H_ONLY}
-					COMPONENT ${TARGET_NAME}_dev
-					DESTINATION include/${TARGET_NAME}
-				)
+				install_headers( ${TARGET_NAME} )
 				if ( IS_API_PLUGIN AND WIN32 )
 					add_custom_command(
 						TARGET ${TARGET_NAME}
@@ -419,12 +455,7 @@ function( add_target TARGET_NAME TARGET_TYPE TARGET_DEPENDENCIES TARGET_LINKED_L
 				ARCHIVE DESTINATION lib/Debug
 			)
 			#For libs, we install headers to <install_dir>/include/${TARGET_NAME}
-			install(
-				FILES ${TARGET_SOURCE_H_ONLY}
-				COMPONENT ${TARGET_NAME}_dev
-				CONFIGURATIONS Release RelWithDebInfo
-				DESTINATION include/${TARGET_NAME}
-			)
+			install_headers( ${TARGET_NAME} )
 		else()
 			message( FATAL_ERROR " Unknown target type : [${TARGET_TYPE}]" )
 		endif()

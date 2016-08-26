@@ -106,10 +106,10 @@ foreach( COMPONENT ${Castor3D_FIND_COMPONENTS} )
 			/usr
 	)
 
-	find_path( Castor3D_${COMPONENT}_INCLUDE_DIR ${COMPONENT}/${COMPONENT}Prerequisites.hpp
+	find_path( Castor3D_${COMPONENT}_INCLUDE_DIR ${COMPONENT}Prerequisites.hpp
 		HINTS
 		PATH_SUFFIXES
-			include
+			include/${COMPONENT}
 		PATHS
 			${Castor3D_${COMPONENT}_ROOT_DIR}
 			/usr/local/include
