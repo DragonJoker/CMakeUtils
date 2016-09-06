@@ -133,7 +133,18 @@ if (CMAKE_CL_64 OR CMAKE_GENERATOR MATCHES Win64)
 	endif()
 else()
 	if( MSVC )
-		FIND_PATH(ASSIMP_LIBRARY_RELEASE_DIR libassimp.so assimp.lib
+		if ( MSVC14 )
+			set( VC_NUM 140 )
+		elseif ( MSVC12 )
+			set( VC_NUM 120 )
+		elseif ( MSVC11 )
+			set( VC_NUM 110 )
+		elseif ( MSVC10 )
+			set( VC_NUM 100 )
+		else ()
+			message( SEND_ERROR "Unsupported MSVC version" )
+		endif ()
+		FIND_PATH(ASSIMP_LIBRARY_RELEASE_DIR assimp.lib assimp-vc${VC_NUM}-mt.lib
 		HINTS
 		PATH_SUFFIXES
 			lib/x86
@@ -145,7 +156,7 @@ else()
 			${ASSIMP_ROOT_DIR}
 		)
 
-		FIND_PATH(ASSIMP_LIBRARY_DEBUG_DIR libassimp.so assimpD.lib
+		FIND_PATH(ASSIMP_LIBRARY_DEBUG_DIR assimpD.lib assimpd.lib assimp-vc${VC_NUM}-mtd.lib
 		HINTS
 		PATH_SUFFIXES
 			lib/x86
@@ -160,6 +171,7 @@ else()
 		FIND_LIBRARY(ASSIMP_LIBRARY_RELEASE
 			NAMES
 				assimp.lib
+				assimp-vc${VC_NUM}-mt.lib
 			HINTS
 			PATHS
 				${ASSIMP_LIBRARY_RELEASE_DIR}
@@ -168,6 +180,8 @@ else()
 		FIND_LIBRARY(ASSIMP_LIBRARY_DEBUG
 			NAMES
 				assimpD.lib
+				assimpd.lib
+				assimp-vc${VC_NUM}-mtd.lib
 			HINTS
 			PATHS
 				${ASSIMP_LIBRARY_DEBUG_DIR}
