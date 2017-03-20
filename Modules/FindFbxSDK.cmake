@@ -12,18 +12,18 @@
 #   FbxSDK_INCLUDE_DIR, where to find headers.
 # 
 
-set( LOOKUP_PATHS
-	C:/Program\ Files/Autodesk/FBX/FBX\ SDK/2016.1.2
-	Z:/Libs/FBX\ SDK/2016.1.2
-)
-
-FIND_PATH(FbxSDK_ROOT_DIR include/fbxsdk.h 
-	HINTS
-	PATHS
-		${LOOKUP_PATHS}
-		/usr/local
-		/usr
-)
+if ( NOT FbxSDK_ROOT_DIR )
+	set( LOOKUP_PATHS
+		C:/Program\ Files/Autodesk/FBX/FBX\ SDK/2016.1.2
+	)
+	FIND_PATH(FbxSDK_ROOT_DIR include/fbxsdk.h 
+		HINTS
+		PATHS
+			${LOOKUP_PATHS}
+			/usr/local
+			/usr
+	)
+endif ()
 
 FIND_PATH(FbxSDK_INCLUDE_DIR fbxsdk.h 
 	HINTS
@@ -41,6 +41,7 @@ if (CMAKE_CL_64 OR CMAKE_GENERATOR MATCHES Win64)
 			HINTS
 			PATH_SUFFIXES
 				lib/vs2015/x64/release
+				lib/x64/release
 			PATHS
 				${FbxSDK_ROOT_DIR}
 		)
@@ -49,6 +50,7 @@ if (CMAKE_CL_64 OR CMAKE_GENERATOR MATCHES Win64)
 			HINTS
 			PATH_SUFFIXES
 				lib/vs2015/x64/debug
+				lib/x64/debug
 				lib
 			PATHS
 				${FbxSDK_ROOT_DIR}
@@ -74,6 +76,7 @@ if (CMAKE_CL_64 OR CMAKE_GENERATOR MATCHES Win64)
 			HINTS
 			PATH_SUFFIXES
 				lib/gcc4/x64/debug
+				lib/x64/debug
 			PATHS
 				${FbxSDK_ROOT_DIR}
 		)
@@ -82,6 +85,7 @@ if (CMAKE_CL_64 OR CMAKE_GENERATOR MATCHES Win64)
 			HINTS
 			PATH_SUFFIXES
 				lib/gcc4/x64/release
+				lib/x64/release
 			PATHS
 				${FbxSDK_ROOT_DIR}
 		)
@@ -110,6 +114,7 @@ if (CMAKE_CL_64 OR CMAKE_GENERATOR MATCHES Win64)
 				lib64
 				lib/x64/Release
 				lib/Release/x64
+				lib/x64
 				lib
 			PATHS
 				${FbxSDK_ROOT_DIR}
@@ -121,6 +126,7 @@ if (CMAKE_CL_64 OR CMAKE_GENERATOR MATCHES Win64)
 				lib64
 				lib/x64/Debug
 				lib/Debug/x64
+				lib/x64
 				lib
 			PATHS
 				${FbxSDK_ROOT_DIR}
@@ -150,6 +156,7 @@ else()
 		HINTS
 		PATH_SUFFIXES
 				lib/vs2015/x86/release
+				lib/x86/release
 		PATHS
 			${FbxSDK_ROOT_DIR}
 		)
@@ -158,6 +165,7 @@ else()
 		HINTS
 		PATH_SUFFIXES
 				lib/vs2015/x86/debug
+				lib/x86/debug
 		PATHS
 			${FbxSDK_ROOT_DIR}
 		)
@@ -220,6 +228,7 @@ else()
 			HINTS
 			PATH_SUFFIXES
 				lib/gcc4/x64/release
+				lib/x64/release
 			PATHS
 				${FbxSDK_ROOT_DIR}
 		)
@@ -228,6 +237,7 @@ else()
 			HINTS
 			PATH_SUFFIXES
 				lib/gcc4/x64/debug
+				lib/x64/debug
 			PATHS
 				${FbxSDK_ROOT_DIR}
 		)
@@ -254,6 +264,7 @@ else()
 			HINTS
 			PATH_SUFFIXES
 				lib/gcc4/x86/release
+				lib/x86/release
 			PATHS
 				${FbxSDK_ROOT_DIR}
 		)
@@ -262,6 +273,7 @@ else()
 			HINTS
 			PATH_SUFFIXES
 				lib/gcc4/x86/debug
+				lib/x86/debug
 			PATHS
 				${FbxSDK_ROOT_DIR}
 		)
