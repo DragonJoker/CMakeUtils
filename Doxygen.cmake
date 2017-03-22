@@ -54,7 +54,7 @@ function( target_add_doc TARGET_NAME LANGUAGE EXT_LIST )
 				install(
 					FILES ${_DOC_FILE}
 					DESTINATION share/doc/${TARGET_NAME}
-					COMPONENT ${TARGET_NAME}_doc
+					COMPONENT ${DOXYGEN_TARGET_NAME}
 				)
 			endif ()
 		endif ()
@@ -82,8 +82,8 @@ function( target_add_doc TARGET_NAME LANGUAGE EXT_LIST )
 			if ( EXISTS ${_DOC_FILE} )
 				install(
 					FILES ${_DOC_FILE}
-					DESTINATION share/doc/${TARGET_NAME}
-					COMPONENT ${TARGET_NAME}_doc
+					DESTINATION share/doc/${LANGUAGE}/${TARGET_NAME}
+					COMPONENT ${DOXYGEN_TARGET_NAME}
 				)
 			endif ()
 		endif ()
