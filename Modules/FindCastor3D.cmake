@@ -227,3 +227,119 @@ if ( Castor3D_ROOT_DIR )
 		unset( Castor3D_${COMPONENT}_LIBRARY_DEBUG_DIR CACHE )
 	endforeach ()
 endif ()
+
+function( _copy_and_install_dll _TARGET_NAME _TARGET_DIR_RELEASE _TARGET_DIR_RELWITHDEBINFO _TARGET_DIR_DEBUG _DLL_PATH_RELEASE _DLL_PATH_DEBUG _DESTINATION )
+	get_filename_component( _FILE ${_DLL_PATH_RELEASE} NAME_WE )
+	get_filename_component( _LIB_NAME_RELEASE ${_DLL_PATH_RELEASE} NAME )
+	get_filename_component( _LIB_NAME_DEBUG ${_DLL_PATH_DEBUG} NAME )
+	add_custom_command(
+		TARGET ${_TARGET_NAME}
+		POST_BUILD
+		COMMAND ${CMAKE_COMMAND} -E copy_if_different
+			$<$<CONFIG:Debug>:${_DLL_PATH_DEBUG}>
+			$<$<CONFIG:Debug>:${_TARGET_DIR_DEBUG}/${_DESTINATION}/${_LIB_NAME_DEBUG}>
+			$<$<CONFIG:Release>:${_DLL_PATH_RELEASE}>
+			$<$<CONFIG:Release>:${_TARGET_DIR_RELEASE}/${_DESTINATION}/${_LIB_NAME_RELEASE}>
+			$<$<CONFIG:RelWithDebInfo>:${_DLL_PATH_RELEASE}>
+			$<$<CONFIG:RelWithDebInfo>:${_TARGET_DIR_RELWITHDEBINFO}/${_DESTINATION}/${_LIB_NAME_RELEASE}>
+		COMMENT "Copying ${_FILE} into binary folder"
+	)
+	install(
+		FILES ${_DLL_PATH_RELEASE}
+		DESTINATION ${_DESTINATION}
+		COMPONENT ${_TARGET_NAME}
+		CONFIGURATIONS Release RelWithDebInfo
+	)
+	install(
+		FILES ${_DLL_PATH_DEBUG}
+		DESTINATION ${_DESTINATION}
+		COMPONENT ${_TARGET_NAME}
+		CONFIGURATIONS Debug
+	)
+endfunction()
+
+function( _find_debug_dll _DEBUG_DLL _RELEASE_DLL _DEBUG_PATH )
+	unset( ${_DEBUG_DLL} PARENT_SCOPE )
+	get_filename_component( _FILE ${_RELEASE_DLL} NAME_WE )
+	set( _FILE ${_FILE}d.dll )
+	find_file(
+		_FOUND
+		NAMES ${_FILE}
+		PATHS ${_DEBUG_PATH}
+		NO_DEFAULT_PATH
+	)
+	if ( _FOUND )
+		set( ${_DEBUG_DLL} ${_FOUND} PARENT_SCOPE )
+	else ()
+		set( ${_DEBUG_DLL} ${_RELEASE_DLL} PARENT_SCOPE )
+	endif ()
+	unset( _FOUND CACHE )
+endfunction()
+
+function( _copy_dlls _TARGET_NAME _TARGET_DIR_RELEASE _TARGET_DIR_RELWITHDEBINFO _TARGET_DIR_DEBUG _SOURCE_DIR_RELEASE _SOURCE_DIR_DEBUG _DESTINATION )
+	file( GLOB FILES_TO_COPY ${_SOURCE_DIR_RELEASE}/*.dll )
+	foreach ( TO_COPY ${FILES_TO_COPY} )
+		_find_debug_dll( TO_COPY_DEBUG ${TO_COPY} ${_SOURCE_DIR_DEBUG} )
+		_copy_and_install_dll(
+			${_TARGET_NAME}
+			${_TARGET_DIR_RELEASE}
+			${_TARGET_DIR_RELWITHDEBINFO}
+			${_TARGET_DIR_DEBUG}
+			${TO_COPY}
+			${TO_COPY_DEBUG}
+			${_DESTINATION} )
+	endforeach ()
+endfunction()
+
+function( _copy_target_files _TARGET _DESTINATION )# ARGN: The files
+	if ( NOT "${_DESTINATION}" STREQUAL "" )
+		set( _DESTINATION ${_DESTINATION}/ )
+	endif ()
+	foreach ( _FILE ${ARGN} )
+		get_filename_component( _FILE ${_FILE} REALPATH )
+		get_filename_component( _FILE_NAME ${_FILE} NAME )
+		add_custom_command(
+			TARGET ${_TARGET}
+			POST_BUILD
+			COMMAND ${CMAKE_COMMAND} -E make_directory ${PROJECTS_BINARIES_OUTPUT_DIR}/$<CONFIGURATION>/share/Castor3D/${_DESTINATION}
+			COMMAND ${CMAKE_COMMAND} -E copy_if_different ${_FILE} ${PROJECTS_BINARIES_OUTPUT_DIR}/$<CONFIGURATION>/share/Castor3D/${_DESTINATION}${_FILE_NAME}
+		)
+	endforeach ()
+	install(
+		FILES ${ARGN}
+		DESTINATION share/${_TARGET}
+		COMPONENT ${_TARGET}
+	)
+endfunction()
+
+function( castor3d_copy_files _TARGET_NAME _TARGET_DIR_RELEASE _TARGET_DIR_RELWITHDEBINFO _TARGET_DIR_DEBUG )
+	if ( WIN32 AND Castor3D_FOUND )
+		set( Castor3D_BIN_DIR_RELEASE "${Castor3D_ROOT_DIR}/bin" )
+		set( Castor3D_BIN_DIR_DEBUG "${Castor3D_ROOT_DIR}/bin/Debug" )
+		set( Castor3D_LIB_DIR_RELEASE "${Castor3D_ROOT_DIR}/lib/Castor3D" )
+		set( Castor3D_LIB_DIR_DEBUG "${Castor3D_ROOT_DIR}/lib/Debug/Castor3D" )
+
+		include( InstallRequiredSystemLibraries )
+		_copy_dlls( ${_TARGET_NAME}
+			${_TARGET_DIR_RELEASE}
+			${_TARGET_DIR_RELWITHDEBINFO}
+			${_TARGET_DIR_DEBUG}
+			${Castor3D_BIN_DIR_RELEASE}
+			${Castor3D_BIN_DIR_DEBUG}
+			bin )
+		_copy_dlls( ${_TARGET_NAME}
+			${_TARGET_DIR_RELEASE}
+			${_TARGET_DIR_RELWITHDEBINFO}
+			${_TARGET_DIR_DEBUG}
+			${Castor3D_LIB_DIR_RELEASE}
+			${Castor3D_LIB_DIR_DEBUG}
+			lib/Castor3D )
+	endif ()
+	set( Castor3D_SHARE_DIR "${Castor3D_ROOT_DIR}/share/Castor3D" )
+	file(
+		GLOB
+			CoreZipFiles
+			${Castor3D_SHARE_DIR}/*.zip
+	)
+	_copy_target_files( ${_TARGET_NAME} "" ${CoreZipFiles} )
+endfunction()
