@@ -335,6 +335,18 @@ function( add_target TARGET_NAME TARGET_TYPE TARGET_DEPENDENCIES TARGET_LINKED_L
 				${TARGET_SOURCE_H_ONLY}
 				${TARGET_RSC}
 			)
+			if ( MSVC )
+				file(
+					GLOB_RECURSE
+						TARGET_NATVIS
+						Src/*.natvis
+				)
+				set( TARGET_SOURCE_H
+					${TARGET_SOURCE_H}
+					${TARGET_NATVIS}
+				)
+				source_group( "Visualisers" FILES ${TARGET_NATVIS} )
+			endif ()
 			source_group( "Resource Files" FILES ${TARGET_RSC} )
 		else ()
 			set( TARGET_SOURCE_H
