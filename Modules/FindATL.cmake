@@ -38,34 +38,8 @@ if ( MSVC )
 			PATHS
 				${ATL_ROOT_DIR}
 		)
-
-		FIND_LIBRARY( ATL_LIBRARY_RELEASE
-			NAMES
-				atls.lib
-			HINTS
-			PATH_SUFFIXES
-				lib${PLATFORM}
-			PATHS
-				${ATL_ROOT_DIR}
-		)
-
-		FIND_LIBRARY( ATL_LIBRARY_DEBUG
-			NAMES
-				atlsd.lib
-			HINTS
-			PATH_SUFFIXES
-				lib${PLATFORM}
-			PATHS
-				${ATL_ROOT_DIR}
-		)
-		
-		if ( NOT ATL_LIBRARY_DEBUG )
-			SET( ATL_LIBRARIES ${ATL_LIBRARY_RELEASE} CACHE STRING "ATL libraries" )
-		else ()
-			SET( ATL_LIBRARIES optimized ${ATL_LIBRARY_RELEASE} debug ${ATL_LIBRARY_DEBUG} CACHE STRING "ATL libraries" )
-		endif ()
 	endif()
 
-	mark_as_advanced( ATL_ROOT_DIR ATL_INCLUDE_DIR ATL_LIBRARIES )
-	find_package_handle_standard_args( ATL DEFAULT_MSG ATL_LIBRARIES ATL_INCLUDE_DIR )
+	mark_as_advanced( ATL_ROOT_DIR ATL_INCLUDE_DIR )
+	find_package_handle_standard_args( ATL DEFAULT_MSG ATL_INCLUDE_DIR )
 endif()
