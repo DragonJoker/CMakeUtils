@@ -21,7 +21,6 @@ find_path( glslang_ROOT_DIR include/glslang/Public/ShaderLang.h
 		/usr
 )
 
-
 if ( glslang_ROOT_DIR )
 	find_path( glslang_INCLUDE_DIR glslang/Public/ShaderLang.h
 		HINTS
@@ -33,43 +32,52 @@ if ( glslang_ROOT_DIR )
 			/usr/include
 	)
 
-	if ( CMAKE_CL_64 OR CMAKE_GENERATOR MATCHES Win64 )
-		set( _PLATFORM "x64" )
+	if (CMAKE_CL_64 OR CMAKE_GENERATOR MATCHES Win64)
+		set( PLATFORM "x64" )
 	else ()
-		set( _PLATFORM "x86" )
-	endif ()
-	if ( WIN32 )
-		set( LIB_EXTENSION "lib" )
-		set( LIB_PREFIX "" )
-	else ()
-		set( LIB_EXTENSION "so" )
-		set( LIB_PREFIX "lib" )
+		set( PLATFORM "x86" )
 	endif ()
 
-	find_path( glslang_LIBRARY_RELEASE_DIR ${LIB_PREFIX}glslang.${LIB_EXTENSION}
+	find_path( glslang_LIBRARY_RELEASE_DIR glslang.lib libglslang.a
 		HINTS
 		PATH_SUFFIXES
-			lib/${_PLATFORM}/Release
-			lib/${_PLATFORM}
+			lib/${PLATFORM}/Release
+			lib/${PLATFORM}
+			lib/Release
+			lib
 			/usr/local/lib
 			/usr/lib
 		PATHS
 			${glslang_ROOT_DIR}
 	)
 
-	find_path( glslang_LIBRARY_DEBUG_DIR ${LIB_PREFIX}glslang.${LIB_EXTENSION}
+	find_path( glslang_LIBRARY_DEBUG_DIR glslangd.lib libglslangd.a
 		HINTS
 		PATH_SUFFIXES
-			lib/${_PLATFORM}/Debug
+			lib/${PLATFORM}
+			lib
 			/usr/local/lib
 			/usr/lib
 		PATHS
 			${glslang_ROOT_DIR}
 	)
+
+	if ( NOT glslang_LIBRARY_DEBUG_DIR )
+		find_path( glslang_LIBRARY_DEBUG_DIR glslang.lib libglslang.a
+			HINTS
+			PATH_SUFFIXES
+				lib/${PLATFORM}/Debug
+				lib/Debug
+				/usr/local/lib
+				/usr/lib
+			PATHS
+				${glslang_ROOT_DIR}
+		)
+	endif ()
 
 	find_library( glslang_LIBRARY_RELEASE
 		NAMES
-			${LIB_PREFIX}glslang.${LIB_EXTENSION}
+			glslang
 		HINTS
 		PATHS
 			${glslang_LIBRARY_RELEASE_DIR}
@@ -77,7 +85,8 @@ if ( glslang_ROOT_DIR )
 
 	find_library( glslang_LIBRARY_DEBUG
 		NAMES
-			${LIB_PREFIX}glslang.${LIB_EXTENSION}
+			glslangd
+			glslang
 		HINTS
 		PATHS
 			${glslang_LIBRARY_DEBUG_DIR}
@@ -85,7 +94,7 @@ if ( glslang_ROOT_DIR )
 
 	find_library( OSDependent_LIBRARY_RELEASE
 		NAMES
-			${LIB_PREFIX}OSDependent.${LIB_EXTENSION}
+			OSDependent
 		HINTS
 		PATHS
 			${glslang_LIBRARY_RELEASE_DIR}
@@ -93,7 +102,8 @@ if ( glslang_ROOT_DIR )
 
 	find_library( OSDependent_LIBRARY_DEBUG
 		NAMES
-			${LIB_PREFIX}OSDependent.${LIB_EXTENSION}
+			OSDependentd
+			OSDependent
 		HINTS
 		PATHS
 			${glslang_LIBRARY_DEBUG_DIR}
@@ -101,7 +111,7 @@ if ( glslang_ROOT_DIR )
 
 	find_library( OGLCompiler_LIBRARY_RELEASE
 		NAMES
-			${LIB_PREFIX}OGLCompiler.${LIB_EXTENSION}
+			OGLCompiler
 		HINTS
 		PATHS
 			${glslang_LIBRARY_RELEASE_DIR}
@@ -109,7 +119,8 @@ if ( glslang_ROOT_DIR )
 
 	find_library( OGLCompiler_LIBRARY_DEBUG
 		NAMES
-			${LIB_PREFIX}OGLCompiler.${LIB_EXTENSION}
+			OGLCompilerd
+			OGLCompiler
 		HINTS
 		PATHS
 			${glslang_LIBRARY_DEBUG_DIR}
