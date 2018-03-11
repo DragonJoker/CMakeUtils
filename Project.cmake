@@ -495,6 +495,9 @@ function( add_target TARGET_NAME TARGET_TYPE TARGET_DEPENDENCIES TARGET_LINKED_L
 		else()
 			message( FATAL_ERROR " Unknown target type : [${TARGET_TYPE}]" )
 		endif()
+
+		set_property( TARGET ${TARGET_NAME} PROPERTY CXX_STANDARD 17 )
+
 		#We add computed ABI name to target outputs
 		set_target_properties( ${TARGET_NAME} PROPERTIES LIBRARY_OUTPUT_NAME_RELEASE "${TARGET_NAME}${TARGET_ABI_NAME}")
 		set_target_properties( ${TARGET_NAME} PROPERTIES RUNTIME_OUTPUT_NAME_RELEASE "${TARGET_NAME}${TARGET_ABI_NAME}")
