@@ -111,30 +111,32 @@ endmacro( pch_get_compile_command )
 #
 #--------------------------------------------------------------------------------------------------
 MACRO( add_target_precompiled_header TARGET_NAME PCH_HEADER PCH_SOURCE TARGET_CXX_FLAGS )
-	set( PCH_CURRENT_TARGET ${TARGET_NAME} )
+	if ( PROJECTS_USE_PRECOMPILED_HEADERS )
+		set( PCH_CURRENT_TARGET ${TARGET_NAME} )
 
-	if ( MSVC )
-		foreach ( SRC ${ARGN} )
-            set_source_files_properties( ${SRC} PROPERTIES COMPILE_FLAGS "${TARGET_CXX_FLAGS} /Yu${PCH_HEADER} /FI${PCH_HEADER}" )
-		endforeach ()
-		set_source_files_properties( Src/${PCH_SOURCE} PROPERTIES COMPILE_FLAGS "${TARGET_CXX_FLAGS} /Yc${PCH_HEADER}" )
-	else ()
-		get_filename_component( PCH_NAME ${PCH_HEADER} NAME)
-		get_filename_component( PCH_PATH ${PCH_HEADER} PATH)
-		set( PCH_OUTPUT "${CMAKE_CURRENT_SOURCE_DIR}/Src/${PCH_NAME}.gch" )
-		get_filename_component( PCH_OUTDIR ${PCH_OUTPUT} PATH )
+		if ( MSVC )
+			foreach ( SRC ${ARGN} )
+		    set_source_files_properties( ${SRC} PROPERTIES COMPILE_FLAGS "${TARGET_CXX_FLAGS} /Yu${PCH_HEADER} /FI${PCH_HEADER}" )
+			endforeach ()
+			set_source_files_properties( Src/${PCH_SOURCE} PROPERTIES COMPILE_FLAGS "${TARGET_CXX_FLAGS} /Yc${PCH_HEADER}" )
+		else ()
+			get_filename_component( PCH_NAME ${PCH_HEADER} NAME)
+			get_filename_component( PCH_PATH ${PCH_HEADER} PATH)
+			set( PCH_OUTPUT "${CMAKE_CURRENT_SOURCE_DIR}/Src/${PCH_NAME}.gch" )
+			get_filename_component( PCH_OUTDIR ${PCH_OUTPUT} PATH )
 
-		FILE( MAKE_DIRECTORY ${PCH_OUTDIR} )
-    	
-		pch_get_compile_flags( ${TARGET_CXX_FLAGS} PCH_COMPILE_FLAGS )
-    	
-		pch_get_compile_command( PCH_COMMAND  ${CMAKE_CURRENT_SOURCE_DIR}/Src/${PCH_NAME} ${PCH_OUTPUT} )
-    	
-		add_custom_command( OUTPUT ${PCH_OUTPUT} COMMAND ${PCH_COMMAND} IMPLICIT_DEPENDS CXX ${CMAKE_CURRENT_SOURCE_DIR}/Src/${PCH_NAME} )
-    	
-		foreach ( SRC ${ARGN} )
-            set_source_files_properties( ${SRC} PROPERTIES COMPILE_FLAGS "${TARGET_CXX_FLAGS} -include ${PCH_OUTDIR}/${PCH_HEADER} -Wl,--enable-large-address-aware" )
-			set_source_files_properties( ${SRC} PROPERTIES OBJECT_DEPENDS ${PCH_OUTPUT} )
-		endforeach ()
+			FILE( MAKE_DIRECTORY ${PCH_OUTDIR} )
+	    	
+			pch_get_compile_flags( ${TARGET_CXX_FLAGS} PCH_COMPILE_FLAGS )
+	    	
+			pch_get_compile_command( PCH_COMMAND  ${CMAKE_CURRENT_SOURCE_DIR}/Src/${PCH_NAME} ${PCH_OUTPUT} )
+	    	
+			add_custom_command( OUTPUT ${PCH_OUTPUT} COMMAND ${PCH_COMMAND} IMPLICIT_DEPENDS CXX ${CMAKE_CURRENT_SOURCE_DIR}/Src/${PCH_NAME} )
+	    	
+			foreach ( SRC ${ARGN} )
+		    set_source_files_properties( ${SRC} PROPERTIES COMPILE_FLAGS "${TARGET_CXX_FLAGS} -include ${PCH_OUTDIR}/${PCH_HEADER} -Wl,--enable-large-address-aware" )
+				set_source_files_properties( ${SRC} PROPERTIES OBJECT_DEPENDS ${PCH_OUTPUT} )
+			endforeach ()
+		endif ()
 	endif ()
 ENDMACRO( add_target_precompiled_header )
