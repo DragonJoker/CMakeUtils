@@ -1,5 +1,5 @@
-# Find OpenGL ES 3
-# ----------------
+# Find glslang
+# ------------
 #
 # Finds the glslang library.
 #
@@ -10,9 +10,32 @@
 #   glslang_FOUND        - True if glslang library is found.
 #   glslang_INCLUDE_DIR  - The glslang include directiories.
 #   glslang_LIBRARIES    - The glslang libraries.
+#   glslang_REVISION     - The glslang version string.
+#
+# COMPONENTS directive is supported, the supported components are:
+#
+#   OSDependent
+#   OGLCompiler
+#   HLSL
+#   SPVRemapper
 #
 
 find_package( PackageHandleStandardArgs )
+
+set( PLATFORM "x86" )
+if ( MSVC )
+	if( (CMAKE_CL_64 OR CMAKE_GENERATOR MATCHES Win64) )
+		set( PLATFORM "x64" )
+	endif()
+else()
+	if( (${CMAKE_SIZEOF_VOID_P} EQUAL 8) AND NOT MINGW )
+		set( PLATFORM "x64" )
+	endif()
+endif()
+
+if ( NOT glslang_FIND_COMPONENTS )
+	set( glslang_FIND_COMPONENTS OSDependent OGLCompiler SPVRemapper )
+endif ()
 
 find_path( glslang_ROOT_DIR include/glslang/Public/ShaderLang.h
 	HINTS
@@ -31,12 +54,6 @@ if ( glslang_ROOT_DIR )
 			/usr/local/include
 			/usr/include
 	)
-
-	if (CMAKE_CL_64 OR CMAKE_GENERATOR MATCHES Win64)
-		set( PLATFORM "x64" )
-	else ()
-		set( PLATFORM "x86" )
-	endif ()
 
 	find_path( glslang_LIBRARY_RELEASE_DIR glslang.lib libglslang.a
 		HINTS
@@ -91,106 +108,90 @@ if ( glslang_ROOT_DIR )
 		PATHS
 			${glslang_LIBRARY_DEBUG_DIR}
 	)
-
-	find_library( OSDependent_LIBRARY_RELEASE
-		NAMES
-			OSDependent
-		HINTS
-		PATHS
-			${glslang_LIBRARY_RELEASE_DIR}
-	)
-
-	find_library( OSDependent_LIBRARY_DEBUG
-		NAMES
-			OSDependentd
-			OSDependent
-		HINTS
-		PATHS
-			${glslang_LIBRARY_DEBUG_DIR}
-	)
-
-	find_library( OGLCompiler_LIBRARY_RELEASE
-		NAMES
-			OGLCompiler
-		HINTS
-		PATHS
-			${glslang_LIBRARY_RELEASE_DIR}
-	)
-
-	find_library( OGLCompiler_LIBRARY_DEBUG
-		NAMES
-			OGLCompilerd
-			OGLCompiler
-		HINTS
-		PATHS
-			${glslang_LIBRARY_DEBUG_DIR}
-	)
-
-	mark_as_advanced( glslang_LIBRARY_RELEASE_DIR )
-	mark_as_advanced( glslang_LIBRARY_DEBUG_DIR )
 	mark_as_advanced( glslang_LIBRARY_RELEASE )
 	mark_as_advanced( glslang_LIBRARY_DEBUG )
-	mark_as_advanced( OSDependent_LIBRARY_RELEASE )
-	mark_as_advanced( OSDependent_LIBRARY_DEBUG )
-	mark_as_advanced( OGLCompiler_LIBRARY_RELEASE )
-	mark_as_advanced( OGLCompiler_LIBRARY_DEBUG )
-	find_package_handle_standard_args( glslang DEFAULT_MSG
-		glslang_LIBRARY_RELEASE
-		glslang_INCLUDE_DIR )
+	mark_as_advanced( glslang_ROOT_DIR )
+	find_package_handle_standard_args( glslang DEFAULT_MSG glslang_LIBRARY_RELEASE glslang_LIBRARY_DEBUG glslang_INCLUDE_DIR )
 
-	IF ( glslang_FOUND )
-		IF (MSVC)
-			if ( glslang_LIBRARY_DEBUG )
-				set( glslang_LIBRARIES
-					optimized ${glslang_LIBRARY_RELEASE}
-					debug ${glslang_LIBRARY_DEBUG}
-					optimized ${OSDependent_LIBRARY_RELEASE}
-					debug ${OSDependent_LIBRARY_DEBUG}
-					optimized ${OGLCompiler_LIBRARY_RELEASE}
-					debug ${OGLCompiler_LIBRARY_DEBUG}
-					CACHE STRING "glslang libraries"
-				)
-				set( glslang_LIBRARY_DIRS
+	if ( glslang_FOUND )
+		if ( glslang_LIBRARY_DEBUG )
+			set( glslang_LIBRARIES
+				optimized ${glslang_LIBRARY_RELEASE}
+				debug ${glslang_LIBRARY_DEBUG}
+				CACHE STRING "glslang libraries" FORCE
+			)
+		else ()
+			set( glslang_LIBRARIES
+				${glslang_LIBRARY_RELEASE}
+				CACHE STRING "glslang libraries" FORCE
+			)
+		endif ()
+		foreach( COMPONENT ${glslang_FIND_COMPONENTS} )
+			find_library( glslang_${COMPONENT}_LIBRARY_RELEASE
+				NAMES
+					${COMPONENT}
+				HINTS
+				PATHS
 					${glslang_LIBRARY_RELEASE_DIR}
+			)
+
+			find_library( glslang_${COMPONENT}_LIBRARY_DEBUG
+				NAMES
+					${COMPONENT}d
+					${COMPONENT}
+				HINTS
+				PATHS
 					${glslang_LIBRARY_DEBUG_DIR}
-				)
-			else()
+			)
+			mark_as_advanced( glslang_${COMPONENT}_LIBRARY_RELEASE )
+			mark_as_advanced( glslang_${COMPONENT}_LIBRARY_DEBUG )
+			find_package_handle_standard_args( glslang_${COMPONENT} DEFAULT_MSG glslang_${COMPONENT}_LIBRARY_RELEASE glslang_${COMPONENT}_LIBRARY_DEBUG )
+
+			if ( glslang_${COMPONENT}_FOUND )
+				if ( glslang_${COMPONENT}_LIBRARY_DEBUG )
+					set( glslang_${COMPONENT}_LIBRARIES
+						optimized ${glslang_${COMPONENT}_LIBRARY_RELEASE}
+						debug ${glslang_${COMPONENT}_LIBRARY_DEBUG}
+						CACHE STRING "glslang ${COMPONENT} library" FORCE
+					)
+				else ()
+					set( glslang_${COMPONENT}_LIBRARIES
+						${glslang_${COMPONENT}_LIBRARY_RELEASE}
+						CACHE STRING "glslang ${COMPONENT} library" FORCE
+					)
+				endif ()
 				set( glslang_LIBRARIES
-					${glslang_LIBRARY_RELEASE}
-					${OSDependent_LIBRARY_RELEASE}
-					${OGLCompiler_LIBRARY_RELEASE}
-					CACHE STRING "glslang libraries"
+					${glslang_LIBRARIES}
+					${glslang_${COMPONENT}_LIBRARIES}
+					CACHE STRING "glslang libraries" FORCE
 				)
-				set( glslang_LIBRARY_DIRS
-					${glslang_LIBRARY_RELEASE_DIR}
-				)
-			endif()
-		ELSE ()
-			if ( glslang_LIBRARY_DEBUG )
-				set( glslang_LIBRARIES
-					optimized ${glslang_LIBRARY_RELEASE}
-					debug ${glslang_LIBRARY_DEBUG}
-					optimized ${OSDependent_LIBRARY_RELEASE}
-					debug ${OSDependent_LIBRARY_DEBUG}
-					optimized ${OGLCompiler_LIBRARY_RELEASE}
-					debug ${OGLCompiler_LIBRARY_DEBUG}
-					CACHE STRING "glslang libraries"
-				)
-				set( glslang_LIBRARY_DIRS
-					${glslang_LIBRARY_RELEASE_DIR}
-					${glslang_LIBRARY_DEBUG_DIR}
-				)
-			else()
-				set( glslang_LIBRARIES
-					${glslang_LIBRARY_RELEASE}
-					${OSDependent_LIBRARY_RELEASE}
-					${OGLCompiler_LIBRARY_RELEASE}
-					CACHE STRING "glslang libraries"
-				)
-				set( glslang_LIBRARY_DIRS
-					${glslang_LIBRARY_RELEASE_DIR}
-				)
-			endif()
-		ENDIF ()
-	ENDIF ()
+				mark_as_advanced( glslang_${COMPONENT}_LIBRARIES )
+			endif ()
+
+			if ( glslang_FOUND AND NOT glslang_${COMPONENT}_FOUND )
+				set( glslang_FOUND FALSE )
+			endif ()
+		endforeach ()
+	endif ()
+	if ( glslang_FOUND )
+		set( glslang_INCLUDE_DIR "${glslang_INCLUDE_DIR}" CACHE STRING "glslang include directories" FORCE )
+		unset( glslang_LIBRARY_RELEASE_DIR CACHE )
+		unset( glslang_LIBRARY_DEBUG_DIR CACHE )
+
+		set( glslang_REVISION_H ${glslang_INCLUDE_DIR}/glslang/Include/revision.h )
+		file( STRINGS "${glslang_REVISION_H}" GLSLANG_REVISION_STR REGEX "^#[\t ]*define[\t ]+GLSLANG_REVISION[\t ]+\"[0-9a-zA-Z .-]+\"$" )
+		file( STRINGS "${glslang_REVISION_H}" GLSLANG_DATE_STR REGEX "^#[\t ]*define[\t ]+GLSLANG_DATE[\t ]+\"[0-9a-zA-Z .-]+\"$" )
+		unset( glslang_REVISION CACHE )
+		if ( GLSLANG_REVISION_STR MATCHES "^#[\t ]*define[\t ]+GLSLANG_REVISION[\t ]+\"[0-9a-zA-Z .-]+\"$" )
+			if ( GLSLANG_DATE_STR MATCHES "^#[\t ]*define[\t ]+GLSLANG_DATE[\t ]+\"[0-9a-zA-Z .-]+\"$" )
+				string( REGEX REPLACE "^#[\t ]*define[\t ]+GLSLANG_REVISION[\t ]+\"([0-9a-zA-Z .-]+)\"$" "\\1" GLSLANG_REVISION_STR "${GLSLANG_REVISION_STR}" )
+				string( REGEX REPLACE "^#[\t ]*define[\t ]+GLSLANG_DATE[\t ]+\"([0-9a-zA-Z .-]+)\"$" "\\1" GLSLANG_DATE_STR "${GLSLANG_DATE_STR}" )
+				set( glslang_REVISION "${GLSLANG_REVISION_STR}.${GLSLANG_DATE_STR}" CACHE STRING "glslang revision string" FORCE )
+				unset( GLSLANG_REVISION_STR )
+				unset( GLSLANG_DATE_STR )
+			endif ()
+		endif ()
+	endif ()
+else ()
+	set( glslang_FOUND FALSE )
 endif ()
