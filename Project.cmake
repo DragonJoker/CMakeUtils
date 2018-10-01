@@ -113,31 +113,39 @@ macro( list_subdirs RESULT CURDIR )
 	set( ${RESULT} ${_SUBFOLDERS} )
 endmacro()
 
-macro( install_subdir_headers TARGET SUBDIR CURDIR )
+macro( target_install_subdir_headers TARGET_NAME SRCDIR SUBDIR CURDIR )
 	file(
 		GLOB
 			_HEADERS
-			Src/${CURDIR}${SUBDIR}/*.h
-			Src/${CURDIR}${SUBDIR}/*.hpp
-			Src/${CURDIR}${SUBDIR}/*.inl
+			${SRCDIR}${CURDIR}${SUBDIR}/*.h
+			${SRCDIR}${CURDIR}${SUBDIR}/*.hpp
+			${SRCDIR}${CURDIR}${SUBDIR}/*.inl
+			${SRCDIR}${CURDIR}${SUBDIR}/Src/*.h
+			${SRCDIR}${CURDIR}${SUBDIR}/Src/*.hpp
+			${SRCDIR}${CURDIR}${SUBDIR}/Src/*.inl
 	)
 	install(
 		FILES ${_HEADERS}
-		COMPONENT ${TARGET}_dev
-		DESTINATION include/${TARGET}/${CURDIR}${SUBDIR}
+		COMPONENT ${TARGET_NAME}_dev
+		DESTINATION include/${TARGET_NAME}/${CURDIR}${SUBDIR}
 	)
 endmacro()
 
-macro( install_headers TARGET )
-	list_subdirs( _SUBDIRS ${CMAKE_CURRENT_SOURCE_DIR}/Src )
+macro( target_install_headers TARGET_NAME SRCDIR )
+	if ( "${SRCDIR}" STREQUAL "" )
+		set( _SRCDIR ${SRCDIR} )
+	else ()
+		set( _SRCDIR ${SRCDIR}/ )
+	endif ()
+	list_subdirs( _SUBDIRS ${CMAKE_CURRENT_SOURCE_DIR}/${_SRCDIR} )
 	foreach( _SUBDIR ${_SUBDIRS} )
-		install_subdir_headers( ${TARGET} ${_SUBDIR} "" )
-		list_subdirs( _SUBSUBDIRS ${CMAKE_CURRENT_SOURCE_DIR}/Src/${_SUBDIR} )
+		target_install_subdir_headers( ${TARGET_NAME} ${_SRCDIR} ${_SUBDIR} "" )
+		list_subdirs( _SUBSUBDIRS ${CMAKE_CURRENT_SOURCE_DIR}/${_SRCDIR}${_SUBDIR} )
 		foreach( _SUBSUBDIR ${_SUBSUBDIRS} )
-			install_subdir_headers( ${TARGET} ${_SUBSUBDIR} "${_SUBDIR}/" )
-			list_subdirs( _SUBSUBSUBDIRS ${CMAKE_CURRENT_SOURCE_DIR}/Src/${_SUBDIR}/${_SUBSUBDIR} )
+			target_install_subdir_headers( ${TARGET_NAME} ${_SRCDIR} ${_SUBSUBDIR} "${_SUBDIR}/" )
+			list_subdirs( _SUBSUBSUBDIRS ${CMAKE_CURRENT_SOURCE_DIR}/${_SRCDIR}${_SUBDIR}/${_SUBSUBDIR} )
 			foreach( _SUBSUBSUBDIR ${_SUBSUBSUBDIRS} )
-				install_subdir_headers( ${TARGET} ${_SUBSUBSUBDIR} "${_SUBDIR}/${_SUBSUBDIR}/" )
+				target_install_subdir_headers( ${TARGET_NAME} ${_SRCDIR} ${_SUBSUBSUBDIR} "${_SUBDIR}/${_SUBSUBDIR}/" )
 			endforeach()
 		endforeach()
 	endforeach()
@@ -145,17 +153,17 @@ macro( install_headers TARGET )
 	file(
 		GLOB
 			TARGET_HEADERS
-			${CMAKE_CURRENT_SOURCE_DIR}/Src/*.h
-			${CMAKE_CURRENT_SOURCE_DIR}/Src/*.hpp
-			${CMAKE_CURRENT_SOURCE_DIR}/Src/*.inl
-			${CMAKE_CURRENT_BINARY_DIR}/Src/*.h
-			${CMAKE_CURRENT_BINARY_DIR}/Src/*.hpp
-			${CMAKE_CURRENT_BINARY_DIR}/Src/*.inl
+			${CMAKE_CURRENT_SOURCE_DIR}/${_SRCDIR}*.h
+			${CMAKE_CURRENT_SOURCE_DIR}/${_SRCDIR}*.hpp
+			${CMAKE_CURRENT_SOURCE_DIR}/${_SRCDIR}*.inl
+			${CMAKE_CURRENT_BINARY_DIR}/${_SRCDIR}*.h
+			${CMAKE_CURRENT_BINARY_DIR}/${_SRCDIR}*.hpp
+			${CMAKE_CURRENT_BINARY_DIR}/${_SRCDIR}*.inl
 	)
 	install(
 		FILES ${TARGET_HEADERS}
-		COMPONENT ${TARGET}_dev
-		DESTINATION include/${TARGET}
+		COMPONENT ${TARGET_NAME}_dev
+		DESTINATION include/${TARGET_NAME}
 	)
 endmacro()
 #--------------------------------------------------------------------------------------------------
@@ -230,12 +238,16 @@ function( add_target TARGET_NAME TARGET_TYPE TARGET_DEPENDENCIES TARGET_LINKED_L
 			msg_debug( "TARGET_ABI_NAME       ${TARGET_ABI_NAME}" )
 			msg_debug( "TARGET_ABI_NAME_DEBUG ${TARGET_ABI_NAME_DEBUG}" )
 		else ()
+			set( TARGET_ABI_NAME "" )
 			set( TARGET_ABI_NAME_DEBUG "d" )
 			if ( IS_PLUGIN OR IS_API_PLUGIN )
 				set( SUB_FOLDER "/${MAIN_PROJECT_NAME}" )
 				set( BIN_FOLDER lib )
 			endif ()
 		endif ()
+		set( CMAKE_DEBUG_POSTFIX "${TARGET_ABI_NAME}${TARGET_ABI_NAME_DEBUG}" CACHE STRING "" FORCE )
+		set( CMAKE_RELEASE_POSTFIX "${TARGET_ABI_NAME}" CACHE STRING "" FORCE )
+		set( CMAKE_RELWITHDEBINFO_POSTFIX "${TARGET_ABI_NAME}" CACHE STRING "" FORCE )
 		if ( NOT ${PROJECT_NAME}_WXWIDGET )
 			set( ${PROJECT_NAME}_WXWIDGET 0 )
 		endif ()
@@ -419,7 +431,7 @@ function( add_target TARGET_NAME TARGET_TYPE TARGET_DEPENDENCIES TARGET_LINKED_L
 			endif()
 			if ( IS_API_DLL OR IS_API_PLUGIN )
 				#For API DLLs, we install headers to <install_dir>/include/${TARGET_NAME}
-				install_headers( ${TARGET_NAME} )
+				target_install_headers( ${TARGET_NAME} Src )
 				if ( IS_API_PLUGIN AND WIN32 )
 					add_custom_command(
 						TARGET ${TARGET_NAME}
@@ -491,25 +503,13 @@ function( add_target TARGET_NAME TARGET_TYPE TARGET_DEPENDENCIES TARGET_LINKED_L
 				ARCHIVE DESTINATION lib/Debug
 			)
 			#For libs, we install headers to <install_dir>/include/${TARGET_NAME}
-			install_headers( ${TARGET_NAME} )
+			target_install_headers( ${TARGET_NAME} Src )
 		else()
 			message( FATAL_ERROR " Unknown target type : [${TARGET_TYPE}]" )
 		endif()
 
 		set_property( TARGET ${TARGET_NAME} PROPERTY CXX_STANDARD 17 )
 
-		#We add computed ABI name to target outputs
-		set_target_properties( ${TARGET_NAME} PROPERTIES LIBRARY_OUTPUT_NAME_RELEASE "${TARGET_NAME}${TARGET_ABI_NAME}")
-		set_target_properties( ${TARGET_NAME} PROPERTIES RUNTIME_OUTPUT_NAME_RELEASE "${TARGET_NAME}${TARGET_ABI_NAME}")
-		set_target_properties( ${TARGET_NAME} PROPERTIES ARCHIVE_OUTPUT_NAME_RELEASE "${TARGET_NAME}${TARGET_ABI_NAME}")
-		#Idem for debug
-		set_target_properties( ${TARGET_NAME} PROPERTIES LIBRARY_OUTPUT_NAME_RELWITHDEBINFO "${TARGET_NAME}${TARGET_ABI_NAME}${TARGET_ABI_NAME_RELWITHDEBINFO}")
-		set_target_properties( ${TARGET_NAME} PROPERTIES RUNTIME_OUTPUT_NAME_RELWITHDEBINFO "${TARGET_NAME}${TARGET_ABI_NAME}${TARGET_ABI_NAME_RELWITHDEBINFO}")
-		set_target_properties( ${TARGET_NAME} PROPERTIES ARCHIVE_OUTPUT_NAME_RELWITHDEBINFO "${TARGET_NAME}${TARGET_ABI_NAME}${TARGET_ABI_NAME_RELWITHDEBINFO}")
-		#Idem for debug
-		set_target_properties( ${TARGET_NAME} PROPERTIES LIBRARY_OUTPUT_NAME_DEBUG "${TARGET_NAME}${TARGET_ABI_NAME}${TARGET_ABI_NAME_DEBUG}")
-		set_target_properties( ${TARGET_NAME} PROPERTIES RUNTIME_OUTPUT_NAME_DEBUG "${TARGET_NAME}${TARGET_ABI_NAME}${TARGET_ABI_NAME_DEBUG}")
-		set_target_properties( ${TARGET_NAME} PROPERTIES ARCHIVE_OUTPUT_NAME_DEBUG "${TARGET_NAME}${TARGET_ABI_NAME}${TARGET_ABI_NAME_DEBUG}")
 		#We scan dependencies to add it to the target
 		foreach( TARGET_DEPENDENCY ${TARGET_DEPENDENCIES} )
 			msg_debug( "TARGET_DEPENDENCY     ${TARGET_DEPENDENCY}")
@@ -521,10 +521,10 @@ function( add_target TARGET_NAME TARGET_TYPE TARGET_DEPENDENCIES TARGET_LINKED_L
 			msg_debug( "TARGET_LIB            ${TARGET_LIB}" )
 			target_link_libraries( ${TARGET_NAME} ${TARGET_LIB} )
 		endforeach()
-		
+
 		set_source_files_properties( ${TARGET_SOURCE_C} PROPERTIES COMPILE_FLAGS "${TARGET_C_FLAGS}")
 		set_source_files_properties( ${TARGET_SOURCE_CPP} PROPERTIES COMPILE_FLAGS "${TARGET_CXX_FLAGS}")
-		
+
 		if ( PCH_HEADER STREQUAL "" OR NOT ${PROJECTS_USE_PRECOMPILED_HEADERS} )
 			msg_debug( "PRECOMPILED HEADERS   No" )
 		else ()
