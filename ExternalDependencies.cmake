@@ -49,6 +49,16 @@ function( _find_dll_config _OUTPUT _LIB_FULL_PATH_NAME _SUFFIX )
 		)
 		set( _DllLibDir ${_DllPath} )
 		set( _DllBinDir ${_DllPath} )
+		set( _LookupPaths
+			${_DllPath}/${_PathLeaf3}/${_PathLeaf2}/${_PathLeaf1}/bin
+			${_DllPath}/${_PathLeaf3}/${_PathLeaf2}/${_PathLeaf1}/lib
+			${_DllPath}/${_PathLeaf3}/${_PathLeaf2}/bin
+			${_DllPath}/${_PathLeaf3}/${_PathLeaf2}/lib
+			${_DllPath}/${_PathLeaf3}/bin
+			${_DllPath}/${_PathLeaf3}/lib
+			${_DllPath}/bin
+			${_DllPath}/lib
+		)
 
 		foreach( _Leaf ${_PathLeafs} )
 			if ( ( ${_Leaf} STREQUAL "lib" ) OR ( ${_Leaf} STREQUAL "bin" ) )
@@ -80,8 +90,7 @@ function( _find_dll_config _OUTPUT _LIB_FULL_PATH_NAME _SUFFIX )
 			_DllFile
 			${_DllName}${_DllSuffix}
 			PATHS
-				${_DllLibDir}
-				${_DllBinDir}
+				${_LookupPaths}
 		)
 		if ( _DllFile )
 			msg_debug( "    Found      ${_DllFile}" )
@@ -98,6 +107,7 @@ function( _find_dll_config _OUTPUT _LIB_FULL_PATH_NAME _SUFFIX )
 			msg_debug( "    LibDir     ${_DllLibDir}" )
 			msg_debug( "    BinDir     ${_DllBinDir}" )
 			msg_debug( "    Found      ${_DllFile}" )
+			msg_debug( "    Lookup     ${_LookupPaths}" )
 		endif ()
 		unset( _DllFile CACHE )
 	endif ()
