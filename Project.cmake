@@ -143,13 +143,13 @@ macro( target_install_headers TARGET_NAME SRCDIR )
 	endif ()
 	list_subdirs( _SUBDIRS ${CMAKE_CURRENT_SOURCE_DIR}/${_SRCDIR} )
 	foreach( _SUBDIR ${_SUBDIRS} )
-		target_install_subdir_headers( ${TARGET_NAME} ${_SRCDIR} ${_SUBDIR} "" )
+		target_install_subdir_headers( ${TARGET_NAME} "${_SRCDIR}" ${_SUBDIR} "" )
 		list_subdirs( _SUBSUBDIRS ${CMAKE_CURRENT_SOURCE_DIR}/${_SRCDIR}${_SUBDIR} )
 		foreach( _SUBSUBDIR ${_SUBSUBDIRS} )
-			target_install_subdir_headers( ${TARGET_NAME} ${_SRCDIR} ${_SUBSUBDIR} "${_SUBDIR}/" )
+			target_install_subdir_headers( ${TARGET_NAME} "${_SRCDIR}" ${_SUBSUBDIR} "${_SUBDIR}/" )
 			list_subdirs( _SUBSUBSUBDIRS ${CMAKE_CURRENT_SOURCE_DIR}/${_SRCDIR}${_SUBDIR}/${_SUBSUBDIR} )
 			foreach( _SUBSUBSUBDIR ${_SUBSUBSUBDIRS} )
-				target_install_subdir_headers( ${TARGET_NAME} ${_SRCDIR} ${_SUBSUBSUBDIR} "${_SUBDIR}/${_SUBSUBDIR}/" )
+				target_install_subdir_headers( ${TARGET_NAME} "${_SRCDIR}" ${_SUBSUBSUBDIR} "${_SUBDIR}/${_SUBSUBDIR}/" )
 			endforeach()
 		endforeach()
 	endforeach()
@@ -402,11 +402,20 @@ function( add_target TARGET_NAME TARGET_TYPE TARGET_DEPENDENCIES TARGET_LINKED_L
 				install(
 					TARGETS ${TARGET_NAME}
 					COMPONENT ${TARGET_NAME}
-					CONFIGURATIONS Release RelWithDebInfo
+					CONFIGURATIONS Release
 					EXPORT ${TARGET_NAME}
 					RUNTIME DESTINATION ${BIN_FOLDER}${SUB_FOLDER}
 					ARCHIVE DESTINATION lib${SUB_FOLDER}
 					LIBRARY DESTINATION lib${SUB_FOLDER}
+				)
+				install(
+					TARGETS ${TARGET_NAME}
+					COMPONENT ${TARGET_NAME}
+					CONFIGURATIONS RelWithDebInfo
+					EXPORT ${TARGET_NAME}
+					RUNTIME DESTINATION ${BIN_FOLDER}/RelWithDebInfo${SUB_FOLDER}
+					ARCHIVE DESTINATION lib/RelWithDebInfo${SUB_FOLDER}
+					LIBRARY DESTINATION lib/RelWithDebInfo${SUB_FOLDER}
 				)
 				install(
 					TARGETS ${TARGET_NAME}
@@ -422,9 +431,16 @@ function( add_target TARGET_NAME TARGET_TYPE TARGET_DEPENDENCIES TARGET_LINKED_L
 				install(
 					TARGETS ${TARGET_NAME}
 					COMPONENT ${TARGET_NAME}
-					CONFIGURATIONS Release RelWithDebInfo
+					CONFIGURATIONS Release
 					EXPORT ${TARGET_NAME}
-					LIBRARY DESTINATION lib${SUB_FOLDER}
+					LIBRARY DESTINATION lib/${SUB_FOLDER}
+				)
+				install(
+					TARGETS ${TARGET_NAME}
+					COMPONENT ${TARGET_NAME}
+					CONFIGURATIONS RelWithDebInfo
+					EXPORT ${TARGET_NAME}
+					LIBRARY DESTINATION lib/RelWithDebInfo${SUB_FOLDER}
 				)
 				install(
 					TARGETS ${TARGET_NAME}
@@ -452,7 +468,13 @@ function( add_target TARGET_NAME TARGET_TYPE TARGET_DEPENDENCIES TARGET_LINKED_L
 					install(
 						FILES ${CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE}${TARGET_NAME}.dll
 						COMPONENT ${TARGET_NAME}
-						CONFIGURATIONS Release RelWithDebInfo
+						CONFIGURATIONS RelWithDebInfo
+						DESTINATION bin/RelWithDebInfo
+					)
+					install(
+						FILES ${CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE}${TARGET_NAME}.dll
+						COMPONENT ${TARGET_NAME}
+						CONFIGURATIONS Release
 						DESTINATION bin
 					)
 				endif ()
@@ -472,9 +494,16 @@ function( add_target TARGET_NAME TARGET_TYPE TARGET_DEPENDENCIES TARGET_LINKED_L
 			install(
 				TARGETS ${TARGET_NAME}
 				COMPONENT ${TARGET_NAME}
-				CONFIGURATIONS Release RelWithDebInfo
+				CONFIGURATIONS Release
 				EXPORT ${TARGET_NAME}
 				RUNTIME DESTINATION bin
+			)
+			install(
+				TARGETS ${TARGET_NAME}
+				COMPONENT ${TARGET_NAME}
+				CONFIGURATIONS RelWithDebInfo
+				EXPORT ${TARGET_NAME}
+				RUNTIME DESTINATION bin/RelWithDebInfo
 			)
 			install(
 				TARGETS ${TARGET_NAME}
@@ -496,9 +525,16 @@ function( add_target TARGET_NAME TARGET_TYPE TARGET_DEPENDENCIES TARGET_LINKED_L
 			install(
 				TARGETS ${TARGET_NAME}
 				COMPONENT ${TARGET_NAME}_dev
-				CONFIGURATIONS Release RelWithDebInfo
+				CONFIGURATIONS Release
 				EXPORT ${TARGET_NAME}
 				ARCHIVE DESTINATION lib
+			)
+			install(
+				TARGETS ${TARGET_NAME}
+				COMPONENT ${TARGET_NAME}_dev
+				CONFIGURATIONS RelWithDebInfo
+				EXPORT ${TARGET_NAME}
+				ARCHIVE DESTINATION lib/RelWithDebInfo
 			)
 			install(
 				TARGETS ${TARGET_NAME}
