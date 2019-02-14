@@ -52,10 +52,42 @@ function( _find_dll_config _OUTPUT _LIB_FULL_PATH_NAME _SUFFIX )
 		set( _LookupPaths
 			${_DllPath}/${_PathLeaf3}/${_PathLeaf2}/${_PathLeaf1}/bin
 			${_DllPath}/${_PathLeaf3}/${_PathLeaf2}/${_PathLeaf1}/lib
+			${_DllPath}/${_PathLeaf3}/${_PathLeaf2}/bin/${_PathLeaf1}
+			${_DllPath}/${_PathLeaf3}/${_PathLeaf2}/lib/${_PathLeaf1}
+			${_DllPath}/${_PathLeaf3}/bin/${_PathLeaf2}/${_PathLeaf1}
+			${_DllPath}/${_PathLeaf3}/lib/${_PathLeaf2}/${_PathLeaf1}
+			${_DllPath}/bin/${_PathLeaf3}/${_PathLeaf2}/${_PathLeaf1}
+			${_DllPath}/lib/${_PathLeaf3}/${_PathLeaf2}/${_PathLeaf1}
+			${_DllPath}/${_PathLeaf3}/${_PathLeaf1}/bin
+			${_DllPath}/${_PathLeaf3}/${_PathLeaf1}/lib
+			${_DllPath}/${_PathLeaf3}/bin/${_PathLeaf1}
+			${_DllPath}/${_PathLeaf3}/lib/${_PathLeaf1}
+			${_DllPath}/bin/${_PathLeaf3}/${_PathLeaf1}
+			${_DllPath}/lib/${_PathLeaf3}/${_PathLeaf1}
+			${_DllPath}/${_PathLeaf2}/${_PathLeaf1}/bin
+			${_DllPath}/${_PathLeaf2}/${_PathLeaf1}/lib
+			${_DllPath}/${_PathLeaf2}/bin/${_PathLeaf1}
+			${_DllPath}/${_PathLeaf2}/lib/${_PathLeaf1}
+			${_DllPath}/bin/${_PathLeaf2}/${_PathLeaf1}
+			${_DllPath}/lib/${_PathLeaf2}/${_PathLeaf1}
 			${_DllPath}/${_PathLeaf3}/${_PathLeaf2}/bin
 			${_DllPath}/${_PathLeaf3}/${_PathLeaf2}/lib
+			${_DllPath}/${_PathLeaf3}/bin/${_PathLeaf2}
+			${_DllPath}/${_PathLeaf3}/lib/${_PathLeaf2}
+			${_DllPath}/bin/${_PathLeaf3}/${_PathLeaf2}
+			${_DllPath}/lib/${_PathLeaf3}/${_PathLeaf2}
+			${_DllPath}/${_PathLeaf1}/bin
+			${_DllPath}/${_PathLeaf1}/lib
+			${_DllPath}/bin/${_PathLeaf1}
+			${_DllPath}/lib/${_PathLeaf1}
+			${_DllPath}/${_PathLeaf2}/bin
+			${_DllPath}/${_PathLeaf2}/lib
+			${_DllPath}/bin/${_PathLeaf2}
+			${_DllPath}/lib/${_PathLeaf2}
 			${_DllPath}/${_PathLeaf3}/bin
 			${_DllPath}/${_PathLeaf3}/lib
+			${_DllPath}/bin/${_PathLeaf3}
+			${_DllPath}/lib/${_PathLeaf3}
 			${_DllPath}/bin
 			${_DllPath}/lib
 		)
@@ -122,9 +154,9 @@ function( copy_dll _TARGET _LIB_FULL_PATH_NAME_DEBUG _LIB_FULL_PATH_NAME_RELEASE
 		if ( _DLL_FILE_DEBUG AND _DLL_FILE_RELEASE AND _DLL_FILE_RELWITHDEBINFO )
 			_copy_and_install( ${_TARGET} ${_DLL_FILE_DEBUG} ${_DLL_FILE_RELEASE} ${_DLL_FILE_RELWITHDEBINFO} )
 		else ()
-			msg_debug( "${_LIB_FULL_PATH_NAME_DEBUG} ${_DLL_FILE_DEBUG}" )
-			msg_debug( "${_LIB_FULL_PATH_NAME_RELEASE} ${_DLL_FILE_RELEASE}" )
-			msg_debug( "${_LIB_FULL_PATH_NAME_RELEASE} ${_DLL_FILE_RELWITHDEBINFO}" )
+			msg_debug( "${_LIB_FULL_PATH_NAME_DEBUG} [${_DLL_FILE_DEBUG}]" )
+			msg_debug( "${_LIB_FULL_PATH_NAME_RELEASE} [${_DLL_FILE_RELEASE}]" )
+			msg_debug( "${_LIB_FULL_PATH_NAME_RELEASE} [${_DLL_FILE_RELWITHDEBINFO}]" )
 		endif ()
 	endif ()
 endfunction()
