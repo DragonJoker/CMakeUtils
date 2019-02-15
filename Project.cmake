@@ -121,9 +121,9 @@ macro( target_install_subdir_headers TARGET_NAME SRCDIR SUBDIR CURDIR )
 	file(
 		GLOB
 			_HEADERS
-			${SRCDIR}${CURDIR}${SUBDIR}/*.h
-			${SRCDIR}${CURDIR}${SUBDIR}/*.hpp
-			${SRCDIR}${CURDIR}${SUBDIR}/*.inl
+			${SRCDIR}/${CURDIR}${SUBDIR}/*.h
+			${SRCDIR}/${CURDIR}${SUBDIR}/*.hpp
+			${SRCDIR}/${CURDIR}${SUBDIR}/*.inl
 	)
 	install(
 		FILES ${_HEADERS}
@@ -132,21 +132,16 @@ macro( target_install_subdir_headers TARGET_NAME SRCDIR SUBDIR CURDIR )
 	)
 endmacro()
 
-macro( target_install_headers TARGET_NAME SRCDIR )
-	if ( "${SRCDIR}" STREQUAL "" )
-		set( _SRCDIR ${SRCDIR} )
-	else ()
-		set( _SRCDIR ${SRCDIR}/ )
-	endif ()
-	list_subdirs( _SUBDIRS ${CMAKE_CURRENT_SOURCE_DIR}/${_SRCDIR} )
+macro( target_install_headers TARGET_NAME HDR_FOLDER )
+	list_subdirs( _SUBDIRS ${HDR_FOLDER} )
 	foreach( _SUBDIR ${_SUBDIRS} )
-		target_install_subdir_headers( ${TARGET_NAME} "${_SRCDIR}" ${_SUBDIR} "" )
-		list_subdirs( _SUBSUBDIRS ${CMAKE_CURRENT_SOURCE_DIR}/${_SRCDIR}${_SUBDIR} )
+		target_install_subdir_headers( ${TARGET_NAME} ${HDR_FOLDER} ${_SUBDIR} "" )
+		list_subdirs( _SUBSUBDIRS ${HDR_FOLDER}/${_SUBDIR} )
 		foreach( _SUBSUBDIR ${_SUBSUBDIRS} )
-			target_install_subdir_headers( ${TARGET_NAME} "${_SRCDIR}" ${_SUBSUBDIR} "${_SUBDIR}/" )
-			list_subdirs( _SUBSUBSUBDIRS ${CMAKE_CURRENT_SOURCE_DIR}/${_SRCDIR}${_SUBDIR}/${_SUBSUBDIR} )
+			target_install_subdir_headers( ${TARGET_NAME} ${HDR_FOLDER} ${_SUBSUBDIR} "${_SUBDIR}/" )
+			list_subdirs( _SUBSUBSUBDIRS ${HDR_FOLDER}/${_SUBDIR}/${_SUBSUBDIR} )
 			foreach( _SUBSUBSUBDIR ${_SUBSUBSUBDIRS} )
-				target_install_subdir_headers( ${TARGET_NAME} "${_SRCDIR}" ${_SUBSUBSUBDIR} "${_SUBDIR}/${_SUBSUBDIR}/" )
+				target_install_subdir_headers( ${TARGET_NAME} ${HDR_FOLDER} ${_SUBSUBSUBDIR} "${_SUBDIR}/${_SUBSUBDIR}/" )
 			endforeach()
 		endforeach()
 	endforeach()
@@ -154,12 +149,9 @@ macro( target_install_headers TARGET_NAME SRCDIR )
 	file(
 		GLOB
 			TARGET_HEADERS
-			${CMAKE_CURRENT_SOURCE_DIR}/${_SRCDIR}*.h
-			${CMAKE_CURRENT_SOURCE_DIR}/${_SRCDIR}*.hpp
-			${CMAKE_CURRENT_SOURCE_DIR}/${_SRCDIR}*.inl
-			${CMAKE_CURRENT_BINARY_DIR}/${_SRCDIR}*.h
-			${CMAKE_CURRENT_BINARY_DIR}/${_SRCDIR}*.hpp
-			${CMAKE_CURRENT_BINARY_DIR}/${_SRCDIR}*.inl
+			${HDR_FOLDER}/*.h
+			${HDR_FOLDER}/*.hpp
+			${HDR_FOLDER}/*.inl
 	)
 	install(
 		FILES ${TARGET_HEADERS}
@@ -357,6 +349,7 @@ function( add_target TARGET_NAME TARGET_TYPE HDR_FOLDER SRC_FOLDER TARGET_DEPEND
 				file(
 					GLOB_RECURSE
 						TARGET_NATVIS
+						${HDR_FOLDER}/*.natvis
 						*.natvis
 				)
 				set( TARGET_SOURCE_H
@@ -453,7 +446,7 @@ function( add_target TARGET_NAME TARGET_TYPE HDR_FOLDER SRC_FOLDER TARGET_DEPEND
 			endif()
 			if ( IS_API_DLL OR IS_API_PLUGIN )
 				#For API DLLs, we install headers to <install_dir>/include/${TARGET_NAME}
-				target_install_headers( ${TARGET_NAME} "" )
+				target_install_headers( ${TARGET_NAME} ${HDR_FOLDER} "" )
 				if ( IS_API_PLUGIN AND WIN32 )
 					add_custom_command(
 						TARGET ${TARGET_NAME}
@@ -545,7 +538,7 @@ function( add_target TARGET_NAME TARGET_TYPE HDR_FOLDER SRC_FOLDER TARGET_DEPEND
 				ARCHIVE DESTINATION lib/Debug
 			)
 			#For libs, we install headers to <install_dir>/include/${TARGET_NAME}
-			target_install_headers( ${TARGET_NAME} "" )
+			target_install_headers( ${TARGET_NAME} ${HDR_FOLDER} "" )
 		else()
 			message( FATAL_ERROR " Unknown target type : [${TARGET_TYPE}]" )
 		endif()
