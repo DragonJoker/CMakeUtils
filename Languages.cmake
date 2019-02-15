@@ -5,7 +5,7 @@
 macro( copy_languages TARGET_NAME SRC_FOLDER DST_FOLDER LANGUAGES )
 	# Copy each language file into each destination folder
 	foreach( LANGUAGE ${LANGUAGES} )
-		set( _FILE ${CMAKE_CURRENT_SOURCE_DIR}/${SRC_FOLDER}/po/${LANGUAGE}/${TARGET_NAME}.mo )
+		set( _FILE ${SRC_FOLDER}/po/${LANGUAGE}/${TARGET_NAME}.mo )
 		add_custom_command(
 			TARGET ${TARGET_NAME}
 			POST_BUILD

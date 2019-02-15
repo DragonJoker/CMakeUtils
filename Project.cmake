@@ -124,9 +124,6 @@ macro( target_install_subdir_headers TARGET_NAME SRCDIR SUBDIR CURDIR )
 			${SRCDIR}${CURDIR}${SUBDIR}/*.h
 			${SRCDIR}${CURDIR}${SUBDIR}/*.hpp
 			${SRCDIR}${CURDIR}${SUBDIR}/*.inl
-			${SRCDIR}${CURDIR}${SUBDIR}/Src/*.h
-			${SRCDIR}${CURDIR}${SUBDIR}/Src/*.hpp
-			${SRCDIR}${CURDIR}${SUBDIR}/Src/*.inl
 	)
 	install(
 		FILES ${_HEADERS}
@@ -205,13 +202,13 @@ endmacro()
 #\param[in,opt] OPT_FILES
 #	String containing the optional files to add to the target.
 #--------------------------------------------------------------------------------------------------
-function( add_target TARGET_NAME TARGET_TYPE TARGET_DEPENDENCIES TARGET_LINKED_LIBRARIES )# ARGV4=PCH_HEADER ARGV5=PCH_SOURCE ARGV6=OPT_C_FLAGS ARGV7=OPT_CXX_FLAGS ARGV8=OPT_LINK_FLAGS ARGV9=OPT_FILES
-	set( PCH_HEADER "${ARGV4}" )
-	set( PCH_SOURCE "${ARGV5}" )
-	set( OPT_C_FLAGS "${ARGV6}" )
-	set( OPT_CXX_FLAGS "${ARGV7}" )
-	set( OPT_LINK_FLAGS "${ARGV8}" )
-	set( OPT_FILES "${ARGV9}" )
+function( add_target TARGET_NAME TARGET_TYPE HDR_FOLDER SRC_FOLDER TARGET_DEPENDENCIES TARGET_LINKED_LIBRARIES )# ARGV4=PCH_HEADER ARGV5=PCH_SOURCE ARGV6=OPT_C_FLAGS ARGV7=OPT_CXX_FLAGS ARGV8=OPT_LINK_FLAGS ARGV9=OPT_FILES
+	set( PCH_HEADER "${ARGV6}" )
+	set( PCH_SOURCE "${ARGV7}" )
+	set( OPT_C_FLAGS "${ARGV8}" )
+	set( OPT_CXX_FLAGS "${ARGV9}" )
+	set( OPT_LINK_FLAGS "${ARGV10}" )
+	set( OPT_FILES "${ARGV11}" )
 	if((NOT "${CMAKE_BUILD_TYPE}" STREQUAL "") OR MSVC)
 		#First we retrieve the kind of target we will build
 		string( COMPARE EQUAL ${TARGET_TYPE} "dll" IS_DLL )
@@ -224,23 +221,28 @@ function( add_target TARGET_NAME TARGET_TYPE TARGET_DEPENDENCIES TARGET_LINKED_L
 		msg_debug( "----------------------------------------------------------------------------------------------------" )
 		msg_debug( "Target    ${TARGET_NAME}" )
 		msg_debug( "Type      ${TARGET_TYPE}" )
-		msg_debug( "PCH_HEADER            [${PCH_HEADER}]" )
-		msg_debug( "PCH_SOURCE            [${PCH_SOURCE}]" )
-		msg_debug( "OPT_C_FLAGS           [${OPT_C_FLAGS}]" )
-		msg_debug( "OPT_CXX_FLAGS         [${OPT_CXX_FLAGS}]" )
-		msg_debug( "IS_DLL                [${IS_DLL}]" )
-		msg_debug( "IS_API_DLL            [${IS_API_DLL}]" )
-		msg_debug( "IS_LIB                [${IS_LIB}]" )
-		msg_debug( "IS_BIN                [${IS_BIN}]" )
-		msg_debug( "IS_BIN_DOS            [${IS_BIN_DOS}]" )
-		msg_debug( "IS_PLUGIN             [${IS_PLUGIN}]" )
-		msg_debug( "IS_API_PLUGIN         [${IS_API_PLUGIN}]" )
+		msg_debug( "HDR_FOLDER                [${HDR_FOLDER}]" )
+		msg_debug( "SRC_FOLDER                [${SRC_FOLDER}]" )
+		msg_debug( "TARGET_DEPENDENCIES       [${TARGET_DEPENDENCIES}]")
+		msg_debug( "TARGET_LINKED_LIBRARIES   [${TARGET_LINKED_LIBRARIES}]")
+		msg_debug( "PCH_HEADER                [${PCH_HEADER}]" )
+		msg_debug( "PCH_SOURCE                [${PCH_SOURCE}]" )
+		msg_debug( "OPT_C_FLAGS               [${OPT_C_FLAGS}]" )
+		msg_debug( "OPT_CXX_FLAGS             [${OPT_CXX_FLAGS}]" )
+		msg_debug( "OPT_FILES                 [${OPT_FILES}]" )
+		msg_debug( "IS_DLL                    [${IS_DLL}]" )
+		msg_debug( "IS_API_DLL                [${IS_API_DLL}]" )
+		msg_debug( "IS_LIB                    [${IS_LIB}]" )
+		msg_debug( "IS_BIN                    [${IS_BIN}]" )
+		msg_debug( "IS_BIN_DOS                [${IS_BIN_DOS}]" )
+		msg_debug( "IS_PLUGIN                 [${IS_PLUGIN}]" )
+		msg_debug( "IS_API_PLUGIN             [${IS_API_PLUGIN}]" )
 		set( BIN_FOLDER bin )
 		if ( IS_LIB )
 			#We compute the extended name of the target (libs only)
 			compute_abi_name( TARGET_ABI_NAME TARGET_ABI_NAME_DEBUG )
-			msg_debug( "TARGET_ABI_NAME       ${TARGET_ABI_NAME}" )
-			msg_debug( "TARGET_ABI_NAME_DEBUG ${TARGET_ABI_NAME_DEBUG}" )
+			msg_debug( "TARGET_ABI_NAME           ${TARGET_ABI_NAME}" )
+			msg_debug( "TARGET_ABI_NAME_DEBUG     ${TARGET_ABI_NAME_DEBUG}" )
 		else ()
 			set( TARGET_ABI_NAME "" )
 			set( TARGET_ABI_NAME_DEBUG "d" )
@@ -273,80 +275,80 @@ function( add_target TARGET_NAME TARGET_TYPE TARGET_DEPENDENCIES TARGET_LINKED_L
 		file(
 			GLOB_RECURSE
 				TARGET_SOURCE_CPP
-				Src/*.cpp
+				${SRC_FOLDER}/*.cpp
 		)
 		file(
 			GLOB_RECURSE
 				TARGET_SOURCE_C
-				Src/*.c
+				${SRC_FOLDER}/*.c
 		)
 		file(
 			GLOB_RECURSE
 				TARGET_SOURCE_H_ONLY
-				Src/*.h
-				Src/*.hpp
-				Src/*.inl
+				${HDR_FOLDER}/*.h
+				${HDR_FOLDER}/*.hpp
+				${HDR_FOLDER}/*.inl
 		)
 		if ( WIN32 )
 			#We include resource files in Visual Studio or MINGW with Windows
 			enable_language( RC )
-			if ( EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/Src/Win32/${TARGET_NAME}.rc.in )
+			if ( EXISTS ${SRC_FOLDER}/Win32/${TARGET_NAME}.rc.in )
 				configure_file(
-					${CMAKE_CURRENT_SOURCE_DIR}/Src/Win32/${TARGET_NAME}.rc.in
-					${CMAKE_CURRENT_BINARY_DIR}/Src/Win32/${TARGET_NAME}.rc
+					${SRC_FOLDER}/Win32/${TARGET_NAME}.rc.in
+					${CMAKE_CURRENT_BINARY_DIR}/Win32/${TARGET_NAME}.rc
 					NEWLINE_STYLE LF
 				)
 				set( TARGET_RSC
-					${CMAKE_CURRENT_BINARY_DIR}/Src/Win32/${TARGET_NAME}.rc
+					${CMAKE_CURRENT_BINARY_DIR}/Win32/${TARGET_NAME}.rc
 				)
 			elseif ( EXISTS ${CMAKE_TEMPLATES_DIR}/${TARGET_NAME}.rc.in )
 				configure_file(
 					${CMAKE_TEMPLATES_DIR}/${TARGET_NAME}.rc.in
-					${CMAKE_CURRENT_BINARY_DIR}/Src/Win32/${TARGET_NAME}.rc
+					${CMAKE_CURRENT_BINARY_DIR}/Win32/${TARGET_NAME}.rc
 					NEWLINE_STYLE LF
 				)
 				set( TARGET_RSC
-					${CMAKE_CURRENT_BINARY_DIR}/Src/Win32/${TARGET_NAME}.rc
+					${CMAKE_CURRENT_BINARY_DIR}/Win32/${TARGET_NAME}.rc
 				)
 			elseif ( EXISTS ${CMAKE_TEMPLATES_DIR}/${RC_IN_FILE} )
 				configure_file(
 					${CMAKE_TEMPLATES_DIR}/${RC_IN_FILE}
-					${CMAKE_CURRENT_BINARY_DIR}/Src/Win32/${TARGET_NAME}.rc
+					${CMAKE_CURRENT_BINARY_DIR}/Win32/${TARGET_NAME}.rc
 					NEWLINE_STYLE LF
 				)
 				configure_file(
 					${CMAKE_TEMPLATES_DIR}/resource.h.in
-					${CMAKE_CURRENT_BINARY_DIR}/Src/Win32/resource.h
+					${CMAKE_CURRENT_BINARY_DIR}/Win32/resource.h
 					NEWLINE_STYLE LF
 				)
 				set( TARGET_RSC
-					${CMAKE_CURRENT_BINARY_DIR}/Src/Win32/${TARGET_NAME}.rc
+					${CMAKE_CURRENT_BINARY_DIR}/Win32/${TARGET_NAME}.rc
 				)
 			endif ()
-			if ( EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/Src/Win32/resource.h" )
+			if ( EXISTS "${SRC_FOLDER}/Win32/resource.h" )
 				set( TARGET_RSC
 					${TARGET_RSC}
-					${CMAKE_CURRENT_SOURCE_DIR}/Src/Win32/resource.h
+					${SRC_FOLDER}/Win32/resource.h
 				)
-			elseif ( EXISTS "${CMAKE_CURRENT_BINARY_DIR}/Src/Win32/resource.h" )
+			elseif ( EXISTS "${CMAKE_CURRENT_BINARY_DIR}/Win32/resource.h" )
 				set( TARGET_RSC
 					${TARGET_RSC}
-					${CMAKE_CURRENT_BINARY_DIR}/Src/Win32/resource.h
+					${CMAKE_CURRENT_BINARY_DIR}/Win32/resource.h
 				)
 			endif ()
-			if ( EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/Src/Win32/${TARGET_NAME}.rc" )
+			if ( EXISTS "${SRC_FOLDER}/Win32/${TARGET_NAME}.rc" )
 				set( TARGET_RSC
 					${TARGET_RSC}
-					${CMAKE_CURRENT_SOURCE_DIR}/Src/Win32/${TARGET_NAME}.rc
+					${SRC_FOLDER}/Win32/${TARGET_NAME}.rc
 				)
 			endif()
-			if ( EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/Src/Win32/${TARGET_NAME}.rc2" )
+			if ( EXISTS "${SRC_FOLDER}/Win32/${TARGET_NAME}.rc2" )
 				set( TARGET_RSC
 					${TARGET_RSC}
-					${CMAKE_CURRENT_SOURCE_DIR}/Src/Win32/${TARGET_NAME}.rc2
+					${SRC_FOLDER}/Win32/${TARGET_NAME}.rc2
 				)
 			endif()
-			include_directories( Src/Win32 )
+			include_directories( Win32 )
 			set( TARGET_SOURCE_H
 				${TARGET_SOURCE_H_ONLY}
 				${TARGET_RSC}
@@ -355,7 +357,7 @@ function( add_target TARGET_NAME TARGET_TYPE TARGET_DEPENDENCIES TARGET_LINKED_L
 				file(
 					GLOB_RECURSE
 						TARGET_NATVIS
-						Src/*.natvis
+						*.natvis
 				)
 				set( TARGET_SOURCE_H
 					${TARGET_SOURCE_H}
@@ -451,7 +453,7 @@ function( add_target TARGET_NAME TARGET_TYPE TARGET_DEPENDENCIES TARGET_LINKED_L
 			endif()
 			if ( IS_API_DLL OR IS_API_PLUGIN )
 				#For API DLLs, we install headers to <install_dir>/include/${TARGET_NAME}
-				target_install_headers( ${TARGET_NAME} Src )
+				target_install_headers( ${TARGET_NAME} "" )
 				if ( IS_API_PLUGIN AND WIN32 )
 					add_custom_command(
 						TARGET ${TARGET_NAME}
@@ -543,7 +545,7 @@ function( add_target TARGET_NAME TARGET_TYPE TARGET_DEPENDENCIES TARGET_LINKED_L
 				ARCHIVE DESTINATION lib/Debug
 			)
 			#For libs, we install headers to <install_dir>/include/${TARGET_NAME}
-			target_install_headers( ${TARGET_NAME} Src )
+			target_install_headers( ${TARGET_NAME} "" )
 		else()
 			message( FATAL_ERROR " Unknown target type : [${TARGET_TYPE}]" )
 		endif()
@@ -552,13 +554,13 @@ function( add_target TARGET_NAME TARGET_TYPE TARGET_DEPENDENCIES TARGET_LINKED_L
 
 		#We scan dependencies to add it to the target
 		foreach( TARGET_DEPENDENCY ${TARGET_DEPENDENCIES} )
-			msg_debug( "TARGET_DEPENDENCY     ${TARGET_DEPENDENCY}")
+			msg_debug( "TARGET_DEPENDENCY         ${TARGET_DEPENDENCY}")
 			add_dependencies( ${TARGET_NAME} ${TARGET_DEPENDENCY} )
 		endforeach()
 		#We scan libraries to add it to the linker
 		foreach( TARGET_LIB ${TARGET_LINKED_LIBRARIES} )
 			string( REPLACE "|" ";" TARGET_LIB ${TARGET_LIB})
-			msg_debug( "TARGET_LIB            ${TARGET_LIB}" )
+			msg_debug( "TARGET_LIB                ${TARGET_LIB}" )
 			target_link_libraries( ${TARGET_NAME} ${TARGET_LIB} )
 		endforeach()
 
@@ -566,9 +568,9 @@ function( add_target TARGET_NAME TARGET_TYPE TARGET_DEPENDENCIES TARGET_LINKED_L
 		set_source_files_properties( ${TARGET_SOURCE_CPP} PROPERTIES COMPILE_FLAGS "${TARGET_CXX_FLAGS}")
 
 		if ( PCH_HEADER STREQUAL "" OR NOT ${PROJECTS_USE_PRECOMPILED_HEADERS} )
-			msg_debug( "PRECOMPILED HEADERS   No" )
+			msg_debug( "PRECOMPILED HEADERS       No" )
 		else ()
-			msg_debug( "PRECOMPILED HEADERS   Yes" )
+			msg_debug( "PRECOMPILED HEADERS       Yes" )
 			add_target_precompiled_header( ${TARGET_NAME} ${PCH_HEADER} ${PCH_SOURCE} ${TARGET_CXX_FLAGS} ${TARGET_SOURCE_CPP} )
 		endif ()
 		if ( MSVC )
@@ -576,9 +578,9 @@ function( add_target TARGET_NAME TARGET_TYPE TARGET_DEPENDENCIES TARGET_LINKED_L
 				set_target_properties( ${TARGET_NAME} PROPERTIES LINK_FLAGS_DEBUG "${TARGET_LINK_FLAGS} /OPT:NOREF /PROFILE")
 			endif ()
 		endif ()
-		msg_debug( "TARGET_CXX_FLAGS:     ${TARGET_CXX_FLAGS}")
-		msg_debug( "TARGET_PCH_FLAGS:     ${TARGET_PCH_FLAGS}")
-		msg_debug( "TARGET_C_FLAGS:       ${TARGET_C_FLAGS}")
-		msg_debug( "TARGET_LINK_FLAGS:    ${TARGET_LINK_FLAGS}")
+		msg_debug( "TARGET_CXX_FLAGS:         ${TARGET_CXX_FLAGS}")
+		msg_debug( "TARGET_PCH_FLAGS:         ${TARGET_PCH_FLAGS}")
+		msg_debug( "TARGET_C_FLAGS:           ${TARGET_C_FLAGS}")
+		msg_debug( "TARGET_LINK_FLAGS:        ${TARGET_LINK_FLAGS}")
 	endif()
 endfunction( add_target )
