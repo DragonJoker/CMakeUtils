@@ -8,7 +8,7 @@
 #   which are added to the <output list>
 #
 #******************************************************************************
-macro( add_com_interfaces OUTPUT_LIST )    
+macro( add_com_interfaces OUTPUT_LIST )
 	foreach( IN_FILE ${ARGN} )
 		get_filename_component( OUT_FILE ${IN_FILE} NAME_WE )
 		get_filename_component( IN_PATH ${IN_FILE} PATH )
@@ -21,7 +21,7 @@ macro( add_com_interfaces OUTPUT_LIST )
 		add_custom_command(
 			OUTPUT ${OUT_HEADER} ${OUT_IID}
 			DEPENDS ${IN_FILE}
-			COMMAND midl /header ${OUT_HEADER_NAME} /iid ${OUT_IID_NAME} ${IN_FILE} /I ${CMAKE_CURRENT_SOURCE_DIR}/Src
+			COMMAND midl /header ${OUT_HEADER_NAME} /iid ${OUT_IID_NAME} ${IN_FILE} /I ${CMAKE_CURRENT_SOURCE_DIR}
 			WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
 		)
 
@@ -51,11 +51,10 @@ macro( add_interface OBJECT_IID RESRC_LIST RESH_LIST RESOURCE_ID OBJECT_NAME )
 	SET( _OBJECT_IID ${OBJECT_IID} )
 	SET( _OBJECT_NAME ${OBJECT_NAME} )
 	configure_file(
-		${CMAKE_CURRENT_SOURCE_DIR}/Src/Win32/ComCastor.rgs.in
-		${CMAKE_CURRENT_BINARY_DIR}/Src/Win32/Com${_OBJECT_NAME}.rgs
-		@ONLY
+		${CMAKE_TEMPLATES_DIR}/ComInterface.rgs.in
+		${CMAKE_CURRENT_BINARY_DIR}/Win32/Com${_OBJECT_NAME}.rgs
 	)
-	set( ${RESRC_LIST} "${${RESRC_LIST}}\nIDR_${_OBJECT_NAME}	REGISTRY	\"${CMAKE_CURRENT_BINARY_DIR}/Src/Win32/Com${_OBJECT_NAME}.rgs\"" )
+	set( ${RESRC_LIST} "${${RESRC_LIST}}\nIDR_${_OBJECT_NAME}	REGISTRY	\"${CMAKE_CURRENT_BINARY_DIR}/Win32/Com${_OBJECT_NAME}.rgs\"" )
 	set( ${RESH_LIST} "${${RESH_LIST}}\n#define IDR_${_OBJECT_NAME}		${${RESOURCE_ID}}" )
 	math( EXPR ${RESOURCE_ID} "${${RESOURCE_ID}}+1")
 endmacro( add_interface )

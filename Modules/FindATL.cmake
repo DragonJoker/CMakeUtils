@@ -23,7 +23,7 @@ if ( MSVC )
 	endif()
 
 	if ( VC_DIR )
-		FIND_PATH( ATL_ROOT_DIR include/atlbase.h 
+		FIND_PATH( ATL_ROOT_DIR include/atlbase.h
 			HINTS
 			PATH_SUFFIXES
 				atlmfc
