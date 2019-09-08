@@ -143,12 +143,12 @@ macro( target_install_dir_headers TARGET_NAME SRCDIR DSTDIR )
 	file(
 		GLOB
 			_HEADERS
-			${CMAKE_SOURCE_DIR}/${SRCDIR}/*.h
-			${CMAKE_SOURCE_DIR}/${SRCDIR}/*.hpp
-			${CMAKE_SOURCE_DIR}/${SRCDIR}/*.inl
-			${CMAKE_BINARY_DIR}/${SRCDIR}/*.h
-			${CMAKE_BINARY_DIR}/${SRCDIR}/*.hpp
-			${CMAKE_BINARY_DIR}/${SRCDIR}/*.inl
+			${SRCDIR}/*.h
+			${SRCDIR}/*.hpp
+			${SRCDIR}/*.inl
+			${SRCDIR}/*.h
+			${SRCDIR}/*.hpp
+			${SRCDIR}/*.inl
 	)
 	install(
 		FILES ${_HEADERS}
@@ -158,6 +158,7 @@ macro( target_install_dir_headers TARGET_NAME SRCDIR DSTDIR )
 endmacro()
 
 macro( target_install_headers TARGET_NAME HDR_FOLDER )
+	target_install_dir_headers( ${TARGET_NAME} ${HDR_FOLDER} ${TARGET_NAME} )
 	list_subdirs( _SUBDIRS ${HDR_FOLDER} )
 	foreach( _SUBDIR ${_SUBDIRS} )
 		target_install_subdir_headers( ${TARGET_NAME} ${HDR_FOLDER} ${_SUBDIR} "" )
@@ -170,11 +171,6 @@ macro( target_install_headers TARGET_NAME HDR_FOLDER )
 			endforeach()
 		endforeach()
 	endforeach()
-
-	target_install_dir_headers( ${TARGET_NAME}
-		${HDR_FOLDER}
-		${TARGET_NAME}
-	)
 endmacro()
 #--------------------------------------------------------------------------------------------------
 #\function
@@ -463,7 +459,7 @@ function( add_target TARGET_NAME TARGET_TYPE HDR_FOLDER SRC_FOLDER TARGET_DEPEND
 			endif()
 			if ( IS_API_DLL OR IS_API_PLUGIN )
 				#For API DLLs, we install headers to <install_dir>/include/${TARGET_NAME}
-				target_install_headers( ${TARGET_NAME} ${HDR_FOLDER} "" )
+				target_install_headers( ${TARGET_NAME} ${HDR_FOLDER} )
 				if ( IS_API_PLUGIN AND WIN32 )
 					add_custom_command(
 						TARGET ${TARGET_NAME}
@@ -555,7 +551,7 @@ function( add_target TARGET_NAME TARGET_TYPE HDR_FOLDER SRC_FOLDER TARGET_DEPEND
 				ARCHIVE DESTINATION lib/Debug
 			)
 			#For libs, we install headers to <install_dir>/include/${TARGET_NAME}
-			target_install_headers( ${TARGET_NAME} ${HDR_FOLDER} "" )
+			target_install_headers( ${TARGET_NAME} ${HDR_FOLDER} )
 		else()
 			message( FATAL_ERROR " Unknown target type : [${TARGET_TYPE}]" )
 		endif()
