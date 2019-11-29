@@ -1,4 +1,8 @@
-option( PROJECTS_USE_PRECOMPILED_HEADERS "Use precompiled headers" TRUE )
+if ( APPLE )
+	option( PROJECTS_USE_PRECOMPILED_HEADERS "Use precompiled headers" OFF )
+else ()
+	option( PROJECTS_USE_PRECOMPILED_HEADERS "Use precompiled headers" ON )
+endif ()
 
 #--------------------------------------------------------------------------------------------------
 # - Try to find precompiled headers support for GCC 3.4 and 4.x
