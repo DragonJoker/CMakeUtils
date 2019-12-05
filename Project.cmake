@@ -294,7 +294,31 @@ function( add_target TARGET_NAME TARGET_TYPE HDR_FOLDER SRC_FOLDER TARGET_DEPEND
 				${HDR_FOLDER}/*.hpp
 				${HDR_FOLDER}/*.inl
 		)
-		if ( WIN32 )
+
+		if ( APPLE )
+			# We add Obj-C and Obj-C++ files to the project
+			file(
+				GLOB_RECURSE
+					TARGET_SOURCE_OBJ_CPP
+					${SRC_FOLDER}/*.mm
+			)
+			file(
+				GLOB_RECURSE
+					TARGET_SOURCE_OBJ_C
+					${SRC_FOLDER}/*.m
+			)
+			set( TARGET_SOURCE_C
+				${TARGET_SOURCE_C}
+				${TARGET_SOURCE_OBJ_C}
+			)
+			set( TARGET_SOURCE_CPP
+				${TARGET_SOURCE_CPP}
+				${TARGET_SOURCE_OBJ_CPP}
+			)
+			set( TARGET_SOURCE_H
+				${TARGET_SOURCE_H_ONLY}
+			)
+		elseif ( WIN32 )
 			#We include resource files in Visual Studio or MINGW with Windows
 			enable_language( RC )
 			if ( EXISTS ${SRC_FOLDER}/Win32/${TARGET_NAME}.rc.in )
@@ -372,16 +396,12 @@ function( add_target TARGET_NAME TARGET_TYPE HDR_FOLDER SRC_FOLDER TARGET_DEPEND
 				source_group( "Visualisers" FILES ${TARGET_NATVIS} )
 			endif ()
 			source_group( "Resource Files" FILES ${TARGET_RSC} )
-		else ()
+		else ( WIN32 )
 			set( TARGET_SOURCE_H
 				${TARGET_SOURCE_H_ONLY}
 			)
-		endif ()
-		add_definitions(
-		 -D${TARGET_NAME}_VERSION_MAJOR=${${TARGET_NAME}_VERSION_MAJOR}
-		 -D${TARGET_NAME}_VERSION_MINOR=${${TARGET_NAME}_VERSION_MINOR}
-		 -D${TARGET_NAME}_VERSION_BUILD=${${TARGET_NAME}_VERSION_BUILD}
-		)
+		endif ( APPLE )
+
 		set( TARGET_C_FLAGS "" )
 		set( TARGET_CXX_FLAGS "" )
 		set( TARGET_LINK_FLAGS "" )
@@ -496,6 +516,7 @@ function( add_target TARGET_NAME TARGET_TYPE HDR_FOLDER SRC_FOLDER TARGET_DEPEND
 			set_target_properties( ${TARGET_NAME}
 				PROPERTIES
 					LINK_FLAGS "${TARGET_LINK_FLAGS}"
+					VS_DEBUGGER_WORKING_DIRECTORY "$(OutDir)"
 			)
 			#We now build the install script
 			#We copy each exe in <install_dir>/bin folder
@@ -567,7 +588,7 @@ function( add_target TARGET_NAME TARGET_TYPE HDR_FOLDER SRC_FOLDER TARGET_DEPEND
 		foreach( TARGET_LIB ${TARGET_LINKED_LIBRARIES} )
 			string( REPLACE "|" ";" TARGET_LIB ${TARGET_LIB})
 			msg_debug( "TARGET_LIB                ${TARGET_LIB}" )
-			target_link_libraries( ${TARGET_NAME} ${TARGET_LIB} )
+			target_link_libraries( ${TARGET_NAME} PUBLIC ${TARGET_LIB} )
 		endforeach()
 
 		set_source_files_properties( ${TARGET_SOURCE_C} PROPERTIES COMPILE_FLAGS "${TARGET_C_FLAGS}")
@@ -584,6 +605,14 @@ function( add_target TARGET_NAME TARGET_TYPE HDR_FOLDER SRC_FOLDER TARGET_DEPEND
 				set_target_properties( ${TARGET_NAME} PROPERTIES LINK_FLAGS_DEBUG "${TARGET_LINK_FLAGS} /OPT:NOREF /PROFILE")
 			endif ()
 		endif ()
+		target_compile_definitions( ${TARGET_NAME}
+			PUBLIC
+				${TARGET_NAME}_VERSION_MAJOR=${${TARGET_NAME}_VERSION_MAJOR}
+				${TARGET_NAME}_VERSION_MINOR=${${TARGET_NAME}_VERSION_MINOR}
+				${TARGET_NAME}_VERSION_BUILD=${${TARGET_NAME}_VERSION_BUILD}
+			PRIVATE
+				${PROJECTS_COMPILE_DEFINITIONS}
+		)
 		msg_debug( "TARGET_CXX_FLAGS:         ${TARGET_CXX_FLAGS}")
 		msg_debug( "TARGET_PCH_FLAGS:         ${TARGET_PCH_FLAGS}")
 		msg_debug( "TARGET_C_FLAGS:           ${TARGET_C_FLAGS}")
