@@ -1,10 +1,6 @@
 find_package( PackageHandleStandardArgs )
 
 if ( MSVC )
-	if ( (CMAKE_CL_64 OR CMAKE_GENERATOR MATCHES Win64) )
-		set( PLATFORM "/amd64" )
-	endif ()
-
 	if ( NOT VC_DIR )
 		if ( MSVC14 )
 			get_filename_component( VS_DIR "[HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\VisualStudio\\14.0\\Setup\\VS;ProductDir]" REALPATH )
