@@ -144,12 +144,12 @@
 # Helper macro to control the debugging output globally. There are
 # two versions for controlling how verbose your output should be.
 MACRO(DBG_MSG _MSG)
-#  MESSAGE(STATUS
-#    "${CMAKE_CURRENT_LIST_FILE}(${CMAKE_CURRENT_LIST_LINE}): ${_MSG}")
+ # MESSAGE(STATUS
+   # "${CMAKE_CURRENT_LIST_FILE}(${CMAKE_CURRENT_LIST_LINE}): ${_MSG}")
 ENDMACRO(DBG_MSG)
 MACRO(DBG_MSG_V _MSG)
-#  MESSAGE(STATUS
-#    "${CMAKE_CURRENT_LIST_FILE}(${CMAKE_CURRENT_LIST_LINE}): ${_MSG}")
+ # MESSAGE(STATUS
+   # "${CMAKE_CURRENT_LIST_FILE}(${CMAKE_CURRENT_LIST_LINE}): ${_MSG}")
 ENDMACRO(DBG_MSG_V)
 
 # Clear return values in case the module is loaded more than once.
@@ -215,7 +215,7 @@ ENDIF(WIN32 AND NOT CYGWIN AND NOT MSYS)
 IF(wxWidgets_FIND_STYLE STREQUAL "win32")
   IF (NOT VCPKG_TOOLCHAIN)
     # Useful common wx libs needed by almost all components.
-    SET(wxWidgets_COMMON_LIBRARIES png tiff jpeg zlib regex expat)
+    SET(wxWidgets_COMMON_LIBRARIES png tiff jpeg zlib expat)
   ENDIF (NOT VCPKG_TOOLCHAIN)
 
   # DEPRECATED: Use FIND_PACKAGE(wxWidgets COMPONENTS mono) instead.
