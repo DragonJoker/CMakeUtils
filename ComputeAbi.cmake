@@ -53,8 +53,6 @@ elseif ( CMAKE_CXX_COMPILER_ID STREQUAL "MSVC" )
 	endif ()
 endif()
 
-message( STATUS "COMPILER: [${CMAKE_CXX_COMPILER_ID}]" )
-
 #--------------------------------------------------------------------------------------------------
 #	Function :	compute_abi_name
 # 	Function which computes the extended library name, with compiler version and debug flag

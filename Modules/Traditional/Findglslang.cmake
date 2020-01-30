@@ -37,22 +37,20 @@ if ( NOT glslang_FIND_COMPONENTS )
 	set( glslang_FIND_COMPONENTS OSDependent OGLCompiler SPVRemapper )
 endif ()
 
-find_path( glslang_ROOT_DIR include/glslang/Public/ShaderLang.h
+find_path( glslang_DIR include/glslang/Public/ShaderLang.h
 	HINTS
 	PATHS
 		/usr/local
 		/usr
 )
 
-if ( glslang_ROOT_DIR )
+if ( glslang_DIR )
 	find_path( glslang_INCLUDE_DIR glslang/Public/ShaderLang.h
 		HINTS
 		PATH_SUFFIXES
 			include
 		PATHS
-			${glslang_ROOT_DIR}
-			/usr/local/include
-			/usr/include
+			${glslang_DIR}
 	)
 
 	find_path( glslang_LIBRARY_RELEASE_DIR glslang.lib libglslang.a
@@ -65,7 +63,7 @@ if ( glslang_ROOT_DIR )
 			/usr/local/lib
 			/usr/lib
 		PATHS
-			${glslang_ROOT_DIR}
+			${glslang_DIR}
 	)
 
 	find_path( glslang_LIBRARY_DEBUG_DIR glslangd.lib libglslangd.a
@@ -76,7 +74,7 @@ if ( glslang_ROOT_DIR )
 			/usr/local/lib
 			/usr/lib
 		PATHS
-			${glslang_ROOT_DIR}
+			${glslang_DIR}
 	)
 
 	if ( NOT glslang_LIBRARY_DEBUG_DIR )
@@ -88,7 +86,7 @@ if ( glslang_ROOT_DIR )
 				/usr/local/lib
 				/usr/lib
 			PATHS
-				${glslang_ROOT_DIR}
+				${glslang_DIR}
 		)
 	endif ()
 
@@ -110,7 +108,7 @@ if ( glslang_ROOT_DIR )
 	)
 	mark_as_advanced( glslang_LIBRARY_RELEASE )
 	mark_as_advanced( glslang_LIBRARY_DEBUG )
-	mark_as_advanced( glslang_ROOT_DIR )
+	mark_as_advanced( glslang_DIR )
 	find_package_handle_standard_args( glslang DEFAULT_MSG glslang_LIBRARY_RELEASE glslang_LIBRARY_DEBUG glslang_INCLUDE_DIR )
 
 	if ( glslang_FOUND )
@@ -179,16 +177,16 @@ if ( glslang_ROOT_DIR )
 		unset( glslang_LIBRARY_DEBUG_DIR CACHE )
 
 		set( glslang_REVISION_H ${glslang_INCLUDE_DIR}/glslang/Include/revision.h )
-		file( STRINGS "${glslang_REVISION_H}" GLSLANG_REVISION_STR REGEX "^#[\t ]*define[\t ]+GLSLANG_REVISION[\t ]+\"[0-9a-zA-Z .-]+\"$" )
-		file( STRINGS "${glslang_REVISION_H}" GLSLANG_DATE_STR REGEX "^#[\t ]*define[\t ]+GLSLANG_DATE[\t ]+\"[0-9a-zA-Z .-]+\"$" )
+		file( STRINGS "${glslang_REVISION_H}" glslang_REVISION_STR REGEX "^#[\t ]*define[\t ]+glslang_REVISION[\t ]+\"[0-9a-zA-Z .-]+\"$" )
+		file( STRINGS "${glslang_REVISION_H}" glslang_DATE_STR REGEX "^#[\t ]*define[\t ]+glslang_DATE[\t ]+\"[0-9a-zA-Z .-]+\"$" )
 		unset( glslang_REVISION CACHE )
-		if ( GLSLANG_REVISION_STR MATCHES "^#[\t ]*define[\t ]+GLSLANG_REVISION[\t ]+\"[0-9a-zA-Z .-]+\"$" )
-			if ( GLSLANG_DATE_STR MATCHES "^#[\t ]*define[\t ]+GLSLANG_DATE[\t ]+\"[0-9a-zA-Z .-]+\"$" )
-				string( REGEX REPLACE "^#[\t ]*define[\t ]+GLSLANG_REVISION[\t ]+\"([0-9a-zA-Z .-]+)\"$" "\\1" GLSLANG_REVISION_STR "${GLSLANG_REVISION_STR}" )
-				string( REGEX REPLACE "^#[\t ]*define[\t ]+GLSLANG_DATE[\t ]+\"([0-9a-zA-Z .-]+)\"$" "\\1" GLSLANG_DATE_STR "${GLSLANG_DATE_STR}" )
-				set( glslang_REVISION "${GLSLANG_REVISION_STR}.${GLSLANG_DATE_STR}" CACHE STRING "glslang revision string" FORCE )
-				unset( GLSLANG_REVISION_STR )
-				unset( GLSLANG_DATE_STR )
+		if ( glslang_REVISION_STR MATCHES "^#[\t ]*define[\t ]+glslang_REVISION[\t ]+\"[0-9a-zA-Z .-]+\"$" )
+			if ( glslang_DATE_STR MATCHES "^#[\t ]*define[\t ]+glslang_DATE[\t ]+\"[0-9a-zA-Z .-]+\"$" )
+				string( REGEX REPLACE "^#[\t ]*define[\t ]+glslang_REVISION[\t ]+\"([0-9a-zA-Z .-]+)\"$" "\\1" glslang_REVISION_STR "${glslang_REVISION_STR}" )
+				string( REGEX REPLACE "^#[\t ]*define[\t ]+glslang_DATE[\t ]+\"([0-9a-zA-Z .-]+)\"$" "\\1" glslang_DATE_STR "${glslang_DATE_STR}" )
+				set( glslang_REVISION "${glslang_REVISION_STR}.${glslang_DATE_STR}" CACHE STRING "glslang revision string" FORCE )
+				unset( glslang_REVISION_STR )
+				unset( glslang_DATE_STR )
 			endif ()
 		endif ()
 	endif ()

@@ -1,10 +1,6 @@
 find_package( AStyle )
 option( PROJECTS_USE_PRETTY_PRINTING "Enable AStyle" TRUE )
 
-if ( ASTYLE_FOUND )
-    message( STATUS "+ Found AStyle" )
-endif()
-
 function( add_target_astyle TARGET_NAME EXT_LIST )
     if ( ASTYLE_FOUND AND PROJECTS_USE_PRETTY_PRINTING )
         # Retrieve project source files
