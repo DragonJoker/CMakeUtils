@@ -267,12 +267,14 @@ function( add_target TARGET_NAME TARGET_TYPE HDR_FOLDER SRC_FOLDER TARGET_DEPEND
 			CONFIGURE_DEPENDS
 				${SRC_FOLDER}/*.cpp
 		)
+		msg_debug( "TARGET_SOURCE_CPP         ${TARGET_SOURCE_CPP}" )
 		file(
 			GLOB_RECURSE
 				TARGET_SOURCE_C
 			CONFIGURE_DEPENDS
 				${SRC_FOLDER}/*.c
 		)
+		msg_debug( "TARGET_SOURCE_C           ${TARGET_SOURCE_C}" )
 		file(
 			GLOB_RECURSE
 				TARGET_SOURCE_H_ONLY
@@ -281,6 +283,7 @@ function( add_target TARGET_NAME TARGET_TYPE HDR_FOLDER SRC_FOLDER TARGET_DEPEND
 				${HDR_FOLDER}/*.hpp
 				${HDR_FOLDER}/*.inl
 		)
+		msg_debug( "TARGET_SOURCE_H_ONLY      ${TARGET_SOURCE_H_ONLY}" )
 
 		if ( APPLE )
 			# We add Obj-C and Obj-C++ files to the project
