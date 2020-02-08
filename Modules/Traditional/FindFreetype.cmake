@@ -121,17 +121,31 @@ find_path(
     freetype2
 )
 
-find_path(
-  FREETYPE_INCLUDE_DIR_freetype2
-  NAMES
-    config/ftheader.h
-  ${FREETYPE_FIND_ARGS}
-  PATH_SUFFIXES
-    include/freetype2
-    include/freetype
-    include
-    freetype2
-)
+if ( FREETYPE_USE_DEPENDENCIES )
+  find_path(
+    FREETYPE_INCLUDE_DIR_freetype2
+    NAMES
+      config/ftheader.h
+    ${FREETYPE_FIND_ARGS}
+    PATH_SUFFIXES
+      include/freetype2
+      include/freetype
+      include
+      freetype2
+  )
+else ()
+  find_path(
+    FREETYPE_INCLUDE_DIR_freetype2
+    NAMES
+      freetype/config/ftheader.h
+      config/ftheader.h
+    ${FREETYPE_FIND_ARGS}
+    PATH_SUFFIXES
+      include/freetype2
+      include
+      freetype2
+  )
+endif ()
 
 if(NOT FREETYPE_LIBRARY)
   find_library(FREETYPE_LIBRARY_RELEASE
