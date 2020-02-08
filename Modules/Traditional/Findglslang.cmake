@@ -112,18 +112,6 @@ if ( glslang_DIR )
 	find_package_handle_standard_args( glslang DEFAULT_MSG glslang_LIBRARY_RELEASE glslang_LIBRARY_DEBUG glslang_INCLUDE_DIR )
 
 	if ( glslang_FOUND )
-		if ( glslang_LIBRARY_DEBUG )
-			set( glslang_LIBRARIES
-				optimized ${glslang_LIBRARY_RELEASE}
-				debug ${glslang_LIBRARY_DEBUG}
-				CACHE STRING "glslang libraries" FORCE
-			)
-		else ()
-			set( glslang_LIBRARIES
-				${glslang_LIBRARY_RELEASE}
-				CACHE STRING "glslang libraries" FORCE
-			)
-		endif ()
 		foreach( COMPONENT ${glslang_FIND_COMPONENTS} )
 			find_library( glslang_${COMPONENT}_LIBRARY_RELEASE
 				NAMES
@@ -146,24 +134,58 @@ if ( glslang_DIR )
 			find_package_handle_standard_args( glslang_${COMPONENT} DEFAULT_MSG glslang_${COMPONENT}_LIBRARY_RELEASE glslang_${COMPONENT}_LIBRARY_DEBUG )
 
 			if ( glslang_${COMPONENT}_FOUND )
+				add_library( glslang::${COMPONENT} UNKNOWN IMPORTED )
 				if ( glslang_${COMPONENT}_LIBRARY_DEBUG )
 					set( glslang_${COMPONENT}_LIBRARIES
 						optimized ${glslang_${COMPONENT}_LIBRARY_RELEASE}
 						debug ${glslang_${COMPONENT}_LIBRARY_DEBUG}
 						CACHE STRING "glslang ${COMPONENT} library" FORCE
 					)
+					set_property( TARGET glslang::${COMPONENT} APPEND PROPERTY
+						IMPORTED_CONFIGURATIONS DEBUG )
+					set_target_properties( glslang::${COMPONENT} PROPERTIES
+						IMPORTED_LOCATION_DEBUG "${glslang_${COMPONENT}_LIBRARY_DEBUG}" )
+					set_property( TARGET glslang::${COMPONENT} APPEND PROPERTY
+						IMPORTED_CONFIGURATIONS RELEASE)
+					set_target_properties(glslang::${COMPONENT} PROPERTIES
+						IMPORTED_LOCATION_RELEASE "${glslang_${COMPONENT}_LIBRARY_RELEASE}" )
 				else ()
 					set( glslang_${COMPONENT}_LIBRARIES
 						${glslang_${COMPONENT}_LIBRARY_RELEASE}
 						CACHE STRING "glslang ${COMPONENT} library" FORCE
 					)
+					set_target_properties( glslang::${COMPONENT} PROPERTIES
+						IMPORTED_LOCATION "${glslang_${COMPONENT}_LIBRARY_RELEASE}" )
 				endif ()
+				set_target_properties( glslang::${COMPONENT} PROPERTIES
+					INTERFACE_INCLUDE_DIRECTORIES "${glslang_INCLUDE_DIR}" )
 				set( glslang_LIBRARIES
 					${glslang_LIBRARIES}
 					${glslang_${COMPONENT}_LIBRARIES}
 					CACHE STRING "glslang libraries" FORCE
 				)
 				mark_as_advanced( glslang_${COMPONENT}_LIBRARIES )
+
+				if( NOT TARGET glslang::${COMPONENT} )
+					add_library( glslang::glslang UNKNOWN IMPORTED )
+					set_target_properties( glslang::${COMPONENT} PROPERTIES
+						INTERFACE_INCLUDE_DIRECTORIES "${glslang_INCLUDE_DIR}" )
+
+					if ( ZLIB_LIBRARY_RELEASE )
+						set_property( TARGET glslang::${COMPONENT} APPEND PROPERTY
+							IMPORTED_CONFIGURATIONS RELEASE)
+						set_target_properties(glslang::${COMPONENT} PROPERTIES
+							IMPORTED_LOCATION_RELEASE "${ZLIB_LIBRARY_RELEASE}" )
+					endif ()
+
+					if ( ZLIB_LIBRARY_DEBUG )
+					endif ()
+
+					if ( NOT ZLIB_LIBRARY_RELEASE AND NOT ZLIB_LIBRARY_DEBUG )
+						set_property( TARGET glslang::${COMPONENT} APPEND PROPERTY
+							IMPORTED_LOCATION "${ZLIB_LIBRARY}" )
+					endif ()
+				endif ()
 			endif ()
 
 			if ( glslang_FOUND AND NOT glslang_${COMPONENT}_FOUND )
