@@ -14,6 +14,60 @@ function( add_target_compilation_flags TARGET_NAME ) #ARGS
     set_target_properties( ${TARGET_NAME} PROPERTIES COMPILE_FLAGS ${TEMP} )
 endfunction( add_target_compilation_flags )
 
+function( add_target_compilation_common_flags TARGET_NAME TARGET_TYPE TARGET_DEFINITIONS TARGET_FLAGS )
+	string( COMPARE EQUAL ${TARGET_TYPE} "dll" IS_DLL )
+	string( COMPARE EQUAL ${TARGET_TYPE} "api_dll" IS_API_DLL )
+	set( _COMP_DEFINITIONS "" )
+	set( _COMP_FLAGS "" )
+	if ( IS_DLL OR IS_API_DLL )
+		set( _COMP_DEFINITIONS
+			${TARGET_NAME}_EXPORTS
+			${TARGET_NAME}_SHARED
+		)
+	endif ()
+	#On GNU compiler, we use c++0x and c++1x support, and also PIC
+	if ( MSVC )
+		set( _COMP_DEFINITIONS
+			${_COMP_DEFINITIONS}
+			_CRT_SECURE_NO_WARNINGS
+			_SCL_SECURE_NO_WARNINGS
+		)
+	elseif ( CMAKE_COMPILER_IS_GNUCXX )
+		DumpCompilerVersion( COMPILER_VERSION )
+		if ( NOT ANDROID )
+			set( SSE2_FLAG "-msse2" )
+		endif ()
+		set( _COMP_FLAGS
+			${_COMP_FLAGS}
+			-fPIC
+		)
+		if ( ${COMPILER_VERSION} LESS "49" )
+			set( _COMP_FLAGS
+				${_COMP_FLAGS}
+				${SSE2_FLAG}
+			)
+		else ()
+			set( _COMP_FLAGS
+				${_COMP_FLAGS}
+				${SSE2_FLAG}
+				-fdiagnostics-color=auto
+			)
+		endif()
+		set( _COMP_FLAGS
+			${_COMP_FLAGS}
+			-pedantic
+		)
+	elseif ( ${CMAKE_CXX_COMPILER_ID} MATCHES "Clang" )
+		DumpCompilerVersion( COMPILER_VERSION )
+		set( _COMP_FLAGS
+			${_COMP_FLAGS}
+			-fPIC
+		)
+	endif ()
+	set( ${TARGET_DEFINITIONS} "${_COMP_DEFINITIONS}" PARENT_SCOPE )
+	set( ${TARGET_FLAGS} "${_COMP_FLAGS}" PARENT_SCOPE )
+endfunction( add_target_compilation_common_flags )
+
 function( compute_compilation_flags TARGET_NAME TARGET_TYPE OPT_C_FLAGS OPT_CXX_FLAGS OPT_LINK_FLAGS TARGET_C_FLAGS TARGET_CXX_FLAGS TARGET_LINK_FLAGS )
 	string( COMPARE EQUAL ${TARGET_TYPE} "dll" IS_DLL )
 	string( COMPARE EQUAL ${TARGET_TYPE} "api_dll" IS_API_DLL )
@@ -21,10 +75,10 @@ function( compute_compilation_flags TARGET_NAME TARGET_TYPE OPT_C_FLAGS OPT_CXX_
 	set( _OPT_CXX_FLAGS "${OPT_CXX_FLAGS}" )
 	set( _OPT_LINK_FLAGS "${OPT_LINK_FLAGS}" )
 	if ( IS_DLL OR IS_API_DLL )
-    	if ( NOT ${_OPT_C_FLAGS} STREQUAL "" )
+	if ( NOT ${_OPT_C_FLAGS} STREQUAL "" )
 			set( _OPT_C_FLAGS " " )
 		endif ()
-    	if ( NOT ${_OPT_CXX_FLAGS} STREQUAL "" )
+	if ( NOT ${_OPT_CXX_FLAGS} STREQUAL "" )
 			set( _OPT_CXX_FLAGS " " )
 		endif ()
 		set( _OPT_C_FLAGS "-D${TARGET_NAME}_EXPORTS -D${TARGET_NAME}_SHARED" )

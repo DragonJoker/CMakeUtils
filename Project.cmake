@@ -156,6 +156,239 @@ macro( target_install_headers TARGET_NAME HDR_FOLDER )
 		endforeach()
 	endforeach()
 endmacro()
+macro( find_rsc_file TARGET_NAME TARGET_TYPE )
+	if ( WIN32 )
+		string( COMPARE EQUAL ${TARGET_TYPE} "dll" IS_DLL )
+		string( COMPARE EQUAL ${TARGET_TYPE} "api_dll" IS_API_DLL )
+		string( COMPARE EQUAL ${TARGET_TYPE} "lib" IS_LIB )
+		string( COMPARE EQUAL ${TARGET_TYPE} "bin" IS_BIN )
+		string( COMPARE EQUAL ${TARGET_TYPE} "bin_dos" IS_BIN_DOS )
+		string( COMPARE EQUAL ${TARGET_TYPE} "plugin" IS_PLUGIN )
+		string( COMPARE EQUAL ${TARGET_TYPE} "api_plugin" IS_API_PLUGIN )
+		if ( IS_DLL OR IS_API_DLL )
+			set( RC_IN_FILE "SharedLibrary.rc.in" )
+		elseif ( IS_BIN OR IS_BIN_DOS )
+			set( RC_IN_FILE "Executable.rc.in" )
+		elseif ( IS_PLUGIN OR IS_API_PLUGIN )
+			set( RC_IN_FILE "Plugin.rc.in" )
+		else ()
+			set( IS_LIB TRUE )
+			set( RC_IN_FILE "StaticLibrary.rc.in" )
+		endif ()
+		#We include resource files in Visual Studio or MINGW with Windows
+		enable_language( RC )
+		if ( EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/Win32/${TARGET_NAME}.rc )
+			set( ${TARGET_NAME}_RSC_FILES
+				${CMAKE_CURRENT_SOURCE_DIR}/Win32/${TARGET_NAME}.rc
+			)
+		elseif ( EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/Win32/${TARGET_NAME}.rc.in )
+			configure_file(
+				${CMAKE_CURRENT_SOURCE_DIR}/Win32/${TARGET_NAME}.rc.in
+				${CMAKE_CURRENT_BINARY_DIR}/Win32/${TARGET_NAME}.rc
+				NEWLINE_STYLE LF
+			)
+			set( ${TARGET_NAME}_RSC_FILES
+				${CMAKE_CURRENT_BINARY_DIR}/Win32/${TARGET_NAME}.rc
+			)
+		elseif ( EXISTS ${CMAKE_TEMPLATES_DIR}/${RC_IN_FILE} )
+			configure_file(
+				${CMAKE_TEMPLATES_DIR}/${RC_IN_FILE}
+				${CMAKE_CURRENT_BINARY_DIR}/Win32/${TARGET_NAME}.rc
+				NEWLINE_STYLE LF
+			)
+			set( ${TARGET_NAME}_RSC_FILES
+				${CMAKE_CURRENT_BINARY_DIR}/Win32/${TARGET_NAME}.rc
+			)
+		endif ()
+		if ( EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/Win32/resource.h" )
+			set( ${TARGET_NAME}_RSC_FILES
+				${${TARGET_NAME}_RSC_FILES}
+				${CMAKE_CURRENT_SOURCE_DIR}/Win32/resource.h
+			)
+		elseif ( EXISTS "${CMAKE_CURRENT_BINARY_DIR}/Win32/resource.h" )
+			set( ${TARGET_NAME}_RSC_FILES
+				${${TARGET_NAME}_RSC_FILES}
+				${CMAKE_CURRENT_BINARY_DIR}/Win32/resource.h
+			)
+		endif ()
+		if ( EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/Win32/${TARGET_NAME}.rc" )
+			set( ${TARGET_NAME}_RSC_FILES
+				${${TARGET_NAME}_RSC_FILES}
+				${CMAKE_CURRENT_SOURCE_DIR}/Win32/${TARGET_NAME}.rc
+			)
+		endif()
+		if ( EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/Win32/${TARGET_NAME}.rc2" )
+			set( ${TARGET_NAME}_RSC_FILES
+				${${TARGET_NAME}_RSC_FILES}
+				${CMAKE_CURRENT_SOURCE_DIR}/Win32/${TARGET_NAME}.rc2
+			)
+		endif()
+		if ( EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/Win32/ )
+			include_directories( Win32 )
+		endif ()
+		set( ${TARGET_NAME}_HDR_FILES
+			${${TARGET_NAME}_HDR_FILES}
+			${${TARGET_NAME}_RSC_FILES}
+		)
+		source_group( "Resource Files" FILES ${${TARGET_NAME}_RSC_FILES} )
+	endif ( WIN32 )
+endmacro()
+macro( install_target TARGET_NAME TARGET_TYPE HDR_FOLDER )
+	string( COMPARE EQUAL ${TARGET_TYPE} "dll" IS_DLL )
+	string( COMPARE EQUAL ${TARGET_TYPE} "api_dll" IS_API_DLL )
+	string( COMPARE EQUAL ${TARGET_TYPE} "lib" IS_LIB )
+	string( COMPARE EQUAL ${TARGET_TYPE} "bin" IS_BIN )
+	string( COMPARE EQUAL ${TARGET_TYPE} "bin_dos" IS_BIN_DOS )
+	string( COMPARE EQUAL ${TARGET_TYPE} "plugin" IS_PLUGIN )
+	string( COMPARE EQUAL ${TARGET_TYPE} "api_plugin" IS_API_PLUGIN )
+	set( IS_SHARED ( IS_DLL OR IS_API_DLL OR IS_PLUGIN OR IS_API_PLUGIN ) )
+	set( IS_API ( IS_API_DLL OR IS_API_PLUGIN ) )
+	set( IS_BINARY ( IS_BIN OR IS_BIN_DOS ) )
+	set( BIN_FOLDER bin )
+	set( SUB_FOLDER "" )
+
+	if ( NOT IS_LIB )
+		if ( IS_PLUGIN OR IS_API_PLUGIN )
+			if ( NOT "${MAIN_PROJECT_NAME}" STREQUAL "" )
+				set( SUB_FOLDER "/${MAIN_PROJECT_NAME}" )
+			endif ()
+			set( BIN_FOLDER lib )
+		endif ()
+	endif ()
+	if ( IS_SHARED )
+		#We now build the install script
+		if ( WIN32 )
+			#We install each .dll in <install_dir>/bin folder
+			install(
+				TARGETS ${TARGET_NAME}
+				COMPONENT ${TARGET_NAME}
+				CONFIGURATIONS Release
+				EXPORT ${TARGET_NAME}
+				RUNTIME DESTINATION ${BIN_FOLDER}${SUB_FOLDER}
+				ARCHIVE DESTINATION lib${SUB_FOLDER}
+				LIBRARY DESTINATION lib${SUB_FOLDER}
+			)
+			install(
+				TARGETS ${TARGET_NAME}
+				COMPONENT ${TARGET_NAME}
+				CONFIGURATIONS RelWithDebInfo
+				EXPORT ${TARGET_NAME}
+				RUNTIME DESTINATION ${BIN_FOLDER}/RelWithDebInfo${SUB_FOLDER}
+				ARCHIVE DESTINATION lib/RelWithDebInfo${SUB_FOLDER}
+				LIBRARY DESTINATION lib/RelWithDebInfo${SUB_FOLDER}
+			)
+			install(
+				TARGETS ${TARGET_NAME}
+				COMPONENT ${TARGET_NAME}
+				CONFIGURATIONS Debug
+				EXPORT ${TARGET_NAME}
+				RUNTIME DESTINATION ${BIN_FOLDER}/Debug${SUB_FOLDER}
+				ARCHIVE DESTINATION lib/Debug${SUB_FOLDER}
+				LIBRARY DESTINATION lib/Debug${SUB_FOLDER}
+			)
+		else ()
+			#We install each .so in <install_dir>/lib folder
+			install(
+				TARGETS ${TARGET_NAME}
+				COMPONENT ${TARGET_NAME}
+				CONFIGURATIONS Release
+				EXPORT ${TARGET_NAME}
+				LIBRARY DESTINATION lib/${SUB_FOLDER}
+			)
+			install(
+				TARGETS ${TARGET_NAME}
+				COMPONENT ${TARGET_NAME}
+				CONFIGURATIONS RelWithDebInfo
+				EXPORT ${TARGET_NAME}
+				LIBRARY DESTINATION lib/RelWithDebInfo${SUB_FOLDER}
+			)
+			install(
+				TARGETS ${TARGET_NAME}
+				COMPONENT ${TARGET_NAME}
+				CONFIGURATIONS Debug
+				LIBRARY DESTINATION lib/Debug${SUB_FOLDER}
+			)
+		endif()
+		if ( IS_API )
+			#For API DLLs, we install headers to <install_dir>/include/${TARGET_NAME}
+			target_install_headers( ${TARGET_NAME} ${HDR_FOLDER} )
+			if ( IS_API_PLUGIN AND WIN32 )
+				add_custom_command(
+					TARGET ${TARGET_NAME}
+					POST_BUILD
+					COMMAND ${CMAKE_COMMAND} -E copy_if_different ${PROJECTS_BINARIES_OUTPUT_DIR}/$<CONFIGURATION>/${BIN_FOLDER}${SUB_FOLDER}/${TARGET_NAME}$<$<CONFIG:Debug>:d>.dll ${PROJECTS_BINARIES_OUTPUT_DIR}/$<CONFIGURATION>/bin
+					VERBATIM
+				)
+				install(
+					FILES ${CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG}${TARGET_NAME}d.dll
+					COMPONENT ${TARGET_NAME}
+					CONFIGURATIONS Debug
+					DESTINATION bin/Debug
+				)
+				install(
+					FILES ${CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE}${TARGET_NAME}.dll
+					COMPONENT ${TARGET_NAME}
+					CONFIGURATIONS RelWithDebInfo
+					DESTINATION bin/RelWithDebInfo
+				)
+				install(
+					FILES ${CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE}${TARGET_NAME}.dll
+					COMPONENT ${TARGET_NAME}
+					CONFIGURATIONS Release
+					DESTINATION bin
+				)
+			endif ()
+		endif ()
+	elseif ( IS_BINARY )
+		#We now build the install script
+		#We copy each exe in <install_dir>/bin folder
+		install(
+			TARGETS ${TARGET_NAME}
+			COMPONENT ${TARGET_NAME}
+			CONFIGURATIONS Release
+			EXPORT ${TARGET_NAME}
+			RUNTIME DESTINATION bin
+		)
+		install(
+			TARGETS ${TARGET_NAME}
+			COMPONENT ${TARGET_NAME}
+			CONFIGURATIONS RelWithDebInfo
+			EXPORT ${TARGET_NAME}
+			RUNTIME DESTINATION bin/RelWithDebInfo
+		)
+		install(
+			TARGETS ${TARGET_NAME}
+			COMPONENT ${TARGET_NAME}
+			CONFIGURATIONS Debug
+			RUNTIME DESTINATION bin/Debug
+		)
+	elseif ( IS_LIB )
+		#We now build the install script
+		#We copy each lib in <install_dir>/lib folder
+		install(
+			TARGETS ${TARGET_NAME}
+			COMPONENT ${TARGET_NAME}_dev
+			CONFIGURATIONS Release
+			EXPORT ${TARGET_NAME}
+			ARCHIVE DESTINATION lib
+		)
+		install(
+			TARGETS ${TARGET_NAME}
+			COMPONENT ${TARGET_NAME}_dev
+			CONFIGURATIONS RelWithDebInfo
+			EXPORT ${TARGET_NAME}
+			ARCHIVE DESTINATION lib/RelWithDebInfo
+		)
+		install(
+			TARGETS ${TARGET_NAME}
+			COMPONENT ${TARGET_NAME}_dev
+			CONFIGURATIONS Debug
+			ARCHIVE DESTINATION lib/Debug
+		)
+		#For libs, we install headers to <install_dir>/include/${TARGET_NAME}
+		target_install_headers( ${TARGET_NAME} ${HDR_FOLDER} )
+	endif()
+endmacro()
 #--------------------------------------------------------------------------------------------------
 #\function
 #	add_target
@@ -191,14 +424,10 @@ endmacro()
 #\param[in,opt] OPT_FILES
 #	String containing the optional files to add to the target.
 #--------------------------------------------------------------------------------------------------
-function( add_target TARGET_NAME TARGET_TYPE HDR_FOLDER SRC_FOLDER TARGET_DEPENDENCIES TARGET_LINKED_LIBRARIES )# ARGV4=PCH_HEADER ARGV5=PCH_SOURCE ARGV6=OPT_C_FLAGS ARGV7=OPT_CXX_FLAGS ARGV8=OPT_LINK_FLAGS ARGV9=OPT_FILES
-	set( PCH_HEADER "${ARGV6}" )
-	set( PCH_SOURCE "${ARGV7}" )
-	set( OPT_C_FLAGS "${ARGV8}" )
-	set( OPT_CXX_FLAGS "${ARGV9}" )
-	set( OPT_LINK_FLAGS "${ARGV10}" )
-	set( OPT_FILES "${ARGV11}" )
-	if((NOT "${CMAKE_BUILD_TYPE}" STREQUAL "") OR MSVC)
+function( add_target_min TARGET_NAME TARGET_TYPE )# ARGV2=PCH_HEADER ARGV3=PCH_SOURCE
+	set( PCH_HEADER "${ARGV2}" )
+	set( PCH_SOURCE "${ARGV3}" )
+	if ( ( NOT "${CMAKE_BUILD_TYPE}" STREQUAL "" ) OR MSVC )
 		#First we retrieve the kind of target we will build
 		string( COMPARE EQUAL ${TARGET_TYPE} "dll" IS_DLL )
 		string( COMPARE EQUAL ${TARGET_TYPE} "api_dll" IS_API_DLL )
@@ -207,18 +436,14 @@ function( add_target TARGET_NAME TARGET_TYPE HDR_FOLDER SRC_FOLDER TARGET_DEPEND
 		string( COMPARE EQUAL ${TARGET_TYPE} "bin_dos" IS_BIN_DOS )
 		string( COMPARE EQUAL ${TARGET_TYPE} "plugin" IS_PLUGIN )
 		string( COMPARE EQUAL ${TARGET_TYPE} "api_plugin" IS_API_PLUGIN )
+		set( IS_SHARED ( IS_DLL OR IS_API_DLL OR IS_PLUGIN OR IS_API_PLUGIN ) )
+		set( IS_API ( IS_API_DLL OR IS_API_PLUGIN ) )
+		set( IS_BINARY ( IS_BIN OR IS_BIN_DOS ) )
 		msg_debug( "----------------------------------------------------------------------------------------------------" )
 		msg_debug( "Target    ${TARGET_NAME}" )
 		msg_debug( "Type      ${TARGET_TYPE}" )
-		msg_debug( "HDR_FOLDER                [${HDR_FOLDER}]" )
-		msg_debug( "SRC_FOLDER                [${SRC_FOLDER}]" )
-		msg_debug( "TARGET_DEPENDENCIES       [${TARGET_DEPENDENCIES}]")
-		msg_debug( "TARGET_LINKED_LIBRARIES   [${TARGET_LINKED_LIBRARIES}]")
 		msg_debug( "PCH_HEADER                [${PCH_HEADER}]" )
 		msg_debug( "PCH_SOURCE                [${PCH_SOURCE}]" )
-		msg_debug( "OPT_C_FLAGS               [${OPT_C_FLAGS}]" )
-		msg_debug( "OPT_CXX_FLAGS             [${OPT_CXX_FLAGS}]" )
-		msg_debug( "OPT_FILES                 [${OPT_FILES}]" )
 		msg_debug( "IS_DLL                    [${IS_DLL}]" )
 		msg_debug( "IS_API_DLL                [${IS_API_DLL}]" )
 		msg_debug( "IS_LIB                    [${IS_LIB}]" )
@@ -227,6 +452,7 @@ function( add_target TARGET_NAME TARGET_TYPE HDR_FOLDER SRC_FOLDER TARGET_DEPEND
 		msg_debug( "IS_PLUGIN                 [${IS_PLUGIN}]" )
 		msg_debug( "IS_API_PLUGIN             [${IS_API_PLUGIN}]" )
 		set( BIN_FOLDER bin )
+		set( SUB_FOLDER "" )
 		if ( IS_LIB )
 			#We compute the extended name of the target (libs only)
 			compute_abi_name( TARGET_ABI_NAME TARGET_ABI_NAME_DEBUG )
@@ -236,169 +462,28 @@ function( add_target TARGET_NAME TARGET_TYPE HDR_FOLDER SRC_FOLDER TARGET_DEPEND
 			set( TARGET_ABI_NAME "" )
 			set( TARGET_ABI_NAME_DEBUG "d" )
 			if ( IS_PLUGIN OR IS_API_PLUGIN )
-				set( SUB_FOLDER "/${MAIN_PROJECT_NAME}" )
+				if ( NOT "${MAIN_PROJECT_NAME}" STREQUAL "" )
+					set( SUB_FOLDER "/${MAIN_PROJECT_NAME}" )
+				endif ()
 				set( BIN_FOLDER lib )
 			endif ()
 		endif ()
 		set( CMAKE_DEBUG_POSTFIX "${TARGET_ABI_NAME}${TARGET_ABI_NAME_DEBUG}" CACHE STRING "" FORCE )
 		set( CMAKE_RELEASE_POSTFIX "${TARGET_ABI_NAME}" CACHE STRING "" FORCE )
 		set( CMAKE_RELWITHDEBINFO_POSTFIX "${TARGET_ABI_NAME}" CACHE STRING "" FORCE )
-		if ( NOT ${PROJECT_NAME}_WXWIDGET )
-			set( ${PROJECT_NAME}_WXWIDGET 0 )
+		if ( NOT ${TARGET_NAME}_WXWIDGET )
+			set( ${TARGET_NAME}_WXWIDGET 0 )
 		endif ()
-		if ( IS_DLL OR IS_API_DLL )
-			set( RC_IN_FILE "SharedLibrary.rc.in" )
-		elseif ( IS_BIN OR IS_BIN_DOS )
-			set( RC_IN_FILE "Executable.rc.in" )
-		elseif ( IS_PLUGIN OR IS_API_PLUGIN )
-			set( RC_IN_FILE "Plugin.rc.in" )
-		else ()
-			set( IS_LIB TRUE )
-			set( RC_IN_FILE "StaticLibrary.rc.in" )
-		endif ()
-		#Additional definition, for X64 builds
+
+		set( TARGET_COMPILE_DEFINITIONS "" )
+		set( TARGET_COMPILE_FLAGS "" )
+		add_target_compilation_common_flags( ${TARGET_NAME} ${TARGET_TYPE} TARGET_COMPILE_DEFINITIONS TARGET_COMPILE_FLAGS TARGET_LINK_FLAGS )
+
 		if ( NOT "x86" STREQUAL ${PROJECTS_PLATFORM} )
-			add_definitions( -D_X64 )
+			#Additional definition, for X64 builds
+			set( TARGET_COMPILE_DEFINITIONS ${TARGET_COMPILE_DEFINITIONS} _X64 )
 		endif ()
-		#We then retrieve target files (located in include/${TARGET_NAME}, source/${TARGET_NAME} and resource/${TARGET_NAME}
-		file(
-			GLOB_RECURSE
-				TARGET_SOURCE_CPP
-			CONFIGURE_DEPENDS
-				${SRC_FOLDER}/*.cpp
-		)
-		msg_debug( "TARGET_SOURCE_CPP         ${TARGET_SOURCE_CPP}" )
-		file(
-			GLOB_RECURSE
-				TARGET_SOURCE_C
-			CONFIGURE_DEPENDS
-				${SRC_FOLDER}/*.c
-		)
-		msg_debug( "TARGET_SOURCE_C           ${TARGET_SOURCE_C}" )
-		file(
-			GLOB_RECURSE
-				TARGET_SOURCE_H_ONLY
-			CONFIGURE_DEPENDS
-				${HDR_FOLDER}/*.h
-				${HDR_FOLDER}/*.hpp
-				${HDR_FOLDER}/*.inl
-		)
-		msg_debug( "TARGET_SOURCE_H_ONLY      ${TARGET_SOURCE_H_ONLY}" )
 
-		if ( APPLE )
-			# We add Obj-C and Obj-C++ files to the project
-			file(
-				GLOB_RECURSE
-					TARGET_SOURCE_OBJ_CPP
-				CONFIGURE_DEPENDS
-					${SRC_FOLDER}/*.mm
-			)
-			file(
-				GLOB_RECURSE
-					TARGET_SOURCE_OBJ_C
-				CONFIGURE_DEPENDS
-					${SRC_FOLDER}/*.m
-			)
-			set( TARGET_SOURCE_C
-				${TARGET_SOURCE_C}
-				${TARGET_SOURCE_OBJ_C}
-			)
-			set( TARGET_SOURCE_CPP
-				${TARGET_SOURCE_CPP}
-				${TARGET_SOURCE_OBJ_CPP}
-			)
-			set( TARGET_SOURCE_H
-				${TARGET_SOURCE_H_ONLY}
-			)
-		elseif ( WIN32 )
-			#We include resource files in Visual Studio or MINGW with Windows
-			enable_language( RC )
-			if ( EXISTS ${SRC_FOLDER}/Win32/${TARGET_NAME}.rc.in )
-				configure_file(
-					${SRC_FOLDER}/Win32/${TARGET_NAME}.rc.in
-					${CMAKE_CURRENT_BINARY_DIR}/Win32/${TARGET_NAME}.rc
-					NEWLINE_STYLE LF
-				)
-				set( TARGET_RSC
-					${CMAKE_CURRENT_BINARY_DIR}/Win32/${TARGET_NAME}.rc
-				)
-			elseif ( EXISTS ${CMAKE_TEMPLATES_DIR}/${TARGET_NAME}.rc.in )
-				configure_file(
-					${CMAKE_TEMPLATES_DIR}/${TARGET_NAME}.rc.in
-					${CMAKE_CURRENT_BINARY_DIR}/Win32/${TARGET_NAME}.rc
-					NEWLINE_STYLE LF
-				)
-				set( TARGET_RSC
-					${CMAKE_CURRENT_BINARY_DIR}/Win32/${TARGET_NAME}.rc
-				)
-			elseif ( EXISTS ${CMAKE_TEMPLATES_DIR}/${RC_IN_FILE} )
-				configure_file(
-					${CMAKE_TEMPLATES_DIR}/${RC_IN_FILE}
-					${CMAKE_CURRENT_BINARY_DIR}/Win32/${TARGET_NAME}.rc
-					NEWLINE_STYLE LF
-				)
-				configure_file(
-					${CMAKE_TEMPLATES_DIR}/resource.h.in
-					${CMAKE_CURRENT_BINARY_DIR}/Win32/resource.h
-					NEWLINE_STYLE LF
-				)
-				set( TARGET_RSC
-					${CMAKE_CURRENT_BINARY_DIR}/Win32/${TARGET_NAME}.rc
-				)
-			endif ()
-			if ( EXISTS "${SRC_FOLDER}/Win32/resource.h" )
-				set( TARGET_RSC
-					${TARGET_RSC}
-					${SRC_FOLDER}/Win32/resource.h
-				)
-			elseif ( EXISTS "${CMAKE_CURRENT_BINARY_DIR}/Win32/resource.h" )
-				set( TARGET_RSC
-					${TARGET_RSC}
-					${CMAKE_CURRENT_BINARY_DIR}/Win32/resource.h
-				)
-			endif ()
-			if ( EXISTS "${SRC_FOLDER}/Win32/${TARGET_NAME}.rc" )
-				set( TARGET_RSC
-					${TARGET_RSC}
-					${SRC_FOLDER}/Win32/${TARGET_NAME}.rc
-				)
-			endif()
-			if ( EXISTS "${SRC_FOLDER}/Win32/${TARGET_NAME}.rc2" )
-				set( TARGET_RSC
-					${TARGET_RSC}
-					${SRC_FOLDER}/Win32/${TARGET_NAME}.rc2
-				)
-			endif()
-			include_directories( Win32 )
-			set( TARGET_SOURCE_H
-				${TARGET_SOURCE_H_ONLY}
-				${TARGET_RSC}
-			)
-			if ( MSVC )
-				file(
-					GLOB_RECURSE
-						TARGET_NATVIS
-					CONFIGURE_DEPENDS
-						${HDR_FOLDER}/*.natvis
-						*.natvis
-				)
-				set( TARGET_SOURCE_H
-					${TARGET_SOURCE_H}
-					${TARGET_NATVIS}
-				)
-				source_group( "Visualisers" FILES ${TARGET_NATVIS} )
-			endif ()
-			source_group( "Resource Files" FILES ${TARGET_RSC} )
-		else ( WIN32 )
-			set( TARGET_SOURCE_H
-				${TARGET_SOURCE_H_ONLY}
-			)
-		endif ( APPLE )
-
-		set( TARGET_C_FLAGS "" )
-		set( TARGET_CXX_FLAGS "" )
-		set( TARGET_LINK_FLAGS "" )
-		compute_compilation_flags( ${TARGET_NAME} ${TARGET_TYPE} "${OPT_C_FLAGS}" "${OPT_CXX_FLAGS}" "${OPT_LINK_FLAGS}" TARGET_C_FLAGS TARGET_CXX_FLAGS TARGET_LINK_FLAGS )
 		set( CMAKE_ARCHIVE_OUTPUT_DIRECTORY_DEBUG "${PROJECTS_BINARIES_OUTPUT_DIR_DEBUG}/lib${SUB_FOLDER}/" )
 		set( CMAKE_LIBRARY_OUTPUT_DIRECTORY_DEBUG "${PROJECTS_BINARIES_OUTPUT_DIR_DEBUG}/lib${SUB_FOLDER}/" )
 		set( CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG "${PROJECTS_BINARIES_OUTPUT_DIR_DEBUG}/${BIN_FOLDER}${SUB_FOLDER}/" )
@@ -408,207 +493,197 @@ function( add_target TARGET_NAME TARGET_TYPE HDR_FOLDER SRC_FOLDER TARGET_DEPEND
 		set( CMAKE_ARCHIVE_OUTPUT_DIRECTORY_RELWITHDEBINFO "${PROJECTS_BINARIES_OUTPUT_DIR_RELWITHDEBINFO}/lib${SUB_FOLDER}/" )
 		set( CMAKE_LIBRARY_OUTPUT_DIRECTORY_RELWITHDEBINFO "${PROJECTS_BINARIES_OUTPUT_DIR_RELWITHDEBINFO}/lib${SUB_FOLDER}/" )
 		set( CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELWITHDEBINFO "${PROJECTS_BINARIES_OUTPUT_DIR_RELWITHDEBINFO}/${BIN_FOLDER}${SUB_FOLDER}/" )
+
+		if ( NOT "${PCH_HEADER}" STREQUAL "" )
+			set( ${TARGET_NAME}_HDR_FILES
+				${${TARGET_NAME}_HDR_FILES}
+				${PCH_HEADER}
+			)
+		endif ()
+		if ( NOT "${PCH_SOURCE}" STREQUAL "" )
+			set( ${TARGET_NAME}_SRC_FILES
+				${${TARGET_NAME}_SRC_FILES}
+				${PCH_SOURCE}
+			)
+		endif ()
+
 		#We now effectively create the target
-		if ( IS_API_DLL OR IS_DLL OR IS_PLUGIN OR IS_API_PLUGIN )
-			add_library( ${TARGET_NAME} SHARED ${TARGET_SOURCE_CPP} ${TARGET_SOURCE_C} ${TARGET_SOURCE_H} ${OPT_FILES} )
+		if ( IS_SHARED )
+			add_library( ${TARGET_NAME} SHARED ${${TARGET_NAME}_SRC_FILES} ${${PROJECT_NAME}_FOLDER_SRC_C_FILES} ${${TARGET_NAME}_HDR_FILES} )
 			set_target_properties( ${TARGET_NAME}
 				PROPERTIES
 					VERSION ${PROJECTS_VERSION}
 					SOVERSION ${PROJECTS_SOVERSION}
-					LINK_FLAGS "${TARGET_LINK_FLAGS}"
+					CXX_STANDARD 17
 			)
-			#We now build the install script
-			if ( WIN32 )
-				#We install each .dll in <install_dir>/bin folder
-				install(
-					TARGETS ${TARGET_NAME}
-					COMPONENT ${TARGET_NAME}
-					CONFIGURATIONS Release
-					EXPORT ${TARGET_NAME}
-					RUNTIME DESTINATION ${BIN_FOLDER}${SUB_FOLDER}
-					ARCHIVE DESTINATION lib${SUB_FOLDER}
-					LIBRARY DESTINATION lib${SUB_FOLDER}
-				)
-				install(
-					TARGETS ${TARGET_NAME}
-					COMPONENT ${TARGET_NAME}
-					CONFIGURATIONS RelWithDebInfo
-					EXPORT ${TARGET_NAME}
-					RUNTIME DESTINATION ${BIN_FOLDER}/RelWithDebInfo${SUB_FOLDER}
-					ARCHIVE DESTINATION lib/RelWithDebInfo${SUB_FOLDER}
-					LIBRARY DESTINATION lib/RelWithDebInfo${SUB_FOLDER}
-				)
-				install(
-					TARGETS ${TARGET_NAME}
-					COMPONENT ${TARGET_NAME}
-					CONFIGURATIONS Debug
-					EXPORT ${TARGET_NAME}
-					RUNTIME DESTINATION ${BIN_FOLDER}/Debug${SUB_FOLDER}
-					ARCHIVE DESTINATION lib/Debug${SUB_FOLDER}
-					LIBRARY DESTINATION lib/Debug${SUB_FOLDER}
-				)
-			else ()
-				#We install each .so in <install_dir>/lib folder
-				install(
-					TARGETS ${TARGET_NAME}
-					COMPONENT ${TARGET_NAME}
-					CONFIGURATIONS Release
-					EXPORT ${TARGET_NAME}
-					LIBRARY DESTINATION lib/${SUB_FOLDER}
-				)
-				install(
-					TARGETS ${TARGET_NAME}
-					COMPONENT ${TARGET_NAME}
-					CONFIGURATIONS RelWithDebInfo
-					EXPORT ${TARGET_NAME}
-					LIBRARY DESTINATION lib/RelWithDebInfo${SUB_FOLDER}
-				)
-				install(
-					TARGETS ${TARGET_NAME}
-					COMPONENT ${TARGET_NAME}
-					CONFIGURATIONS Debug
-					LIBRARY DESTINATION lib/Debug${SUB_FOLDER}
-				)
-			endif()
-			if ( IS_API_DLL OR IS_API_PLUGIN )
-				#For API DLLs, we install headers to <install_dir>/include/${TARGET_NAME}
-				target_install_headers( ${TARGET_NAME} ${HDR_FOLDER} )
-				if ( IS_API_PLUGIN AND WIN32 )
-					add_custom_command(
-						TARGET ${TARGET_NAME}
-						POST_BUILD
-						COMMAND ${CMAKE_COMMAND} -E copy_if_different ${PROJECTS_BINARIES_OUTPUT_DIR}/$<CONFIGURATION>/${BIN_FOLDER}${SUB_FOLDER}/${TARGET_NAME}$<$<CONFIG:Debug>:d>.dll ${PROJECTS_BINARIES_OUTPUT_DIR}/$<CONFIGURATION>/bin
-						VERBATIM
-					)
-					install(
-						FILES ${CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG}${TARGET_NAME}d.dll
-						COMPONENT ${TARGET_NAME}
-						CONFIGURATIONS Debug
-						DESTINATION bin/Debug
-					)
-					install(
-						FILES ${CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE}${TARGET_NAME}.dll
-						COMPONENT ${TARGET_NAME}
-						CONFIGURATIONS RelWithDebInfo
-						DESTINATION bin/RelWithDebInfo
-					)
-					install(
-						FILES ${CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE}${TARGET_NAME}.dll
-						COMPONENT ${TARGET_NAME}
-						CONFIGURATIONS Release
-						DESTINATION bin
-					)
-				endif ()
-			endif ()
-		elseif ( IS_BIN OR IS_BIN_DOS )
+		elseif ( IS_BINARY )
 			if ( WIN32 AND NOT IS_BIN_DOS )
-				add_executable( ${TARGET_NAME} WIN32 ${TARGET_SOURCE_CPP} ${TARGET_SOURCE_C} ${TARGET_SOURCE_H} ${OPT_FILES} )
+				add_executable( ${TARGET_NAME} WIN32 ${${TARGET_NAME}_SRC_FILES} ${${PROJECT_NAME}_FOLDER_SRC_C_FILES} ${${TARGET_NAME}_HDR_FILES} )
 			else ()
-				add_executable( ${TARGET_NAME} ${TARGET_SOURCE_CPP} ${TARGET_SOURCE_C} ${TARGET_SOURCE_H} ${OPT_FILES} )
+				add_executable( ${TARGET_NAME} ${${TARGET_NAME}_SRC_FILES} ${${PROJECT_NAME}_FOLDER_SRC_C_FILES} ${${TARGET_NAME}_HDR_FILES} )
 			endif ()
 			set_target_properties( ${TARGET_NAME}
 				PROPERTIES
-					LINK_FLAGS "${TARGET_LINK_FLAGS}"
 					VS_DEBUGGER_WORKING_DIRECTORY "$(OutDir)"
-			)
-			#We now build the install script
-			#We copy each exe in <install_dir>/bin folder
-			install(
-				TARGETS ${TARGET_NAME}
-				COMPONENT ${TARGET_NAME}
-				CONFIGURATIONS Release
-				EXPORT ${TARGET_NAME}
-				RUNTIME DESTINATION bin
-			)
-			install(
-				TARGETS ${TARGET_NAME}
-				COMPONENT ${TARGET_NAME}
-				CONFIGURATIONS RelWithDebInfo
-				EXPORT ${TARGET_NAME}
-				RUNTIME DESTINATION bin/RelWithDebInfo
-			)
-			install(
-				TARGETS ${TARGET_NAME}
-				COMPONENT ${TARGET_NAME}
-				CONFIGURATIONS Debug
-				RUNTIME DESTINATION bin/Debug
+					CXX_STANDARD 17
 			)
 		elseif ( IS_LIB )
-			add_library( ${TARGET_NAME} STATIC ${TARGET_SOURCE_CPP} ${TARGET_SOURCE_C} ${TARGET_SOURCE_H} ${OPT_FILES} )
-			add_target_compilation_flags( ${TARGET_NAME} "-D${TARGET_NAME}_STATIC" )
-			if ( MSVC )
-				set_target_properties( ${TARGET_NAME}
-					PROPERTIES
-						STATIC_LIBRARY_FLAGS "${TARGET_LINK_FLAGS}"
-				)
-			endif()
-			#We now build the install script
-			#We copy each lib in <install_dir>/lib folder
-			install(
-				TARGETS ${TARGET_NAME}
-				COMPONENT ${TARGET_NAME}_dev
-				CONFIGURATIONS Release
-				EXPORT ${TARGET_NAME}
-				ARCHIVE DESTINATION lib
+			add_library( ${TARGET_NAME} STATIC ${${TARGET_NAME}_SRC_FILES} ${${PROJECT_NAME}_FOLDER_SRC_C_FILES} ${${TARGET_NAME}_HDR_FILES} )
+			set( TARGET_COMPILE_DEFINITIONS
+				${TARGET_COMPILE_DEFINITIONS}
+				${TARGET_NAME}_STATIC
 			)
-			install(
-				TARGETS ${TARGET_NAME}
-				COMPONENT ${TARGET_NAME}_dev
-				CONFIGURATIONS RelWithDebInfo
-				EXPORT ${TARGET_NAME}
-				ARCHIVE DESTINATION lib/RelWithDebInfo
+			set_target_properties( ${TARGET_NAME}
+				PROPERTIES
+					CXX_STANDARD 17
 			)
-			install(
-				TARGETS ${TARGET_NAME}
-				COMPONENT ${TARGET_NAME}_dev
-				CONFIGURATIONS Debug
-				ARCHIVE DESTINATION lib/Debug
-			)
-			#For libs, we install headers to <install_dir>/include/${TARGET_NAME}
-			target_install_headers( ${TARGET_NAME} ${HDR_FOLDER} )
 		else()
 			message( FATAL_ERROR " Unknown target type : [${TARGET_TYPE}]" )
-		endif()
-
-		set_property( TARGET ${TARGET_NAME} PROPERTY CXX_STANDARD 17 )
-
-		#We scan dependencies to add it to the target
-		foreach( TARGET_DEPENDENCY ${TARGET_DEPENDENCIES} )
-			msg_debug( "TARGET_DEPENDENCY         ${TARGET_DEPENDENCY}")
-			add_dependencies( ${TARGET_NAME} ${TARGET_DEPENDENCY} )
-		endforeach()
-		#We scan libraries to add it to the linker
-		foreach( TARGET_LIB ${TARGET_LINKED_LIBRARIES} )
-			string( REPLACE "|" ";" TARGET_LIB ${TARGET_LIB})
-			msg_debug( "TARGET_LIB                ${TARGET_LIB}" )
-			target_link_libraries( ${TARGET_NAME} PUBLIC ${TARGET_LIB} )
-		endforeach()
-
-		set_source_files_properties( ${TARGET_SOURCE_C} PROPERTIES COMPILE_FLAGS "${TARGET_C_FLAGS}")
-		set_source_files_properties( ${TARGET_SOURCE_CPP} PROPERTIES COMPILE_FLAGS "${TARGET_CXX_FLAGS}")
+		endif ()
+		if ( MSVC )
+			if ( ${PROJECTS_PROFILING} )
+				set_target_properties( ${TARGET_NAME}
+					PROPERTIES
+						LINK_FLAGS_DEBUG "/OPT:NOREF /PROFILE" )
+			endif ()
+		endif ()
 
 		if ( PCH_HEADER STREQUAL "" OR NOT ${PROJECTS_USE_PRECOMPILED_HEADERS} )
 			msg_debug( "PRECOMPILED HEADERS       No" )
 		else ()
 			msg_debug( "PRECOMPILED HEADERS       Yes" )
-			add_target_precompiled_header( ${TARGET_NAME} ${PCH_HEADER} ${PCH_SOURCE} ${TARGET_CXX_FLAGS} ${TARGET_SOURCE_CPP} )
-		endif ()
-		if ( MSVC )
-			if ( ${PROJECTS_PROFILING} )
-				set_target_properties( ${TARGET_NAME} PROPERTIES LINK_FLAGS_DEBUG "${TARGET_LINK_FLAGS} /OPT:NOREF /PROFILE")
-			endif ()
+			add_target_precompiled_header( ${TARGET_NAME}
+				${PCH_HEADER} ${PCH_SOURCE}
+				"${TARGET_COMPILE_FLAGS}"
+				${${TARGET_NAME}_SRC_FILES} )
 		endif ()
 		target_compile_definitions( ${TARGET_NAME}
 			PUBLIC
 				${TARGET_NAME}_VERSION_MAJOR=${${TARGET_NAME}_VERSION_MAJOR}
 				${TARGET_NAME}_VERSION_MINOR=${${TARGET_NAME}_VERSION_MINOR}
 				${TARGET_NAME}_VERSION_BUILD=${${TARGET_NAME}_VERSION_BUILD}
+				${TARGET_COMPILE_DEFINITIONS}
 			PRIVATE
 				${PROJECTS_COMPILE_DEFINITIONS}
 		)
-		msg_debug( "TARGET_CXX_FLAGS:         ${TARGET_CXX_FLAGS}")
-		msg_debug( "TARGET_PCH_FLAGS:         ${TARGET_PCH_FLAGS}")
-		msg_debug( "TARGET_C_FLAGS:           ${TARGET_C_FLAGS}")
-		msg_debug( "TARGET_LINK_FLAGS:        ${TARGET_LINK_FLAGS}")
-	endif()
+		target_compile_options( ${TARGET_NAME}
+			PUBLIC
+				${TARGET_COMPILE_FLAGS}
+		)
+		msg_debug( "TARGET_COMPILE_FLAGS:        ${TARGET_COMPILE_FLAGS}" )
+		msg_debug( "TARGET_COMPILE_DEFINITIONS:  ${TARGET_COMPILE_DEFINITIONS}" )
+	endif ()
+endfunction()
+
+function( add_target TARGET_NAME TARGET_TYPE HDR_FOLDER SRC_FOLDER TARGET_DEPENDENCIES TARGET_LINKED_LIBRARIES )# ARGV6=PCH_HEADER ARGV7=PCH_SOURCE ARGV8=OPT_C_FLAGS ARGV9=OPT_CXX_FLAGS ARGV10=OPT_LINK_FLAGS ARGV11=OPT_FILES
+	set( PCH_HEADER "${ARGV6}" )
+	set( PCH_SOURCE "${ARGV7}" )
+	set( OPT_C_FLAGS "${ARGV8}" )
+	set( OPT_CXX_FLAGS "${ARGV9}" )
+	set( OPT_LINK_FLAGS "${ARGV10}" )
+	set( OPT_FILES "${ARGV11}" )
+	#We then retrieve target files (located in include/${TARGET_NAME}, source/${TARGET_NAME} and resource/${TARGET_NAME}
+	file(
+		GLOB_RECURSE
+			TARGET_SOURCE_CPP
+		CONFIGURE_DEPENDS
+			${SRC_FOLDER}/*.cpp
+	)
+	msg_debug( "TARGET_SOURCE_CPP         ${TARGET_SOURCE_CPP}" )
+	file(
+		GLOB_RECURSE
+			TARGET_SOURCE_C
+		CONFIGURE_DEPENDS
+			${SRC_FOLDER}/*.c
+	)
+	msg_debug( "TARGET_SOURCE_C           ${TARGET_SOURCE_C}" )
+	file(
+		GLOB_RECURSE
+			TARGET_SOURCE_H_ONLY
+		CONFIGURE_DEPENDS
+			${HDR_FOLDER}/*.h
+			${HDR_FOLDER}/*.hpp
+			${HDR_FOLDER}/*.inl
+	)
+	msg_debug( "TARGET_SOURCE_H_ONLY      ${TARGET_SOURCE_H_ONLY}" )
+	msg_debug( "SRC_FOLDER                [${SRC_FOLDER}]" )
+	msg_debug( "HDR_FOLDER                [${HDR_FOLDER}]" )
+
+	if ( APPLE )
+		# We add Obj-C and Obj-C++ files to the project
+		file(
+			GLOB_RECURSE
+				TARGET_SOURCE_OBJ_CPP
+			CONFIGURE_DEPENDS
+				${SRC_FOLDER}/*.mm
+		)
+		file(
+			GLOB_RECURSE
+				TARGET_SOURCE_OBJ_C
+			CONFIGURE_DEPENDS
+				${SRC_FOLDER}/*.m
+		)
+		set( TARGET_SOURCE_C
+			${TARGET_SOURCE_C}
+			${TARGET_SOURCE_OBJ_C}
+		)
+		set( TARGET_SOURCE_CPP
+			${TARGET_SOURCE_CPP}
+			${TARGET_SOURCE_OBJ_CPP}
+		)
+		set( ${TARGET_NAME}_HDR_FILES
+			${TARGET_SOURCE_H_ONLY}
+		)
+	elseif ( WIN32 )
+		find_rsc_file( ${TARGET_NAME} ${TARGET_TYPE} )
+		if ( MSVC )
+			file(
+				GLOB_RECURSE
+					${PROJECT_NAME}_NVS_FILES
+				CONFIGURE_DEPENDS
+					${HDR_FOLDER}/*.natvis
+					${SRC_FOLDER}/*.natvis
+					*.natvis
+			)
+			set( ${TARGET_NAME}_HDR_FILES
+				${${TARGET_NAME}_HDR_FILES}
+				${${PROJECT_NAME}_NVS_FILES}
+			)
+			source_group( "Natvis Files" FILES ${${PROJECT_NAME}_NVS_FILES} )
+		endif ()
+	else ( WIN32 )
+		set( ${TARGET_NAME}_HDR_FILES
+			${TARGET_SOURCE_H_ONLY}
+		)
+	endif ( APPLE )
+
+	set( ${TARGET_NAME}_SRC_FILES
+		${${TARGET_NAME}_SRC_FILES}
+		${TARGET_SOURCE_CPP}
+	)
+	set( ${TARGET_NAME}_SRC_C_FILES
+		${${TARGET_NAME}_SRC_C_FILES}
+		${TARGET_SOURCE_C}
+	)
+	set( ${TARGET_NAME}_HDR_FILES
+		${${TARGET_NAME}_HDR_FILES}
+		${TARGET_SOURCE_H_ONLY}
+	)
+
+	add_target_min( ${TARGET_NAME} ${TARGET_TYPE} "${PCH_HEADER}" "${PCH_SOURCE}" )
+
+	#We scan dependencies to add it to the target
+	foreach( TARGET_DEPENDENCY ${TARGET_DEPENDENCIES} )
+		msg_debug( "TARGET_DEPENDENCY         ${TARGET_DEPENDENCY}")
+		add_dependencies( ${TARGET_NAME} ${TARGET_DEPENDENCY} )
+	endforeach()
+
+	#We scan libraries to add it to the linker
+	foreach( TARGET_LIB ${TARGET_LINKED_LIBRARIES} )
+		string( REPLACE "|" ";" TARGET_LIB ${TARGET_LIB})
+		msg_debug( "TARGET_LIB                ${TARGET_LIB}" )
+		target_link_libraries( ${TARGET_NAME} PUBLIC ${TARGET_LIB} )
+	endforeach()
+
+	install_target( ${TARGET_NAME} ${TARGET_TYPE} ${HDR_FOLDER} )
 endfunction( add_target )
