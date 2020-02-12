@@ -213,6 +213,16 @@ macro( find_rsc_file TARGET_NAME TARGET_TYPE )
 				${${TARGET_NAME}_RSC_FILES}
 				${CMAKE_CURRENT_BINARY_DIR}/Win32/resource.h
 			)
+		elseif ( EXISTS "${CMAKE_TEMPLATES_DIR}/resource.h.in" )
+			configure_file(
+				${CMAKE_TEMPLATES_DIR}/resource.h.in
+				${CMAKE_CURRENT_BINARY_DIR}/Win32/resource.h
+				NEWLINE_STYLE LF
+			)
+			set( ${TARGET_NAME}_RSC_FILES
+				${${TARGET_NAME}_RSC_FILES}
+				${CMAKE_CURRENT_BINARY_DIR}/Win32/resource.h
+			)
 		endif ()
 		if ( EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/Win32/${TARGET_NAME}.rc" )
 			set( ${TARGET_NAME}_RSC_FILES
@@ -244,9 +254,18 @@ macro( install_target TARGET_NAME TARGET_TYPE HDR_FOLDER )
 	string( COMPARE EQUAL ${TARGET_TYPE} "bin_dos" IS_BIN_DOS )
 	string( COMPARE EQUAL ${TARGET_TYPE} "plugin" IS_PLUGIN )
 	string( COMPARE EQUAL ${TARGET_TYPE} "api_plugin" IS_API_PLUGIN )
-	set( IS_SHARED ( IS_DLL OR IS_API_DLL OR IS_PLUGIN OR IS_API_PLUGIN ) )
-	set( IS_API ( IS_API_DLL OR IS_API_PLUGIN ) )
-	set( IS_BINARY ( IS_BIN OR IS_BIN_DOS ) )
+	set( IS_SHARED OFF )
+	if ( IS_DLL OR IS_API_DLL OR IS_PLUGIN OR IS_API_PLUGIN )
+		set( IS_SHARED ON )
+	endif ()
+	set( IS_API OFF )
+	if ( IS_API_DLL OR IS_API_PLUGIN )
+		set( IS_API ON )
+	endif ()
+	set( IS_BINARY OFF )
+	if ( IS_BIN OR IS_BIN_DOS )
+		set( IS_BINARY ON )
+	endif ()
 	set( BIN_FOLDER bin )
 	set( SUB_FOLDER "" )
 
