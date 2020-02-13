@@ -2,6 +2,7 @@ include( Languages )
 include( Logging )
 include( CompilerVersion )
 include( ComputeAbi )
+include( PrecompiledHeaders )
 include( FileUtils )
 
 set( PROJECTS_VERSION "" )
@@ -156,6 +157,7 @@ macro( target_install_headers TARGET_NAME HDR_FOLDER )
 		endforeach()
 	endforeach()
 endmacro()
+
 macro( find_rsc_file TARGET_NAME TARGET_TYPE )
 	if ( WIN32 )
 		string( COMPARE EQUAL ${TARGET_TYPE} "dll" IS_DLL )
@@ -246,6 +248,7 @@ macro( find_rsc_file TARGET_NAME TARGET_TYPE )
 		source_group( "Resource Files" FILES ${${TARGET_NAME}_RSC_FILES} )
 	endif ( WIN32 )
 endmacro()
+
 macro( install_target TARGET_NAME TARGET_TYPE HDR_FOLDER )
 	string( COMPARE EQUAL ${TARGET_TYPE} "dll" IS_DLL )
 	string( COMPARE EQUAL ${TARGET_TYPE} "api_dll" IS_API_DLL )
@@ -411,6 +414,7 @@ macro( install_target TARGET_NAME TARGET_TYPE HDR_FOLDER )
 		target_install_headers( ${TARGET_NAME} ${HDR_FOLDER} )
 	endif()
 endmacro()
+
 #--------------------------------------------------------------------------------------------------
 #\function
 #	add_target
@@ -528,19 +532,6 @@ function( add_target_min TARGET_NAME TARGET_TYPE )# ARGV2=PCH_HEADER ARGV3=PCH_S
 		set( CMAKE_LIBRARY_OUTPUT_DIRECTORY_RELWITHDEBINFO "${PROJECTS_BINARIES_OUTPUT_DIR_RELWITHDEBINFO}/lib${SUB_FOLDER}/" )
 		set( CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELWITHDEBINFO "${PROJECTS_BINARIES_OUTPUT_DIR_RELWITHDEBINFO}/${BIN_FOLDER}${SUB_FOLDER}/" )
 
-		if ( NOT "${PCH_HEADER}" STREQUAL "" )
-			set( ${TARGET_NAME}_HDR_FILES
-				${${TARGET_NAME}_HDR_FILES}
-				${PCH_HEADER}
-			)
-		endif ()
-		if ( NOT "${PCH_SOURCE}" STREQUAL "" )
-			set( ${TARGET_NAME}_SRC_FILES
-				${${TARGET_NAME}_SRC_FILES}
-				${PCH_SOURCE}
-			)
-		endif ()
-
 		#We now effectively create the target
 		if ( IS_SHARED )
 			add_library( ${TARGET_NAME} SHARED ${${TARGET_NAME}_SRC_FILES} ${${PROJECT_NAME}_FOLDER_SRC_C_FILES} ${${TARGET_NAME}_HDR_FILES} )
@@ -586,10 +577,10 @@ function( add_target_min TARGET_NAME TARGET_TYPE )# ARGV2=PCH_HEADER ARGV3=PCH_S
 			msg_debug( "PRECOMPILED HEADERS       No" )
 		else ()
 			msg_debug( "PRECOMPILED HEADERS       Yes" )
-			add_target_precompiled_header( ${TARGET_NAME}
-				${PCH_HEADER} ${PCH_SOURCE}
-				"${TARGET_COMPILE_FLAGS}"
-				${${TARGET_NAME}_SRC_FILES} )
+			target_add_precompiled_header( ${TARGET_NAME}
+				${PCH_HEADER}
+				${PCH_SOURCE}
+			)
 		endif ()
 		target_compile_definitions( ${TARGET_NAME}
 			PRIVATE
