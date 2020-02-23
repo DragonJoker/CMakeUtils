@@ -16,7 +16,7 @@ FIND_PATH( Fmod_INCLUDE_DIR fmod.hpp
 		${Fmod_ROOT_DIR}
 )
 
-FIND_PATH( Fmod_LIBRARY_DIR fmod_vc.lib libfmod.so
+FIND_PATH( Fmod_LIBRARY_DIR fmod64_vc.lib libfmod.so
 	HINTS
 	PATH_SUFFIXES
 		lib64
@@ -29,7 +29,7 @@ FIND_PATH( Fmod_LIBRARY_DIR fmod_vc.lib libfmod.so
 
 FIND_LIBRARY(Fmod_LIBRARY
 	NAMES
-		fmod_vc.lib
+		fmod64_vc.lib
 		libfmod.so
 	HINTS
 	PATH_SUFFIXES
