@@ -534,7 +534,13 @@ function( add_target_min TARGET_NAME TARGET_TYPE )# ARGV2=PCH_HEADER ARGV3=PCH_S
 
 		#We now effectively create the target
 		if ( IS_SHARED )
-			add_library( ${TARGET_NAME} SHARED ${${TARGET_NAME}_SRC_FILES} ${${PROJECT_NAME}_FOLDER_SRC_C_FILES} ${${TARGET_NAME}_HDR_FILES} )
+			add_library( ${TARGET_NAME}
+				SHARED
+					${${TARGET_NAME}_SRC_FILES}
+					${${PROJECT_NAME}_FOLDER_SRC_C_FILES}
+					${${TARGET_NAME}_HDR_FILES}
+					${${TARGET_NAME}_NVS_FILES}
+			)
 			set_target_properties( ${TARGET_NAME}
 				PROPERTIES
 					VERSION ${PROJECTS_VERSION}
@@ -543,9 +549,20 @@ function( add_target_min TARGET_NAME TARGET_TYPE )# ARGV2=PCH_HEADER ARGV3=PCH_S
 			)
 		elseif ( IS_BINARY )
 			if ( WIN32 AND NOT IS_BIN_DOS )
-				add_executable( ${TARGET_NAME} WIN32 ${${TARGET_NAME}_SRC_FILES} ${${PROJECT_NAME}_FOLDER_SRC_C_FILES} ${${TARGET_NAME}_HDR_FILES} )
+				add_executable( ${TARGET_NAME}
+					WIN32
+						${${TARGET_NAME}_SRC_FILES}
+						${${PROJECT_NAME}_FOLDER_SRC_C_FILES}
+						${${TARGET_NAME}_HDR_FILES}
+						${${TARGET_NAME}_NVS_FILES}
+				)
 			else ()
-				add_executable( ${TARGET_NAME} ${${TARGET_NAME}_SRC_FILES} ${${PROJECT_NAME}_FOLDER_SRC_C_FILES} ${${TARGET_NAME}_HDR_FILES} )
+				add_executable( ${TARGET_NAME}
+					${${TARGET_NAME}_SRC_FILES}
+					${${PROJECT_NAME}_FOLDER_SRC_C_FILES}
+					${${TARGET_NAME}_HDR_FILES}
+					${${TARGET_NAME}_NVS_FILES}
+			)
 			endif ()
 			set_target_properties( ${TARGET_NAME}
 				PROPERTIES
@@ -553,7 +570,13 @@ function( add_target_min TARGET_NAME TARGET_TYPE )# ARGV2=PCH_HEADER ARGV3=PCH_S
 					CXX_STANDARD 17
 			)
 		elseif ( IS_LIB )
-			add_library( ${TARGET_NAME} STATIC ${${TARGET_NAME}_SRC_FILES} ${${PROJECT_NAME}_FOLDER_SRC_C_FILES} ${${TARGET_NAME}_HDR_FILES} )
+			add_library( ${TARGET_NAME}
+				STATIC
+					${${TARGET_NAME}_SRC_FILES}
+					${${PROJECT_NAME}_FOLDER_SRC_C_FILES}
+					${${TARGET_NAME}_HDR_FILES}
+					${${TARGET_NAME}_NVS_FILES}
+			)
 			set( TARGET_COMPILE_DEFINITIONS
 				${TARGET_COMPILE_DEFINITIONS}
 				${TARGET_NAME}_STATIC
