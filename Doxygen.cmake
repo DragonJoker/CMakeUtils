@@ -14,47 +14,19 @@ function( target_add_doc TARGET_NAME LANGUAGE EXT_LIST )
 		if ( EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/Doc/${TARGET_NAME}Doxygen.css )
 			set( TARGET_STYLESHEET ${CMAKE_CURRENT_SOURCE_DIR}/Doc/${TARGET_NAME}Doxygen.css )
 		endif ()
+		set( FOLDER_LIST
+			${CMAKE_CURRENT_SOURCE_DIR}/Doc/${TARGET_NAME}
+			${CMAKE_CURRENT_SOURCE_DIR}/Doc
+			${CMAKE_SOURCE_DIR}/Doc/${TARGET_NAME}
+			${CMAKE_SOURCE_DIR}/Doc
+		)
 		if ( "${LANGUAGE}" STREQUAL "" )
 			set( CHM_NAME ${TARGET_NAME}.chm )
-			if ( EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/Doc/${TARGET_NAME}.Doxyfile )
-				file( COPY
-					${CMAKE_CURRENT_SOURCE_DIR}/Doc/${TARGET_NAME}.Doxyfile
-					DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/${TARGET_NAME}.Doxyfile
-				)
-			elseif ( EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/Doc/${TARGET_NAME}.Doxyfile.in )
-				configure_file(
-					${CMAKE_CURRENT_SOURCE_DIR}/Doc/${TARGET_NAME}.Doxyfile.in
-					${CMAKE_CURRENT_BINARY_DIR}/${TARGET_NAME}.Doxyfile
-					NEWLINE_STYLE LF
-				)
-			elseif ( EXISTS ${CMAKE_TEMPLATES_DIR}/Doxyfile.in )
-				configure_file(
-					${CMAKE_TEMPLATES_DIR}/Doxyfile.in
-					${CMAKE_CURRENT_BINARY_DIR}/${TARGET_NAME}.Doxyfile
-					NEWLINE_STYLE LF
-				)
-			else ()
-				message( SEND_ERROR "Couldn't find a doxyfile or a template doxyfile" )
-			endif ()
-			set( DOXYGEN_INPUT ${CMAKE_CURRENT_BINARY_DIR}/${TARGET_NAME}.Doxyfile )
-			set( DOXYGEN_OUTPUT ${PROJECTS_DOCUMENTATION_OUTPUT_DIR}/${TARGET_NAME} )
-			file( MAKE_DIRECTORY ${DOXYGEN_OUTPUT} )
+			set( DOXYGEN_INPUT_FILE ${CMAKE_CURRENT_BINARY_DIR}/${TARGET_NAME}.Doxyfile )
+			set( DOXYGEN_OUTPUT_DIR ${PROJECTS_DOCUMENTATION_OUTPUT_DIR}/${TARGET_NAME}/v${${TARGET_NAME}_VERSION_MAJOR}.${${TARGET_NAME}_VERSION_MINOR}.${${TARGET_NAME}_VERSION_BUILD} )
 			set( DOXYGEN_TARGET_NAME ${TARGET_NAME}_Doc )
-			add_custom_target(
-				${DOXYGEN_TARGET_NAME}
-				COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYGEN_INPUT}
-				COMMENT "Building Doxygen documentation for ${TARGET_NAME}"
-				VERBATIM
-			)
-			set_property( TARGET ${DOXYGEN_TARGET_NAME} PROPERTY FOLDER "Documentation/${TARGET_NAME}" )
-			set( _DOC_FILE ${PROJECTS_DOCUMENTATION_OUTPUT_DIR}/${TARGET_NAME}/${CHM_NAME} )
-			if ( EXISTS ${_DOC_FILE} )
-				install(
-					FILES ${_DOC_FILE}
-					DESTINATION share/doc/${TARGET_NAME}
-					COMPONENT ${DOXYGEN_TARGET_NAME}
-				)
-			endif ()
+			set( DOXYGEN_DOC_FILE ${PROJECTS_DOCUMENTATION_OUTPUT_DIR}/${TARGET_NAME}/${CHM_NAME} )
+			set( DOXYGEN_INST_DIR share/doc/${TARGET_NAME} )
 		else ()
 			if ( LANGUAGE STREQUAL "English" )
 				set( SHORT_LANGUAGE "EN" )
@@ -63,29 +35,50 @@ function( target_add_doc TARGET_NAME LANGUAGE EXT_LIST )
 			endif ()
 			set( CHM_NAME ${TARGET_NAME}-${LANGUAGE}.chm )
 			set( DOXYGEN_INPUT_FILE ${CMAKE_CURRENT_BINARY_DIR}/${TARGET_NAME}_${LANGUAGE}.Doxyfile )
-			set( DOXYGEN_OUTPUT_DIR ${PROJECTS_DOCUMENTATION_OUTPUT_DIR}/${TARGET_NAME}/${SHORT_LANGUAGE}/${${TARGET_NAME}_VERSION_MAJOR}.${${TARGET_NAME}_VERSION_MINOR}.${${TARGET_NAME}_VERSION_BUILD} )
-			configure_file(
-				${CMAKE_CURRENT_SOURCE_DIR}/Doc/${TARGET_NAME}.Doxyfile.in
-				${DOXYGEN_INPUT_FILE}
-				NEWLINE_STYLE LF
-			)
-			file( MAKE_DIRECTORY ${DOXYGEN_OUTPUT_DIR} )
+			set( DOXYGEN_OUTPUT_DIR ${PROJECTS_DOCUMENTATION_OUTPUT_DIR}/${TARGET_NAME}/${SHORT_LANGUAGE}/v${${TARGET_NAME}_VERSION_MAJOR}.${${TARGET_NAME}_VERSION_MINOR}.${${TARGET_NAME}_VERSION_BUILD} )
 			set( DOXYGEN_TARGET_NAME ${TARGET_NAME}_${LANGUAGE}_Doc )
-			add_custom_target(
-				${DOXYGEN_TARGET_NAME}
-				COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYGEN_INPUT_FILE}
-				COMMENT "Building Doxygen ${LANGUAGE} documentation for ${TARGET_NAME}"
-				VERBATIM
-			)
-			set_property( TARGET ${DOXYGEN_TARGET_NAME} PROPERTY FOLDER "Documentation/${TARGET_NAME}" )
-			set( _DOC_FILE ${PROJECTS_DOCUMENTATION_OUTPUT_DIR}/${CHM_NAME} )
-			if ( EXISTS ${_DOC_FILE} )
-				install(
-					FILES ${_DOC_FILE}
-					DESTINATION share/doc/${LANGUAGE}/${TARGET_NAME}
-					COMPONENT ${DOXYGEN_TARGET_NAME}
-				)
+			set( DOXYGEN_DOC_FILE ${PROJECTS_DOCUMENTATION_OUTPUT_DIR}/${CHM_NAME} )
+			set( DOXYGEN_INST_DIR share/doc/${LANGUAGE}/${TARGET_NAME} )
+		endif ()
+		set( _FOUND OFF )
+		foreach( FOLDER ${FOLDER_LIST} )
+			if ( NOT _FOUND )
+				set( FILEPATH ${FOLDER}/${TARGET_NAME}.Doxyfile )
+				if ( EXISTS ${FILEPATH} )
+					file( COPY
+						${FILEPATH}
+						DESTINATION ${DOXYGEN_INPUT_FILE}
+					)
+					set( _FOUND ON )
+				endif ()
+				set( FILEPATH ${FOLDER}/${TARGET_NAME}.Doxyfile.in )
+				if ( EXISTS ${FILEPATH} )
+					configure_file(
+						${FILEPATH}
+						${DOXYGEN_INPUT_FILE}
+						NEWLINE_STYLE LF
+					)
+					set( _FOUND ON )
+				endif ()
 			endif ()
+		endforeach()
+		if ( NOT ${_FOUND} )
+			message( SEND_ERROR "Couldn't find a doxyfile or a template doxyfile" )
+		endif ()
+		file( MAKE_DIRECTORY ${DOXYGEN_OUTPUT_DIR} )
+		add_custom_target(
+			${DOXYGEN_TARGET_NAME}
+			COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYGEN_INPUT_FILE}
+			COMMENT "Building Doxygen documentation for ${TARGET_NAME}"
+			VERBATIM
+		)
+		set_property( TARGET ${DOXYGEN_TARGET_NAME} PROPERTY FOLDER "Documentation/${TARGET_NAME}" )
+		if ( EXISTS ${DOXYGEN_DOC_FILE} )
+			install(
+				FILES ${DOXYGEN_DOC_FILE}
+				DESTINATION ${DOXYGEN_INST_DIR}
+				COMPONENT ${DOXYGEN_TARGET_NAME}
+			)
 		endif ()
 	endif ()
 endfunction( target_add_doc )
