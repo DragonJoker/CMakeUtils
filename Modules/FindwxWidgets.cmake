@@ -213,10 +213,10 @@ ENDIF(WIN32 AND NOT CYGWIN AND NOT MSYS)
 # WIN32_FIND_STYLE
 #=====================================================================
 IF(wxWidgets_FIND_STYLE STREQUAL "win32")
-  IF (NOT VCPKG_TOOLCHAIN)
+  IF (wxWidgets_IGNORE_VCPKG OR NOT VCPKG_TOOLCHAIN)
     # Useful common wx libs needed by almost all components.
     SET(wxWidgets_COMMON_LIBRARIES png tiff jpeg zlib expat)
-  ENDIF (NOT VCPKG_TOOLCHAIN)
+  ENDIF (wxWidgets_IGNORE_VCPKG OR NOT VCPKG_TOOLCHAIN)
 
   # DEPRECATED: Use FIND_PACKAGE(wxWidgets COMPONENTS mono) instead.
   IF(NOT wxWidgets_FIND_COMPONENTS)
@@ -444,7 +444,7 @@ IF(wxWidgets_FIND_STYLE STREQUAL "win32")
   #-------------------------------------------------------------------
 
   # VCPKG_TOOLCHAIN
-  if (VCPKG_TOOLCHAIN)
+  if (VCPKG_TOOLCHAIN AND NOT wxWidgets_IGNORE_VCPKG)
     SET(wxWidgets_FOUND TRUE)
     FIND_PATH(wxWidgets_ROOT_DIR
       NAMES include/wx/wx.h
@@ -711,7 +711,7 @@ IF(wxWidgets_FIND_STYLE STREQUAL "win32")
         ENDIF(WX_CONFIGURATION)
       ENDIF(WX_LIB_DIR)
     ENDIF(WX_ROOT_DIR)
-  ENDIF(VCPKG_TOOLCHAIN)
+  ENDIF(VCPKG_TOOLCHAIN AND NOT wxWidgets_IGNORE_VCPKG)
 #=====================================================================
 # UNIX_FIND_STYLE
 #=====================================================================
