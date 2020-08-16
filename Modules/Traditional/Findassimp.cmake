@@ -32,17 +32,9 @@ find_path( assimp_INCLUDE_DIR assimp/ai_assert.h
 
 if ( MSVC )
 	if ( CMAKE_GENERATOR STREQUAL "Visual Studio 16 2019" )
-		if ( VCPKKG_TOOLCHAIN )
-			set( VC_NUM 142 )
-		else ()
-			set( VC_NUM 140 )
-		endif ()
+		set( VC_NUM 142 140 )
 	elseif ( CMAKE_GENERATOR STREQUAL "Visual Studio 15 2017" )
-		if ( VCPKKG_TOOLCHAIN )
-			set( VC_NUM 141 )
-		else ()
-			set( VC_NUM 140 )
-		endif ()
+		set( VC_NUM 141 140 )
 	elseif ( MSVC14 )
 		set( VC_NUM 140 )
 	elseif ( MSVC12 )
@@ -58,48 +50,52 @@ endif ()
 
 if ( CMAKE_CL_64 OR CMAKE_GENERATOR MATCHES Win64 )
 	if ( MSVC )
-		find_path( assimp_LIBRARY_RELEASE_DIR assimp.lib assimp-vc${VC_NUM}-mt.lib
-			HINTS
-			PATH_SUFFIXES
-				lib/x64
-				lib/assimp_release-dll_x64
-				lib/x64/Release
-				lib/Release/x64
-				lib
-			PATHS
-				${assimp_DIR}
-		)
-		find_path( assimp_LIBRARY_DEBUG_DIR assimpD.lib assimpd.lib assimp-vc${VC_NUM}-mtd.lib
-			HINTS
-			PATH_SUFFIXES
-				lib/x64
-				lib/assimp_debug-dll_x64
-				lib/x64/Debug
-				lib/Debug/x64
-				lib
-			PATHS
-				${assimp_DIR}
-				${assimp_DIR}/debug
-				${assimp_LIBRARY_RELEASE_DIR}
-		)
-		find_library( assimp_LIBRARY_RELEASE
-			NAMES
-				assimp-vc${VC_NUM}-mt.lib
-				assimp.lib
-			HINTS
-			PATHS
-				${assimp_LIBRARY_RELEASE_DIR}
-		)
-		find_library( assimp_LIBRARY_DEBUG
-			NAMES
-				assimp-vc${VC_NUM}-mtd.lib
-				assimpD.lib
-				assimpd.lib
-			HINTS
-			PATHS
-				${assimp_LIBRARY_DEBUG_DIR}
-				${assimp_LIBRARY_RELEASE_DIR}
-		)
+		foreach ( NUM ${VC_NUM} )
+			if ( NOT assimp_LIBRARY_RELEASE )
+				find_path( assimp_LIBRARY_RELEASE_DIR assimp.lib assimp-vc${NUM}-mt.lib
+					HINTS
+					PATH_SUFFIXES
+						lib/x64
+						lib/assimp_release-dll_x64
+						lib/x64/Release
+						lib/Release/x64
+						lib
+					PATHS
+						${assimp_DIR}
+				)
+				find_path( assimp_LIBRARY_DEBUG_DIR assimpD.lib assimpd.lib assimp-vc${NUM}-mtd.lib
+					HINTS
+					PATH_SUFFIXES
+						lib/x64
+						lib/assimp_debug-dll_x64
+						lib/x64/Debug
+						lib/Debug/x64
+						lib
+					PATHS
+						${assimp_DIR}
+						${assimp_DIR}/debug
+						${assimp_LIBRARY_RELEASE_DIR}
+				)
+				find_library( assimp_LIBRARY_RELEASE
+					NAMES
+						assimp-vc${NUM}-mt.lib
+						assimp.lib
+					HINTS
+					PATHS
+						${assimp_LIBRARY_RELEASE_DIR}
+				)
+				find_library( assimp_LIBRARY_DEBUG
+					NAMES
+						assimp-vc${NUM}-mtd.lib
+						assimpD.lib
+						assimpd.lib
+					HINTS
+					PATHS
+						${assimp_LIBRARY_DEBUG_DIR}
+						${assimp_LIBRARY_RELEASE_DIR}
+				)
+			endif ()
+		endforeach ()
 	else ()
 		find_path( assimp_LIBRARY_RELEASE_DIR libassimp.so libassimp.lib libassimp.dylib
 			HINTS
@@ -145,46 +141,50 @@ if ( CMAKE_CL_64 OR CMAKE_GENERATOR MATCHES Win64 )
 	endif ()
 else ()
 	if ( MSVC )
-		find_path( assimp_LIBRARY_RELEASE_DIR assimp.lib assimp-vc${VC_NUM}-mt.lib
-			HINTS
-			PATH_SUFFIXES
-				lib/x86
-				lib/assimp_release-dll_win32
-				lib/x86/Release
-				lib/Release/x86
-				lib
-			PATHS
-				${assimp_DIR}
-		)
-		find_path( assimp_LIBRARY_DEBUG_DIR assimpD.lib assimpd.lib assimp-vc${VC_NUM}-mtd.lib
-			HINTS
-			PATH_SUFFIXES
-				lib/x86
-				lib/assimp_debug-dll_win32
-				lib/x86/Debug
-				lib/Debug/x86
-				lib
-			PATHS
-				${assimp_DIR}
-				${assimp_DIR}/debug
-		)
-		find_library( assimp_LIBRARY_RELEASE
-			NAMES
-				assimp.lib
-				assimp-vc${VC_NUM}-mt.lib
-			HINTS
-			PATHS
-				${assimp_LIBRARY_RELEASE_DIR}
-		)
-		find_library( assimp_LIBRARY_DEBUG
-			NAMES
-				assimpD.lib
-				assimpd.lib
-				assimp-vc${VC_NUM}-mtd.lib
-			HINTS
-			PATHS
-				${assimp_LIBRARY_DEBUG_DIR}
-		)
+		foreach ( NUM ${VC_NUM} )
+			if ( NOT assimp_LIBRARY_RELEASE )
+				find_path( assimp_LIBRARY_RELEASE_DIR assimp.lib assimp-vc${NUM}-mt.lib
+					HINTS
+					PATH_SUFFIXES
+						lib/x86
+						lib/assimp_release-dll_win32
+						lib/x86/Release
+						lib/Release/x86
+						lib
+					PATHS
+						${assimp_DIR}
+				)
+				find_path( assimp_LIBRARY_DEBUG_DIR assimpD.lib assimpd.lib assimp-vc${NUM}-mtd.lib
+					HINTS
+					PATH_SUFFIXES
+						lib/x86
+						lib/assimp_debug-dll_win32
+						lib/x86/Debug
+						lib/Debug/x86
+						lib
+					PATHS
+						${assimp_DIR}
+						${assimp_DIR}/debug
+				)
+				find_library( assimp_LIBRARY_RELEASE
+					NAMES
+						assimp.lib
+						assimp-vc${NUM}-mt.lib
+					HINTS
+					PATHS
+						${assimp_LIBRARY_RELEASE_DIR}
+				)
+				find_library( assimp_LIBRARY_DEBUG
+					NAMES
+						assimpD.lib
+						assimpd.lib
+						assimp-vc${NUM}-mtd.lib
+					HINTS
+					PATHS
+						${assimp_LIBRARY_DEBUG_DIR}
+				)
+			endif ()
+		endforeach ()
 	elseif ( MINGW )
 		find_path( assimp_LIBRARY_RELEASE_DIR libassimp.dll.a
 			HINTS
