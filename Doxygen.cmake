@@ -1,4 +1,4 @@
-find_package( Doxygen COMPONENTS doxygen dot dia )
+find_package( Doxygen QUIET COMPONENTS doxygen dot dia )
 option( PROJECTS_GENERATE_DOC "Generate Doxygen documentation" FALSE )
 
 #--------------------------------------------------------------------------------------------------

@@ -23,6 +23,9 @@
 #                              different version than the C API; i.e OpenCL 1.2
 #                              but with C++ bindings for 1.1)
 #
+macro( msg_debug msg )
+#	message( STATUS ${msg} )
+endmacro( msg_debug )
 
 if(NOT OPENCL_FOUND)
   include(CheckTypeSize)
@@ -30,19 +33,19 @@ if(NOT OPENCL_FOUND)
 
   # User specified OpenCL location
   if(OPENCL_ROOT)
-    message(STATUS "OpenCL: Searching in custom location")
+    msg_debug("OpenCL: Searching in custom location")
     set(_CMAKE_FIND_ROOT_PATH ${CMAKE_FIND_ROOT_PATH})
     set(CMAKE_FIND_ROOT_PATH ${OPENCL_ROOT})
     set(_OPENCL_ROOT_OPTS ONLY_CMAKE_FIND_ROOT_PATH NO_DEFAULT_PATH)
   elseif(NOT "$ENV{OPENCL_ROOT}" STREQUAL "")
-    message(STATUS "OpenCL: Searching in custom location")
+    msg_debug("OpenCL: Searching in custom location")
     set(_CMAKE_FIND_ROOT_PATH ${CMAKE_FIND_ROOT_PATH})
     set(CMAKE_FIND_ROOT_PATH $ENV{OPENCL_ROOT})
     set(_OPENCL_ROOT_OPTS ONLY_CMAKE_FIND_ROOT_PATH NO_DEFAULT_PATH)
 
   # AMD APP SDK
   elseif(NOT "$ENV{AMDAPPSDKROOT}" STREQUAL "")
-    message(STATUS "OpenCL: Searching for AMD APP SDK")
+    msg_debug("OpenCL: Searching for AMD APP SDK")
     set(_CMAKE_FIND_ROOT_PATH ${CMAKE_FIND_ROOT_PATH})
     set(CMAKE_FIND_ROOT_PATH $ENV{AMDAPPSDKROOT})
     set(_OPENCL_ROOT_OPTS ONLY_CMAKE_FIND_ROOT_PATH NO_DEFAULT_PATH)
@@ -55,7 +58,7 @@ if(NOT OPENCL_FOUND)
 
   # NVIDIA CUDA
   elseif(NOT "$ENV{CUDA_PATH}" STREQUAL "")
-    message(STATUS "OpenCL: Searching for NVIDIA CUDA SDK")
+    msg_debug("OpenCL: Searching for NVIDIA CUDA SDK")
     set(_CMAKE_FIND_ROOT_PATH ${CMAKE_FIND_ROOT_PATH})
     set(CMAKE_FIND_ROOT_PATH $ENV{CUDA_PATH})
     set(_OPENCL_ROOT_OPTS ONLY_CMAKE_FIND_ROOT_PATH NO_DEFAULT_PATH)
@@ -75,7 +78,7 @@ if(NOT OPENCL_FOUND)
 
   # Intel OpenCL SDK
   elseif(NOT "$ENV{INTELOCLSDKROOT}" STREQUAL "")
-    message(STATUS "OpenCL: Searching for Intel OpenCL SDK")
+    msg_debug("OpenCL: Searching for Intel OpenCL SDK")
     set(_CMAKE_FIND_ROOT_PATH ${CMAKE_FIND_ROOT_PATH})
     set(CMAKE_FIND_ROOT_PATH $ENV{INTELOCLSDKROOT})
     set(_OPENCL_ROOT_OPTS ONLY_CMAKE_FIND_ROOT_PATH NO_DEFAULT_PATH)
@@ -95,7 +98,7 @@ if(NOT OPENCL_FOUND)
 
   # System location
   else()
-    message(STATUS "OpenCL: Searching in system location")
+    msg_debug("OpenCL: Searching in system location")
   endif()
 
   if(APPLE)

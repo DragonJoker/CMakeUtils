@@ -1,4 +1,4 @@
-find_package( AStyle )
+find_package( AStyle QUIET )
 option( PROJECTS_USE_PRETTY_PRINTING "Enable AStyle" TRUE )
 
 function( add_target_astyle TARGET_NAME EXT_LIST )
