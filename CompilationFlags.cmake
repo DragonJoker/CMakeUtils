@@ -40,6 +40,7 @@ function( add_target_compilation_common_flags TARGET_NAME TARGET_TYPE TARGET_DEF
 		set( _COMP_FLAGS
 			${_COMP_FLAGS}
 			-fPIC
+			-Wno-pragmas
 		)
 		if ( ${COMPILER_VERSION} LESS "49" )
 			set( _COMP_FLAGS
