@@ -5,7 +5,7 @@
 #  LIBXML_LIBRARIES - The libraries needed to use LibXml
 #  LIBXML_DEFINITIONS - Compiler switches required for using LibXml
 
-find_package(PkgConfig)
+find_package(PkgConfig QUIET)
 pkg_check_modules(PC_LIBXML QUIET libxml)
 set(LIBXML_DEFINITIONS ${PC_LIBXML_CFLAGS_OTHER})
 

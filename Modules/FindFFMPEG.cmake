@@ -25,7 +25,7 @@ else ()
 		set( FFMPEG_FIND_COMPONENTS avcodec avutil avformat swscale swresample )
 	endif ()
 
-	find_package( PkgConfig )
+	find_package( PkgConfig QUIET )
 
 	if ( PKG_CONFIG_FOUND )
 		pkg_check_modules( _FFMPEG_AVCODEC libavcodec )
