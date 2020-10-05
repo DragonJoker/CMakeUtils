@@ -114,6 +114,7 @@ macro( __target_install_headers TARGET_NAME SRCDIR DSTDIR )
 		FILES ${_HEADERS}
 		COMPONENT ${TARGET_NAME}_dev
 		DESTINATION include/${DSTDIR}
+		CONFIGURATIONS Release
 	)
 endmacro()
 
@@ -139,6 +140,7 @@ macro( target_install_dir_headers TARGET_NAME SRCDIR DSTDIR )
 		FILES ${_HEADERS}
 		COMPONENT ${TARGET_NAME}_dev
 		DESTINATION include/${DSTDIR}
+		CONFIGURATIONS Release
 	)
 endmacro()
 
