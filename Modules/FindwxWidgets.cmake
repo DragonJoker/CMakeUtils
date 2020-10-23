@@ -215,7 +215,7 @@ ENDIF(WIN32 AND NOT CYGWIN AND NOT MSYS)
 IF(wxWidgets_FIND_STYLE STREQUAL "win32")
   IF (wxWidgets_IGNORE_VCPKG OR NOT VCPKG_TOOLCHAIN)
     # Useful common wx libs needed by almost all components.
-    SET(wxWidgets_COMMON_LIBRARIES png tiff jpeg zlib expat)
+    SET(wxWidgets_COMMON_LIBRARIES png tiff jpeg zlib expat regex)
   ENDIF (wxWidgets_IGNORE_VCPKG OR NOT VCPKG_TOOLCHAIN)
 
   # DEPRECATED: Use FIND_PACKAGE(wxWidgets COMPONENTS mono) instead.
