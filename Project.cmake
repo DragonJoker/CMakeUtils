@@ -15,7 +15,8 @@ endif()
 #	Defining output paths for each project configuration
 #--------------------------------------------------------------------------------------------------
 if ( MSVC )
-	option( PROJECTS_PROFILING "Activate code profiling or not" FALSE )
+	option( PROJECTS_PROFILING "Activate code profiling or not" OFF )
+	option( PROJECTS_COVERAGE "Activate code coverage or not" OFF )
 endif()
 
 set( PROJECTS_PLATFORM "x86" )
