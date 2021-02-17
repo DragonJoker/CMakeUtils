@@ -5,9 +5,10 @@ option( PROJECTS_GENERATE_DOC "Generate Doxygen documentation" FALSE )
 #	Function :	target_add_doc
 #	Generates doc for given target
 #--------------------------------------------------------------------------------------------------
-function( target_add_doc TARGET_NAME LANGUAGE EXT_LIST )
+function( target_add_doc_ex TARGET_NAME LANGUAGE EXT_LIST LOOKUP_FOLDER )
 	if ( DOXYGEN_FOUND AND PROJECTS_GENERATE_DOC )
 		find_package( HTMLHelp )
+		set( DOXYGEN_INPUT_FOLDER ${LOOKUP_FOLDER} )
 		set( TARGET_VERSION_MAJOR ${${PROJECT_NAME}_VERSION_MAJOR} )
 		set( TARGET_VERSION_MINOR ${${PROJECT_NAME}_VERSION_MINOR} )
 		set( TARGET_VERSION_BUILD ${${PROJECT_NAME}_VERSION_BUILD} )
@@ -81,7 +82,7 @@ function( target_add_doc TARGET_NAME LANGUAGE EXT_LIST )
 			)
 		endif ()
 	endif ()
-endfunction( target_add_doc )
+endfunction( target_add_doc_ex )
 
 #--------------------------------------------------------------------------------------------------
 #	Macro :	add_doc
@@ -90,3 +91,7 @@ endfunction( target_add_doc )
 macro( add_doc LANGUAGE EXT_LIST )
 	target_add_doc( ${PROJECT_NAME} "${LANGUAGE}" "${EXT_LIST}" )
 endmacro( add_doc )
+
+macro( target_add_doc TARGET_NAME LANGUAGE EXT_LIST )
+	target_add_doc_ex( ${PROJECT_NAME} "${LANGUAGE}" "${EXT_LIST}" ${CMAKE_CURRENT_SOURCE_DIR}/Src )
+endmacro( target_add_doc )
