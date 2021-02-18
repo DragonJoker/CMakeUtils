@@ -88,10 +88,10 @@ endfunction( target_add_doc_ex )
 #	Macro :	add_doc
 #	Generates doc for current project
 #--------------------------------------------------------------------------------------------------
+macro( target_add_doc TARGET_NAME LANGUAGE EXT_LIST )
+	target_add_doc_ex( ${TARGET_NAME} "${LANGUAGE}" "${EXT_LIST}" ${CMAKE_CURRENT_SOURCE_DIR}/Src )
+endmacro( target_add_doc )
+
 macro( add_doc LANGUAGE EXT_LIST )
 	target_add_doc( ${PROJECT_NAME} "${LANGUAGE}" "${EXT_LIST}" )
 endmacro( add_doc )
-
-macro( target_add_doc TARGET_NAME LANGUAGE EXT_LIST )
-	target_add_doc_ex( ${PROJECT_NAME} "${LANGUAGE}" "${EXT_LIST}" ${CMAKE_CURRENT_SOURCE_DIR}/Src )
-endmacro( target_add_doc )

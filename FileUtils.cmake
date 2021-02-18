@@ -1,4 +1,4 @@
-function( copy_target_files _TARGET _DESTINATION )# ARGN: The files
+function( copy_target_files_ex _TARGET _COMPONENT _DESTINATION )# ARGN: The files
 	if ( NOT "${_DESTINATION}" STREQUAL "" )
 		set( _DESTINATION ${_DESTINATION}/ )
 	endif ()
@@ -14,12 +14,16 @@ function( copy_target_files _TARGET _DESTINATION )# ARGN: The files
 	endforeach ()
 	install(
 		FILES ${ARGN}
+		COMPONENT ${_COMPONENT}
 		DESTINATION share/${_TARGET}
-		COMPONENT ${_TARGET}
 	)
 endfunction()
 
-function( copy_target_directory _TARGET _SOURCE ) #ARGV2: _DESTINATION
+function( copy_target_files _TARGET _DESTINATION )# ARGN: The files
+	copy_target_files_ex( ${_TARGET} ${_TARGET} ${_DESTINATION} ${ARGN} )
+endfunction()
+
+function( copy_target_directory_ex _TARGET _COMPONENT _SOURCE ) #ARGV2: _DESTINATION
 	set( _DESTINATION "${ARGV2}" )
 	add_custom_command(
 		TARGET ${_TARGET}
@@ -29,7 +33,11 @@ function( copy_target_directory _TARGET _SOURCE ) #ARGV2: _DESTINATION
 	)
 	install(
 		DIRECTORY ${_SOURCE}
+		COMPONENT ${_COMPONENT}
 		DESTINATION share/${_TARGET}
-		COMPONENT ${_TARGET}
 	)
+endfunction()
+
+function( copy_target_directory _TARGET _SOURCE ) #ARGV2: _DESTINATION
+	copy_target_directory_ex( ${_TARGET} ${_TARGET} ${_SOURCE} ${ARGV2} )
 endfunction()

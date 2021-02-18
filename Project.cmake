@@ -265,7 +265,7 @@ macro( find_rsc_file TARGET_NAME TARGET_TYPE )
 	endif ( WIN32 )
 endmacro()
 
-macro( install_target TARGET_NAME TARGET_TYPE HDR_FOLDER )
+macro( install_target_ex TARGET_NAME COMPONENT_NAME TARGET_TYPE HDR_FOLDER )
 	string( COMPARE EQUAL ${TARGET_TYPE} "dll" IS_DLL )
 	string( COMPARE EQUAL ${TARGET_TYPE} "api_dll" IS_API_DLL )
 	string( COMPARE EQUAL ${TARGET_TYPE} "lib" IS_LIB )
@@ -304,7 +304,7 @@ macro( install_target TARGET_NAME TARGET_TYPE HDR_FOLDER )
 			#We install each .dll in <install_dir>/bin folder
 			install(
 				TARGETS ${TARGET_NAME}
-				COMPONENT ${TARGET_NAME}
+				COMPONENT ${COMPONENT_NAME}
 				CONFIGURATIONS Release
 				RUNTIME DESTINATION ${BIN_FOLDER}${SUB_FOLDER}
 				ARCHIVE DESTINATION lib${SUB_FOLDER}
@@ -312,7 +312,7 @@ macro( install_target TARGET_NAME TARGET_TYPE HDR_FOLDER )
 			)
 			install(
 				TARGETS ${TARGET_NAME}
-				COMPONENT ${TARGET_NAME}
+				COMPONENT ${COMPONENT_NAME}
 				CONFIGURATIONS RelWithDebInfo
 				RUNTIME DESTINATION ${BIN_FOLDER}/RelWithDebInfo${SUB_FOLDER}
 				ARCHIVE DESTINATION lib/RelWithDebInfo${SUB_FOLDER}
@@ -320,7 +320,7 @@ macro( install_target TARGET_NAME TARGET_TYPE HDR_FOLDER )
 			)
 			install(
 				TARGETS ${TARGET_NAME}
-				COMPONENT ${TARGET_NAME}
+				COMPONENT ${COMPONENT_NAME}
 				CONFIGURATIONS Debug
 				RUNTIME DESTINATION ${BIN_FOLDER}/Debug${SUB_FOLDER}
 				ARCHIVE DESTINATION lib/Debug${SUB_FOLDER}
@@ -330,19 +330,19 @@ macro( install_target TARGET_NAME TARGET_TYPE HDR_FOLDER )
 			#We install each .so in <install_dir>/lib folder
 			install(
 				TARGETS ${TARGET_NAME}
-				COMPONENT ${TARGET_NAME}
+				COMPONENT ${COMPONENT_NAME}
 				CONFIGURATIONS Release
 				LIBRARY DESTINATION lib/${SUB_FOLDER}
 			)
 			install(
 				TARGETS ${TARGET_NAME}
-				COMPONENT ${TARGET_NAME}
+				COMPONENT ${COMPONENT_NAME}
 				CONFIGURATIONS RelWithDebInfo
 				LIBRARY DESTINATION lib/RelWithDebInfo${SUB_FOLDER}
 			)
 			install(
 				TARGETS ${TARGET_NAME}
-				COMPONENT ${TARGET_NAME}
+				COMPONENT ${COMPONENT_NAME}
 				CONFIGURATIONS Debug
 				LIBRARY DESTINATION lib/Debug${SUB_FOLDER}
 			)
@@ -359,19 +359,19 @@ macro( install_target TARGET_NAME TARGET_TYPE HDR_FOLDER )
 				)
 				install(
 					FILES ${CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG}${TARGET_NAME}d.dll
-					COMPONENT ${TARGET_NAME}
+					COMPONENT ${COMPONENT_NAME}
 					CONFIGURATIONS Debug
 					DESTINATION bin/Debug
 				)
 				install(
 					FILES ${CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE}${TARGET_NAME}.dll
-					COMPONENT ${TARGET_NAME}
+					COMPONENT ${COMPONENT_NAME}
 					CONFIGURATIONS RelWithDebInfo
 					DESTINATION bin/RelWithDebInfo
 				)
 				install(
 					FILES ${CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE}${TARGET_NAME}.dll
-					COMPONENT ${TARGET_NAME}
+					COMPONENT ${COMPONENT_NAME}
 					CONFIGURATIONS Release
 					DESTINATION bin
 				)
@@ -382,19 +382,19 @@ macro( install_target TARGET_NAME TARGET_TYPE HDR_FOLDER )
 		#We copy each exe in <install_dir>/bin folder
 		install(
 			TARGETS ${TARGET_NAME}
-			COMPONENT ${TARGET_NAME}
+			COMPONENT ${COMPONENT_NAME}
 			CONFIGURATIONS Release
 			RUNTIME DESTINATION bin
 		)
 		install(
 			TARGETS ${TARGET_NAME}
-			COMPONENT ${TARGET_NAME}
+			COMPONENT ${COMPONENT_NAME}
 			CONFIGURATIONS RelWithDebInfo
 			RUNTIME DESTINATION bin/RelWithDebInfo
 		)
 		install(
 			TARGETS ${TARGET_NAME}
-			COMPONENT ${TARGET_NAME}
+			COMPONENT ${COMPONENT_NAME}
 			CONFIGURATIONS Debug
 			RUNTIME DESTINATION bin/Debug
 		)
@@ -403,25 +403,29 @@ macro( install_target TARGET_NAME TARGET_TYPE HDR_FOLDER )
 		#We copy each lib in <install_dir>/lib folder
 		install(
 			TARGETS ${TARGET_NAME}
-			COMPONENT ${TARGET_NAME}_dev
+			COMPONENT ${COMPONENT_NAME}_dev
 			CONFIGURATIONS Release
 			ARCHIVE DESTINATION lib
 		)
 		install(
 			TARGETS ${TARGET_NAME}
-			COMPONENT ${TARGET_NAME}_dev
+			COMPONENT ${COMPONENT_NAME}_dev
 			CONFIGURATIONS RelWithDebInfo
 			ARCHIVE DESTINATION lib/RelWithDebInfo
 		)
 		install(
 			TARGETS ${TARGET_NAME}
-			COMPONENT ${TARGET_NAME}_dev
+			COMPONENT ${COMPONENT_NAME}_dev
 			CONFIGURATIONS Debug
 			ARCHIVE DESTINATION lib/Debug
 		)
 		#For libs, we install headers to <install_dir>/include/${TARGET_NAME}
-		target_install_headers( ${TARGET_NAME} ${HDR_FOLDER} )
+		target_install_headers_ex( ${TARGET_NAME} ${COMPONENT_NAME} ${HDR_FOLDER} )
 	endif()
+endmacro()
+
+macro( install_target TARGET_NAME TARGET_TYPE HDR_FOLDER )
+	install_target_ex( ${TARGET_NAME} ${TARGET_NAME} ${TARGET_TYPE} ${HDR_FOLDER} )
 endmacro()
 
 #--------------------------------------------------------------------------------------------------

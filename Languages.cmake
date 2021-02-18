@@ -2,7 +2,7 @@
 #	Macro : copy_languages
 #	Used to copy language files for TARGET_NAME from SRC_FOLDER to DST_FOLDER
 #--------------------------------------------------------------------------------------------------
-macro( copy_languages TARGET_NAME SRC_FOLDER DST_FOLDER LANGUAGES )
+macro( copy_languages_ex TARGET_NAME COMPONENT_NAME SRC_FOLDER DST_FOLDER LANGUAGES )
 	# Copy each language file into each destination folder
 	foreach( LANGUAGE ${LANGUAGES} )
 		set( _FILE ${SRC_FOLDER}/po/${LANGUAGE}/${TARGET_NAME}.mo )
@@ -15,8 +15,17 @@ macro( copy_languages TARGET_NAME SRC_FOLDER DST_FOLDER LANGUAGES )
 		)
 		install(
 			FILES ${_FILE}
+			COMPONENT ${COMPONENT_NAME}
 			DESTINATION share/${DST_FOLDER}/${LANGUAGE}/
-			COMPONENT ${TARGET_NAME}
 		)
 	endforeach()
+endmacro()
+
+macro( copy_languages TARGET_NAME SRC_FOLDER DST_FOLDER LANGUAGES )
+	copy_languages_ex( ${TARGET_NAME}
+		${TARGET_NAME}
+		${SRC_FOLDER}
+		${DST_FOLDER}
+		${LANGUAGES}
+	)
 endmacro()
