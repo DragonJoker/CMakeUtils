@@ -103,7 +103,7 @@ macro( list_subdirs RESULT CURDIR )
 	set( ${RESULT} ${_SUBFOLDERS} )
 endmacro()
 
-macro( __target_install_headers TARGET_NAME SRCDIR DSTDIR )
+macro( __target_install_headers TARGET_NAME COMPONENT_NAME SRCDIR DSTDIR )
 	file(
 		GLOB
 			_HEADERS
@@ -113,20 +113,25 @@ macro( __target_install_headers TARGET_NAME SRCDIR DSTDIR )
 	)
 	install(
 		FILES ${_HEADERS}
-		COMPONENT ${TARGET_NAME}_dev
+		COMPONENT ${COMPONENT_NAME}_dev
 		DESTINATION include/${DSTDIR}
 		CONFIGURATIONS Release
 	)
 endmacro()
 
-macro( target_install_subdir_headers TARGET_NAME SRCDIR SUBDIR CURDIR )
+macro( target_install_subdir_headers_ex TARGET_NAME COMPONENT_NAME SRCDIR SUBDIR CURDIR )
 	__target_install_headers( ${TARGET_NAME}
+		${COMPONENT_NAME}
 		${SRCDIR}/${CURDIR}${SUBDIR}
 		${TARGET_NAME}/${CURDIR}${SUBDIR}
 	)
 endmacro()
 
-macro( target_install_dir_headers TARGET_NAME SRCDIR DSTDIR )
+macro( target_install_subdir_headers TARGET_NAME SRCDIR SUBDIR CURDIR )
+	target_install_subdir_headers_ex( "${TARGET_NAME}" "${TARGET_NAME}" "${SRCDIR}" "${SUBDIR}" "${CURDIR}" )
+endmacro()
+
+macro( target_install_dir_headers_ex TARGET_NAME COMPONENT_NAME SRCDIR DSTDIR )
 	file(
 		GLOB
 			_HEADERS
@@ -139,26 +144,34 @@ macro( target_install_dir_headers TARGET_NAME SRCDIR DSTDIR )
 	)
 	install(
 		FILES ${_HEADERS}
-		COMPONENT ${TARGET_NAME}_dev
+		COMPONENT ${COMPONENT_NAME}_dev
 		DESTINATION include/${DSTDIR}
 		CONFIGURATIONS Release
 	)
 endmacro()
 
-macro( target_install_headers TARGET_NAME HDR_FOLDER )
-	target_install_dir_headers( ${TARGET_NAME} ${HDR_FOLDER} ${TARGET_NAME} )
+macro( target_install_dir_headers TARGET_NAME SRCDIR DSTDIR )
+	target_install_dir_headers_ex( "${TARGET_NAME}" "${TARGET_NAME}" "${SRCDIR}" "${DSTDIR}" )
+endmacro()
+
+macro( target_install_headers_ex TARGET_NAME COMPONENT_NAME HDR_FOLDER )
+	target_install_dir_headers_ex( ${TARGET_NAME} ${COMPONENT_NAME} ${HDR_FOLDER} ${TARGET_NAME} )
 	list_subdirs( _SUBDIRS ${HDR_FOLDER} )
 	foreach( _SUBDIR ${_SUBDIRS} )
-		target_install_subdir_headers( ${TARGET_NAME} ${HDR_FOLDER} ${_SUBDIR} "" )
+		target_install_subdir_headers_ex( ${TARGET_NAME} ${COMPONENT_NAME} ${HDR_FOLDER} ${_SUBDIR} "" )
 		list_subdirs( _SUBSUBDIRS ${HDR_FOLDER}/${_SUBDIR} )
 		foreach( _SUBSUBDIR ${_SUBSUBDIRS} )
-			target_install_subdir_headers( ${TARGET_NAME} ${HDR_FOLDER} ${_SUBSUBDIR} "${_SUBDIR}/" )
+			target_install_subdir_headers_ex( ${TARGET_NAME} ${COMPONENT_NAME} ${HDR_FOLDER} ${_SUBSUBDIR} "${_SUBDIR}/" )
 			list_subdirs( _SUBSUBSUBDIRS ${HDR_FOLDER}/${_SUBDIR}/${_SUBSUBDIR} )
 			foreach( _SUBSUBSUBDIR ${_SUBSUBSUBDIRS} )
-				target_install_subdir_headers( ${TARGET_NAME} ${HDR_FOLDER} ${_SUBSUBSUBDIR} "${_SUBDIR}/${_SUBSUBDIR}/" )
+				target_install_subdir_headers_ex( ${TARGET_NAME} ${COMPONENT_NAME} ${HDR_FOLDER} ${_SUBSUBSUBDIR} "${_SUBDIR}/${_SUBSUBDIR}/" )
 			endforeach()
 		endforeach()
 	endforeach()
+endmacro()
+
+macro( target_install_headers TARGET_NAME HDR_FOLDER )
+	target_install_headers_ex( "${TARGET_NAME}" "${TARGET_NAME}" "${HDR_FOLDER}" )
 endmacro()
 
 macro( find_rsc_file TARGET_NAME TARGET_TYPE )
