@@ -2,7 +2,7 @@ find_package( AStyle QUIET )
 option( PROJECTS_USE_PRETTY_PRINTING "Enable AStyle" TRUE )
 
 function( add_target_astyle TARGET_NAME EXT_LIST )
-    if ( ASTYLE_FOUND AND PROJECTS_USE_PRETTY_PRINTING )
+    if ( AStyle_FOUND AND PROJECTS_USE_PRETTY_PRINTING )
         # Retrieve project source files
         get_property( SOURCE_FILES
             TARGET ${TARGET_NAME}
@@ -22,7 +22,7 @@ function( add_target_astyle TARGET_NAME EXT_LIST )
         endforeach()
 	    # Add test
         if ( WIN32 )
-		    set( ASTYLE_ARGS
+		    set( AStyle_ARGS
 		        --formatted
 		        --style=allman
 		        --indent=force-tab
@@ -39,7 +39,7 @@ function( add_target_astyle TARGET_NAME EXT_LIST )
 		        --ascii
 		    )
 	    else()
-		    set( ASTYLE_ARGS
+		    set( AStyle_ARGS
 		        --formatted
 		        --style=allman
 		        --indent=force-tab
@@ -57,7 +57,7 @@ function( add_target_astyle TARGET_NAME EXT_LIST )
 	    endif()
         add_test(
             NAME ${TARGET_NAME}_AStyle
-            COMMAND ${ASTYLE_BINARY} ${ASTYLE_ARGS} ${PROJECT_FILES}
+            COMMAND ${AStyle_BINARY} ${AStyle_ARGS} ${PROJECT_FILES}
         )
     endif()
 endfunction( add_target_astyle )

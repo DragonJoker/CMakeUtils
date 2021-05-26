@@ -9,14 +9,14 @@
 ## 2: Variable
 # The following are set after configuration is done: 
 #  
-#  ASTYLE_FOUND
-#  ASTYLE_BINARY
+#  AStyle_FOUND
+#  AStyle_BINARY
 #
 ###########################################################
 
 FIND_PACKAGE( PackageHandleStandardArgs )
 
-FIND_PATH(ASTYLE_ROOT_DIR
+FIND_PATH(AStyle_ROOT_DIR
   NAMES
   	bin/AStyle.exe
   	bin/astyle
@@ -29,20 +29,20 @@ FIND_PATH(ASTYLE_ROOT_DIR
 	Z:/
 )
 
-SET( ASTYLE_BINARY_DIR ${ASTYLE_ROOT_DIR}/bin )
+SET( AStyle_BINARY_DIR ${AStyle_ROOT_DIR}/bin )
 
-FIND_PROGRAM( ASTYLE_BINARY
+FIND_PROGRAM( AStyle_BINARY
   NAMES 
   	AStyle.exe
 	astyle
   PATHS
-  	${ASTYLE_BINARY_DIR}
+  	${AStyle_BINARY_DIR}
 )
 
-MARK_AS_ADVANCED( ASTYLE_LIBRARY_DIR ASTYLE_BINARY )
+MARK_AS_ADVANCED( AStyle_LIBRARY_DIR AStyle_BINARY )
 
-if ( ASTYLE_BINARY )
-	set( ASTYLE_FOUND ON )
+if ( AStyle_BINARY )
+	set( AStyle_FOUND ON )
 else ()
-	set( ASTYLE_FOUND OFF )
+	set( AStyle_FOUND OFF )
 endif ()
