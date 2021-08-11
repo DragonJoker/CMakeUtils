@@ -22,7 +22,7 @@ FIND_PATH( Fmod_LIBRARY_DIR fmod64_vc.lib libfmod.so
 		lib64
 		lib
 		lib/x64
-		lib/x86
+		lib/x86_64
 	PATHS
 		${Fmod_ROOT_DIR}
 )

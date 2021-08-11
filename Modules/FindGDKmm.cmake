@@ -13,7 +13,7 @@ libfind_package(GDKmm Glibmm)
 libfind_package(GDKmm Pangomm)
 libfind_package(GDKmm Cairomm)
 
-set(GDKmm_Version 2.4)
+set(GDKmm_Version 3.0)
 
 # Use pkg-config to get hints about paths
 libfind_pkg_check_modules(GDKmm_PKGCONF gdkmm-${GDKmm_Version})

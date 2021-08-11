@@ -15,7 +15,7 @@ libfind_package(GTKmm GDKmm)
 libfind_package(GTKmm Pangomm)
 libfind_package(GTKmm Atkmm)
 
-set(GTKmm_Version 2.4)
+set(GTKmm_Version 3.0)
 
 
 # Use pkg-config to get hints about paths
