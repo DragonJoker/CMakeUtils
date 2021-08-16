@@ -14,19 +14,23 @@
 #
 ###########################################################
 
-FIND_PACKAGE( PackageHandleStandardArgs )
+find_package( PackageHandleStandardArgs )
 
 if( MSVC )
-	FIND_PATH(VLD_ROOT_DIR include/vld.h 
+	find_path( VLD_ROOT_DIR include/vld.h 
 		HINTS
-		PATH_SUFFIXES include vld "Visual Leak Detector"
+		PATH_SUFFIXES
+			include
+			vld
+			VisualLeakDetector
+			"Visual Leak Detector"
 		PATHS
 		/usr/local
 		/usr
 		C:/ Z:/
 	)
 
-	FIND_PATH(VLD_INCLUDE_DIR vld.h
+	find_path( VLD_INCLUDE_DIR vld.h
 	  HINTS
 	  PATH_SUFFIXES include
 	  PATHS
@@ -34,26 +38,52 @@ if( MSVC )
 	)
 
 	if (CMAKE_CL_64 OR CMAKE_GENERATOR MATCHES Win64)
-		FIND_PATH(VLD_LIBRARY_DIR vld.lib
+		find_path( VLD_LIBRARY_DIR vld.lib
 			HINTS
 				PATH_SUFFIXES lib/Win64
 				PATHS ${VLD_ROOT_DIR}
 		)
 	else ()
-		FIND_PATH(VLD_LIBRARY_DIR vld.lib
+		find_path( VLD_LIBRARY_DIR vld.lib
 			HINTS
 				PATH_SUFFIXES lib/Win32
 				PATHS ${VLD_ROOT_DIR}
 		)
 	endif ()
 
-	FIND_LIBRARY(VLD_LIBRARY
+	find_library( VLD_LIBRARY
 		NAMES vld.lib
 		PATHS
 			${VLD_LIBRARY_DIR}
 	)
 
-	MARK_AS_ADVANCED( VLD_LIBRARY_DIR VLD_LIBRARY )
+	if ( VLD_LIBRARY )
+		if ( NOT TARGET vld::vld )
+			add_library( vld::vld UNKNOWN IMPORTED )
+			set_target_properties(vld::vld PROPERTIES
+				INTERFACE_INCLUDE_DIRECTORIES "${VLD_INCLUDE_DIR}" )
+			set_target_properties( vld::vld PROPERTIES
+				IMPORTED_LINK_INTERFACE_LANGUAGES "C"
+				IMPORTED_LOCATION "${VLD_LIBRARY}" )
+
+			set_property( TARGET vld::vld APPEND PROPERTY
+				IMPORTED_CONFIGURATIONS DEBUG
+			)
+			set_target_properties( vld::vld PROPERTIES
+				IMPORTED_LOCATION_DEBUG "${VLD_LIBRARY}"
+			)
+			set_property( TARGET vld::vld APPEND PROPERTY
+				IMPORTED_CONFIGURATIONS RELEASE
+			)
+			set_target_properties( vld::vld PROPERTIES
+				IMPORTED_LOCATION_RELEASE "${VLD_LIBRARY}"
+			)
+		endif()
+		set( VLD_LIBRARIES ${VLD_LIBRARY} CACHE STRING "VLD libraries" )
+		unset( VLD_LIBRARY_DIR CACHE )
+	else ()
+		mark_as_advanced( VLD_LIBRARY_DIR )
+	endif ()
 endif()
 
 find_package_handle_standard_args( VLD DEFAULT_MSG VLD_LIBRARY VLD_INCLUDE_DIR )
