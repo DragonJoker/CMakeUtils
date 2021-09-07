@@ -92,6 +92,27 @@ if ( WIN32 )
 				${FreeImage_LIBRARY_RELEASE_DIR}
 		)
 
+		if ( NOT TARGET freeimage::FreeImage )
+			add_library( freeimage::FreeImage UNKNOWN IMPORTED )
+			set_target_properties(freeimage::FreeImage PROPERTIES
+				INTERFACE_INCLUDE_DIRECTORIES "${FreeImage_INCLUDE_DIR}" )
+			if ( FreeImage_LIBRARY_RELEASE AND FreeImage_LIBRARY_DEBUG )
+				set_property( TARGET freeimage::FreeImage APPEND PROPERTY
+					IMPORTED_CONFIGURATIONS RELEASE )
+				set_target_properties( freeimage::FreeImage PROPERTIES
+					IMPORTED_LINK_INTERFACE_LANGUAGES_RELEASE "C"
+					IMPORTED_LOCATION_RELEASE "${FreeImage_LIBRARY_RELEASE}" )
+				set_property( TARGET freeimage::FreeImage APPEND PROPERTY
+					IMPORTED_CONFIGURATIONS DEBUG )
+				set_target_properties( freeimage::FreeImage PROPERTIES
+					IMPORTED_LINK_INTERFACE_LANGUAGES_DEBUG "C"
+					IMPORTED_LOCATION_DEBUG "${FreeImage_LIBRARY_DEBUG}" )
+			elseif ( FreeImage_LIBRARY_RELEASE )
+				set_target_properties( freeimage::FreeImage PROPERTIES
+					IMPORTED_LINK_INTERFACE_LANGUAGES "C"
+					IMPORTED_LOCATION "${FreeImage_LIBRARY_RELEASE}" )
+			endif()
+		endif()
 		if ( FreeImage_LIBRARY_RELEASE AND FreeImage_LIBRARY_DEBUG )
 			set( FreeImage_LIBRARIES 
 				optimized ${FreeImage_LIBRARY_RELEASE}
@@ -100,6 +121,9 @@ if ( WIN32 )
 		elseif ( FreeImage_LIBRARY_RELEASE )
 			set( FreeImage_LIBRARIES ${FreeImage_LIBRARY_RELEASE} )
 		endif ()
+
+		mark_as_advanced( FreeImage_LIBRARY_DEBUG )
+		mark_as_advanced( FreeImage_LIBRARY_RELEASE )
 	else ()
 		find_path( FreeImage_LIBRARY_DIR FreeImage.lib
 			HINTS
@@ -117,10 +141,19 @@ if ( WIN32 )
 				${FreeImage_LIBRARY_DIR}
 		)
 
+		if ( NOT TARGET freeimage::FreeImage )
+			if ( FreeImage_LIBRARY )
+				add_library( freeimage::FreeImage UNKNOWN IMPORTED )
+				set_target_properties(freeimage::FreeImage PROPERTIES
+					INTERFACE_INCLUDE_DIRECTORIES "${FreeImage_INCLUDE_DIR}" )
+				set_target_properties( freeimage::FreeImage PROPERTIES
+					IMPORTED_LINK_INTERFACE_LANGUAGES "C"
+					IMPORTED_LOCATION "${FreeImage_LIBRARY}" )
+			endif()
+		endif()
 		set( FreeImage_LIBRARIES ${FreeImage_LIBRARY} )
 
-		mark_as_advanced( FreeImage_LIBRARY_DEBUG )
-		mark_as_advanced( FreeImage_LIBRARY_RELEASE )
+		mark_as_advanced( FreeImage_LIBRARY )
 	endif ()
 else ()
 	find_path( FreeImage_ROOT_DIR include/FreeImage.h Dist/FreeImage.h
@@ -160,6 +193,14 @@ else ()
 	)
 
 	if ( FreeImage_LIBRARY )
+		if ( NOT TARGET freeimage::FreeImage )
+			add_library( freeimage::FreeImage UNKNOWN IMPORTED )
+			set_target_properties(freeimage::FreeImage PROPERTIES
+				INTERFACE_INCLUDE_DIRECTORIES "${FreeImage_INCLUDE_DIR}" )
+			set_target_properties( freeimage::FreeImage PROPERTIES
+				IMPORTED_LINK_INTERFACE_LANGUAGES "C"
+				IMPORTED_LOCATION "${FreeImage_LIBRARY}" )
+		endif()
 		SET( FreeImage_LIBRARIES ${FreeImage_LIBRARY} )
 	endif ()
 
