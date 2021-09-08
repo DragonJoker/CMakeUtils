@@ -4,6 +4,7 @@ include( CompilerVersion )
 include( ComputeAbi )
 include( PrecompiledHeaders )
 include( FileUtils )
+include( CompilationFlags )
 
 set( PROJECTS_VERSION "" )
 set( PROJECTS_SOVERSION "" )
@@ -533,9 +534,16 @@ function( add_target_min TARGET_NAME TARGET_TYPE )# ARGV2=PCH_HEADER ARGV3=PCH_S
 			set( ${PROJECT_NAME}_WXWIDGET 0 )
 		endif ()
 
-		set( TARGET_COMPILE_DEFINITIONS "" )
-		set( TARGET_COMPILE_FLAGS "" )
-		add_target_compilation_common_flags( ${TARGET_NAME} ${TARGET_TYPE} TARGET_COMPILE_DEFINITIONS TARGET_COMPILE_FLAGS TARGET_LINK_FLAGS )
+		compute_target_compilation_common_flags( ${TARGET_NAME} ${TARGET_TYPE}
+			TARGET_C_DEFS
+			TARGET_C_FLAGS
+			TARGET_CXX_DEFS
+			TARGET_CXX_FLAGS
+			TARGET_LNK_FLAGS
+		)
+		set( TARGET_COMPILE_DEFINITIONS ${TARGET_C_DEFS} ${TARGET_CXX_DEFS} )
+		set( TARGET_COMPILE_FLAGS ${TARGET_C_FLAGS} ${TARGET_CXX_FLAGS} )
+		set( TARGET_LINK_FLAGS ${TARGET_LNK_FLAGS} )
 
 		if ( NOT "x86" STREQUAL ${PROJECTS_PLATFORM} )
 			#Additional definition, for X64 builds
@@ -641,8 +649,13 @@ function( add_target_min TARGET_NAME TARGET_TYPE )# ARGV2=PCH_HEADER ARGV3=PCH_S
 				${TARGET_COMPILE_FLAGS}
 				${PROJECTS_COMPILE_OPTIONS}
 		)
+		target_link_options( ${TARGET_NAME}
+			PUBLIC
+				${TARGET_LINK_FLAGS}
+		)
 		msg_debug( "TARGET_COMPILE_FLAGS:        ${TARGET_COMPILE_FLAGS}" )
 		msg_debug( "TARGET_COMPILE_DEFINITIONS:  ${TARGET_COMPILE_DEFINITIONS}" )
+		msg_debug( "TARGET_LINK_FLAGS:           ${TARGET_LINK_FLAGS}" )
 	endif ()
 endfunction()
 
