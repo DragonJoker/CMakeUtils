@@ -205,6 +205,7 @@ function( compute_compiler_flags C_DEFINITIONS C_FLAGS CXX_DEFINITIONS CXX_FLAGS
 			/MP # Enabling multi-processes compilation
 
 			/wd4061 # Enum value in a switch not explicitly handled by a case label
+			/wd4068 # Unknown pragma
 			/wd4100 # Unused parameter.
 			/wd4263 # Member function does not override any base class virtual member function
 			/wd4264 # No override available for virtual member function from base 'class'; function is hidden
