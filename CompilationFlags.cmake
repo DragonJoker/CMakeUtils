@@ -170,6 +170,7 @@ function( compute_compiler_flags C_DEFINITIONS C_FLAGS CXX_DEFINITIONS CXX_FLAGS
 			-Wno-undef
 			-Wno-unknown-pragmas
 			-Wno-unused-parameter
+			-Wno-unknown-warning-option
 		)
 		set( _CXX_FLAGS
 			-Wno-c++98-compat
