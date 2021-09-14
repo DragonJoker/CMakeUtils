@@ -1,4 +1,5 @@
 set( PROJECTS_COMPILER "Unknown" )
+
 if ( MSVC AND NOT CMAKE_CXX_COMPILER_ID MATCHES "Clang" )
 	set( PROJECTS_COMPILER "MSVC" )
 	set( PROJECTS_COMPILER_MSVC ON )
@@ -69,14 +70,9 @@ function( add_target_compilation_flags TARGET_NAME ) #ARGS
 	set_target_properties( ${TARGET_NAME} PROPERTIES COMPILE_FLAGS ${TEMP} )
 endfunction( add_target_compilation_flags )
 
-function( compute_compiler_flags C_DEFINITIONS C_FLAGS CXX_DEFINITIONS CXX_FLAGS )
+function( compute_compiler_warning_flags C_DEFINITIONS C_FLAGS CXX_DEFINITIONS CXX_FLAGS LNK_FLAGS )
 	if ( PROJECTS_COMPILER_GCC )
-		DumpCompilerVersion( COMPILER_VERSION )
-		if ( NOT ANDROID )
-			set( SSE2_FLAG -msse2 )
-		endif ()
 		set( _C_FLAGS
-			${SSE2_FLAG}
 			-pedantic
 			-Wall
 			-Warray-bounds
@@ -102,6 +98,7 @@ function( compute_compiler_flags C_DEFINITIONS C_FLAGS CXX_DEFINITIONS CXX_FLAGS
 			-Wstrict-aliasing
 			-Wstrict-null-sentinel
 			-Wunused-macros
+			-Wno-pragmas
 		)
 		set( _CXX_FLAGS
 			-Wnon-virtual-dtor
@@ -142,7 +139,7 @@ function( compute_compiler_flags C_DEFINITIONS C_FLAGS CXX_DEFINITIONS CXX_FLAGS
 			set( _C_FLAGS
 				${_C_FLAGS}
 				-Walloca
-				-Wshadow
+				-Wshadow=compatible-local
 			)
 			set( _CXX_FLAGS
 				${_CXX_FLAGS}
@@ -152,7 +149,6 @@ function( compute_compiler_flags C_DEFINITIONS C_FLAGS CXX_DEFINITIONS CXX_FLAGS
 			)
 		endif ()
 	elseif ( PROJECTS_COMPILER_CLANG )
-		DumpCompilerVersion( COMPILER_VERSION )
 		set( _C_FLAGS
 			-Weverything
 
@@ -167,6 +163,7 @@ function( compute_compiler_flags C_DEFINITIONS C_FLAGS CXX_DEFINITIONS CXX_FLAGS
 			-Wno-padded
 			-Wno-reserved-id-macro
 			-Wno-switch-enum
+			-Wno-shadow-field
 			-Wno-undef
 			-Wno-unknown-pragmas
 			-Wno-unused-parameter
@@ -179,6 +176,7 @@ function( compute_compiler_flags C_DEFINITIONS C_FLAGS CXX_DEFINITIONS CXX_FLAGS
 			-Wno-format-nonliteral
 			-Wno-global-constructors
 			-Wno-sign-conversion
+			-Wno-weak-vtables
 			-Wno-weak-vtables
 		)
 		if ( PROJECTS_COMPILER_CLANG_CL )
@@ -198,6 +196,8 @@ function( compute_compiler_flags C_DEFINITIONS C_FLAGS CXX_DEFINITIONS CXX_FLAGS
 			set( _CXX_FLAGS
 				${_CXX_FLAGS}
 				-Wno-unused-template
+				-Wno-shadow-field-in-constructor
+				-Wno-inconsistent-missing-destructor-override
 			)
 		endif ()
 	elseif ( PROJECTS_COMPILER_MSVC )
@@ -238,6 +238,33 @@ function( compute_compiler_flags C_DEFINITIONS C_FLAGS CXX_DEFINITIONS CXX_FLAGS
 		string( REGEX REPLACE "/W[0-4]" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}" )
 	endif ()
 	if ( PROJECTS_COMPILER_MSVC OR PROJECTS_COMPILER_CLANG_CL )
+		set( _LNK_FLAGS
+			${_LNK_FLAGS}
+			# LINK Warnings
+			/IGNORE:4099 # pdb not found
+		)
+	endif ()
+	set( _CXX_DEFINITIONS ${_C_DEFINITIONS} ${_CXX_DEFINITIONS} )
+	set( _CXX_FLAGS ${_C_FLAGS} ${_CXX_FLAGS} )
+
+	set( ${C_DEFINITIONS} "${_C_DEFINITIONS}" PARENT_SCOPE )
+	set( ${C_FLAGS} "${_C_FLAGS}" PARENT_SCOPE )
+	set( ${CXX_DEFINITIONS} "${_CXX_DEFINITIONS}" PARENT_SCOPE )
+	set( ${CXX_FLAGS} "${_CXX_FLAGS}" PARENT_SCOPE )
+	set( ${LNK_FLAGS} "${_LNK_FLAGS}" PARENT_SCOPE )
+endfunction( compute_compiler_warning_flags )
+
+function( compute_compiler_flags C_DEFINITIONS C_FLAGS CXX_DEFINITIONS CXX_FLAGS LNK_FLAGS )
+	compute_compiler_warning_flags( C_WARN_DEFS C_WARN_FLAGS CXX_WARN_DEFS CXX_WARN_FLAGS LNK_WARN_FLAGS )
+	if ( PROJECTS_COMPILER_GCC )
+		if ( NOT ANDROID )
+			set( SSE2_FLAG -msse2 )
+		endif ()
+		set( _C_FLAGS
+			${SSE2_FLAG}
+		)
+	endif ()
+	if ( PROJECTS_COMPILER_MSVC OR PROJECTS_COMPILER_CLANG_CL )
 		set( _CXX_FLAGS
 			${_CXX_FLAGS}
 			/permissive- # Improving standard compliance
@@ -252,13 +279,17 @@ function( compute_compiler_flags C_DEFINITIONS C_FLAGS CXX_DEFINITIONS CXX_FLAGS
 			_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING # Ignoring std::codecvt deprecation warnings
 		)
 	endif ()
-	set( _CXX_DEFINITIONS ${_C_DEFINITIONS} ${_CXX_DEFINITIONS} )
-	set( _CXX_FLAGS ${_C_FLAGS} ${_CXX_FLAGS} )
+	set( _C_DEFINITIONS ${C_WARN_DEFS} ${_C_DEFINITIONS} )
+	set( _C_FLAGS ${C_WARN_FLAGS} ${_C_FLAGS} )
+	set( _CXX_DEFINITIONS ${CXX_WARN_DEFS} ${_CXX_DEFINITIONS} )
+	set( _CXX_FLAGS ${CXX_WARN_FLAGS} ${_CXX_FLAGS} )
+	set( _LNK_FLAGS ${LNK_WARN_FLAGS} ${_LNK_FLAGS} )
 
 	set( ${C_DEFINITIONS} "${_C_DEFINITIONS}" PARENT_SCOPE )
 	set( ${C_FLAGS} "${_C_FLAGS}" PARENT_SCOPE )
 	set( ${CXX_DEFINITIONS} "${_CXX_DEFINITIONS}" PARENT_SCOPE )
 	set( ${CXX_FLAGS} "${_CXX_FLAGS}" PARENT_SCOPE )
+	set( ${LNK_FLAGS} "${_LNK_FLAGS}" PARENT_SCOPE )
 endfunction( compute_compiler_flags )
 
 function( compute_platform_flags C_DEFINITIONS C_FLAGS CXX_DEFINITIONS CXX_FLAGS LNK_FLAGS )
@@ -276,8 +307,6 @@ function( compute_platform_flags C_DEFINITIONS C_FLAGS CXX_DEFINITIONS CXX_FLAGS
 			set( _LNK_FLAGS -m32 )
 		endif()
 	endif()
-	set( _CXX_DEFINITIONS ${_C_DEFINITIONS} ${_CXX_DEFINITIONS} )
-	set( _CXX_FLAGS ${_C_FLAGS} ${_CXX_FLAGS} )
 
 	set( ${C_DEFINITIONS} "${_C_DEFINITIONS}" PARENT_SCOPE )
 	set( ${C_FLAGS} "${_C_FLAGS}" PARENT_SCOPE )
@@ -307,7 +336,8 @@ function( compute_target_compilation_common_flags TARGET_NAME TARGET_TYPE TARGET
 	set( C_COMPILER_FLAGS )
 	set( CXX_COMPILER_DEFS )
 	set( CXX_COMPILER_FLAGS )
-	compute_compiler_flags( C_COMPILER_DEFS C_COMPILER_FLAGS CXX_COMPILER_DEFS CXX_COMPILER_FLAGS )
+	set( LNK_COMPILER_FLAGS )
+	compute_compiler_flags( C_COMPILER_DEFS C_COMPILER_FLAGS CXX_COMPILER_DEFS CXX_COMPILER_FLAGS LNK_COMPILER_FLAGS )
 	set( C_PLATFORM_DEFS )
 	set( C_PLATFORM_FLAGS )
 	set( CXX_PLATFORM_DEFS )
@@ -318,7 +348,7 @@ function( compute_target_compilation_common_flags TARGET_NAME TARGET_TYPE TARGET
 	set( C_TGT_FLAGS ${C_TGT_FLAGS} ${C_COMPILER_FLAGS} ${C_PLATFORM_FLAGS} )
 	set( CXX_TGT_DEFS ${CXX_TGT_DEFS} ${CXX_COMPILER_DEFS} ${CXX_PLATFORM_DEFS} )
 	set( CXX_TGT_FLAGS ${CXX_TGT_FLAGS} ${CXX_COMPILER_FLAGS} ${CXX_PLATFORM_FLAGS} )
-	set( LNK_TGT_FLAGS ${LNK_PLATFORM_FLAGS} )
+	set( LNK_TGT_FLAGS ${LNK_COMPILER_FLAGS} ${LNK_PLATFORM_FLAGS} )
 
 	set( ${TARGET_C_DEFINITIONS} "${C_TGT_DEFS}" PARENT_SCOPE )
 	set( ${TARGET_C_FLAGS} "${C_TGT_FLAGS}" PARENT_SCOPE )
@@ -353,33 +383,25 @@ function( compute_compilation_flags TARGET_NAME TARGET_TYPE OPT_C_FLAGS OPT_CXX_
 endfunction( compute_compilation_flags )
 
 function( target_add_compilation_flags TARGET_NAME )
-	compute_compiler_flags( COMP_C_DEFS COMP_C_FLAGS COMP_CXX_DEFS COMP_CXX_FLAGS )
+	compute_compiler_flags( COMP_C_DEFS COMP_C_FLAGS COMP_CXX_DEFS COMP_CXX_FLAGS COMP_LNK_FLAGS )
 	compute_platform_flags( PLAT_C_DEFS PLAT_C_FLAGS PLAT_CXX_DEFS PLAT_CXX_FLAGS PLAT_LNK_FLAGS )
-	set( _COMPILE_DEFINITIONS
-		${COMP_C_DEFS}
-		${COMP_CXX_DEFS}
-		${PLAT_C_DEFS}
-		${PLAT_CXX_DEFS}
-	)
-	set( _COMPILE_OPTIONS
-		${COMP_C_FLAGS}
-		${COMP_CXX_FLAGS}
-		${PLAT_C_FLAGS}
-		${PLAT_CXX_FLAGS}
-	)
-	set( _LINK_OPTIONS
-		${PLAT_LNK_FLAGS}
-	)
 	target_compile_definitions( ${TARGET_NAME}
 		PRIVATE
-			${_COMPILE_DEFINITIONS}
+			${COMP_C_DEFS}
+			${COMP_CXX_DEFS}
+			${PLAT_C_DEFS}
+			${PLAT_CXX_DEFS}
 	)
 	target_compile_options( ${TARGET_NAME}
 		PRIVATE
-			${_COMPILE_OPTIONS}
+			${COMP_C_FLAGS}
+			${COMP_CXX_FLAGS}
+			${PLAT_C_FLAGS}
+			${PLAT_CXX_FLAGS}
 	)
 	target_link_options( ${TARGET_NAME}
 		PRIVATE
-			${_LINK_OPTIONS}
+			${COMP_LNK_FLAGS}
+			${PLAT_LNK_FLAGS}
 	)
 endfunction( target_add_compilation_flags )
