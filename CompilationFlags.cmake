@@ -1,5 +1,7 @@
 set( PROJECTS_COMPILER "Unknown" )
 
+option( PROJECTS_WARNINGS_AS_ERRORS "Turns compiler warnings to errors" OFF )
+
 if ( MSVC AND NOT CMAKE_CXX_COMPILER_ID MATCHES "Clang" )
 	set( PROJECTS_COMPILER "MSVC" )
 	set( PROJECTS_COMPILER_MSVC ON )
@@ -100,6 +102,12 @@ function( compute_compiler_warning_flags C_DEFINITIONS C_FLAGS CXX_DEFINITIONS C
 			-Wunused-macros
 			-Wno-pragmas
 		)
+		if ( PROJECTS_WARNINGS_AS_ERRORS )
+			set( _C_FLAGS
+				${_C_FLAGS}
+				-Werror
+			)
+		endif ()
 		set( _CXX_FLAGS
 			-Wnon-virtual-dtor
 			# -Wold-style-cast
@@ -169,6 +177,12 @@ function( compute_compiler_warning_flags C_DEFINITIONS C_FLAGS CXX_DEFINITIONS C
 			-Wno-unused-parameter
 			-Wno-unknown-warning-option
 		)
+		if ( PROJECTS_WARNINGS_AS_ERRORS )
+			set( _C_FLAGS
+				${_C_FLAGS}
+				-Werror
+			)
+		endif ()
 		set( _CXX_FLAGS
 			-Wno-c++98-compat
 			-Wno-c++98-compat-pedantic
@@ -234,6 +248,12 @@ function( compute_compiler_warning_flags C_DEFINITIONS C_FLAGS CXX_DEFINITIONS C
 			/wd5039 # Pointer/ref to a potentially throwing function passed to an 'extern "C"' function (with -EHc)
 			/wd5220 # Non-static volatile member doesn't imply non-trivial move/copy ctor/operator=
 		)
+		if ( PROJECTS_WARNINGS_AS_ERRORS )
+			set( _CXX_FLAGS
+				${_CXX_FLAGS}
+				/WX
+			)
+		endif ()
 		string( REGEX REPLACE "/Z[iI7]" "/ZI" CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}" )
 		string( REGEX REPLACE "/W[0-4]" "" CMAKE_C_FLAGS "${CMAKE_C_FLAGS}" )
 		string( REGEX REPLACE "/W[0-4]" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}" )
