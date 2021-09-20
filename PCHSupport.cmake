@@ -1,9 +1,9 @@
 include( Logging )
 
-if ( APPLE )
-	option( PROJECTS_USE_PRECOMPILED_HEADERS "Use precompiled headers" OFF )
-else ()
+if ( MSVC )
 	option( PROJECTS_USE_PRECOMPILED_HEADERS "Use precompiled headers" ON )
+else ()
+	option( PROJECTS_USE_PRECOMPILED_HEADERS "Use precompiled headers" OFF )
 endif ()
 
 #--------------------------------------------------------------------------------------------------
@@ -116,7 +116,7 @@ endmacro( pch_get_compile_command )
 # Adds the precompiled headers to the given target
 #
 #--------------------------------------------------------------------------------------------------
-MACRO( add_target_precompiled_header_ex TARGET_NAME PROJ_GROUP PCH_HEADER PCH_SOURCE TARGET_CXX_FLAGS )
+MACRO( add_target_precompiled_header_legacy TARGET_NAME PROJ_GROUP PCH_HEADER PCH_SOURCE TARGET_CXX_FLAGS )
 	if ( PROJECTS_USE_PRECOMPILED_HEADERS )
 		msg_debug( "PCH: TARGET_NAME ${TARGET_NAME}" )
 		msg_debug( "PCH:     PROJ_GROUP ${PROJ_GROUP}" )
@@ -156,7 +156,26 @@ MACRO( add_target_precompiled_header_ex TARGET_NAME PROJ_GROUP PCH_HEADER PCH_SO
 			endforeach ()
 		endif ()
 	endif ()
+ENDMACRO( add_target_precompiled_header_legacy )
+
+MACRO( add_target_precompiled_header_ex TARGET_NAME PROJ_GROUP PCH_HEADER PCH_SOURCE TARGET_CXX_FLAGS )
+	if ( PROJECTS_USE_PRECOMPILED_HEADERS )
+		if ( ${CMAKE_VERSION} VERSION_LESS "3.16.0" )
+			add_target_precompiled_header_legacy( ${TARGET_NAME}
+				${PROJ_GROUP}
+				${PCH_HEADER}
+				${PCH_SOURCE}
+				${TARGET_CXX_FLAGS}
+			)
+		else ()
+			target_precompile_headers( ${TARGET_NAME}
+				PRIVATE
+					${PCH_HEADER}
+			)
+		endif ()
+	endif ()
 ENDMACRO( add_target_precompiled_header_ex )
+
 MACRO( add_target_precompiled_header TARGET_NAME PCH_HEADER PCH_SOURCE TARGET_CXX_FLAGS )
 	add_target_precompiled_header_ex( ${TARGET_NAME} "" ${PCH_HEADER} ${PCH_SOURCE} "${TARGET_CXX_FLAGS}" ${ARGN} )
 ENDMACRO( add_target_precompiled_header )
