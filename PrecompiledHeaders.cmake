@@ -129,7 +129,7 @@ macro( target_add_precompiled_header_legacy TARGET_NAME PRECOMPILED_HEADER PRECO
 	endif ()
 endmacro( target_add_precompiled_header_legacy )
 
-if ( MSVC )
+if ( MSVC OR ${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.16.0" )
 	option( PROJECTS_USE_PRECOMPILED_HEADERS "Use precompiled headers" ON )
 else ()
 	option( PROJECTS_USE_PRECOMPILED_HEADERS "Use precompiled headers" OFF )
