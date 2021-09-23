@@ -233,6 +233,7 @@ function( compute_compiler_warning_flags C_DEFINITIONS C_FLAGS CXX_DEFINITIONS C
 			/wd4866 # Compiler may not enforce left-to-right evaluation order for call to <operator_name>
 			/wd4868 # Compiler may not enforce left-to-right evaluation order in braced initializer list
 			/wd5045 # Spectre mitigation
+			/wd5246 # The initialization of a subobject should be wrapped in braces
 
 			# Warnings triggered by MSVC's standard library
 			/wd4355 # 'this' used in base member initializing list
