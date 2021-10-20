@@ -186,6 +186,7 @@ function( compute_compiler_warning_flags C_DEFINITIONS C_FLAGS CXX_DEFINITIONS C
 		set( _CXX_FLAGS
 			-Wno-c++98-compat
 			-Wno-c++98-compat-pedantic
+			-Wno-return-std-move-in-c++11
 			-Wno-exit-time-destructors
 			-Wno-format-nonliteral
 			-Wno-global-constructors
