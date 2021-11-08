@@ -23,8 +23,8 @@ function( copy_target_files _TARGET _DESTINATION )# ARGN: The files
 	copy_target_files_ex( ${_TARGET} ${_TARGET} ${_DESTINATION} ${ARGN} )
 endfunction()
 
-function( copy_target_directory_ex _TARGET _COMPONENT _SOURCE ) #ARGV2: _DESTINATION
-	set( _DESTINATION "${ARGV2}" )
+function( copy_target_directory_ex _TARGET _COMPONENT _SOURCE ) #ARGV3: _DESTINATION
+	set( _DESTINATION "${ARGV3}" )
 	add_custom_command(
 		TARGET ${_TARGET}
 		POST_BUILD
