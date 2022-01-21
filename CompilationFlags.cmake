@@ -34,7 +34,7 @@ endif ()
 
 string( FIND ${CMAKE_C_COMPILER} "arm" IS_ARM )
 
-if ( IS_ARM )
+if ( IS_ARM GREATER -1 )
 	if ( MSVC )
 		if( (CMAKE_CL_64 OR CMAKE_GENERATOR MATCHES Win64) )
 			set( PROJECTS_PLATFORM "arm64" )
