@@ -560,7 +560,7 @@ function( add_target_min TARGET_NAME TARGET_TYPE )# ARGV2=PCH_HEADER ARGV3=PCH_S
 				PROPERTIES
 					VERSION ${PROJECTS_VERSION}
 					SOVERSION ${PROJECTS_SOVERSION}
-					CXX_STANDARD 17
+					CXX_STANDARD 20
 			)
 		elseif ( IS_BINARY )
 			if ( WIN32 AND NOT IS_BIN_DOS )
@@ -582,7 +582,7 @@ function( add_target_min TARGET_NAME TARGET_TYPE )# ARGV2=PCH_HEADER ARGV3=PCH_S
 			set_target_properties( ${TARGET_NAME}
 				PROPERTIES
 					VS_DEBUGGER_WORKING_DIRECTORY "$(OutDir)"
-					CXX_STANDARD 17
+					CXX_STANDARD 20
 			)
 		elseif ( IS_LIB )
 			add_library( ${TARGET_NAME}
@@ -598,7 +598,7 @@ function( add_target_min TARGET_NAME TARGET_TYPE )# ARGV2=PCH_HEADER ARGV3=PCH_S
 			)
 			set_target_properties( ${TARGET_NAME}
 				PROPERTIES
-					CXX_STANDARD 17
+					CXX_STANDARD 20
 			)
 		else()
 			message( FATAL_ERROR " Unknown target type : [${TARGET_TYPE}]" )
