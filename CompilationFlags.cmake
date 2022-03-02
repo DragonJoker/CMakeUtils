@@ -139,13 +139,13 @@ function( compute_compiler_warning_flags C_DEFINITIONS C_FLAGS CXX_DEFINITIONS C
 			-Woverloaded-virtual
 			-Wtrampolines
 			-Wuninitialized
-			-Wuseless-cast
 			-Wvector-operation-performance
 			-Wvla
 			-Wzero-as-null-pointer-constant
 
 			-Wno-comment
 			-Wno-format-nonliteral
+			-Wno-useless-cast
 		)
 		if ( CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 5 )
 			set( _C_FLAGS
