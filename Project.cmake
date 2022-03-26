@@ -419,6 +419,28 @@ macro( install_target TARGET_NAME TARGET_TYPE HDR_FOLDER )
 	install_target_ex( ${TARGET_NAME} ${TARGET_NAME} ${TARGET_TYPE} ${HDR_FOLDER} )
 endmacro()
 
+macro( target_add_manifest TARGET_NAME )
+	if ( WIN32 )
+		if ( PROJECTS_PLATFORM_64 )
+			set( _MANIFEST_INPUT ${CMAKE_TEMPLATES_DIR}/manifest_x64.bin.in )
+		else ()
+			set( _MANIFEST_INPUT ${CMAKE_TEMPLATES_DIR}/manifest.bin.in )
+		endif ()
+		if ( EXISTS ${_MANIFEST_INPUT} )
+			set( _MANIFEST_OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${TARGET_NAME}.manifest )
+			configure_file( 
+				${_MANIFEST_INPUT}
+				${_MANIFEST_OUTPUT}
+				NEWLINE_STYLE LF
+			)
+			set( ${TARGET_NAME}_SRC_FILES
+				${${TARGET_NAME}_SRC_FILES}
+				${_MANIFEST_OUTPUT}
+			)
+		endif ()
+	endif ()
+endmacro()
+
 #--------------------------------------------------------------------------------------------------
 #\function
 #	add_target
