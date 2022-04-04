@@ -24,7 +24,6 @@ function( _copy_files _TARGET_NAME _TARGET_DIR_RELEASE _TARGET_DIR_RELWITHDEBINF
 			$<$<CONFIG:Release>:${_TARGET_DIR_RELEASE}/${_DESTINATION}/${_LIB_NAME_RELEASE}>
 			$<$<CONFIG:RelWithDebInfo>:${_SOURCE_RELEASE}>
 			$<$<CONFIG:RelWithDebInfo>:${_TARGET_DIR_RELWITHDEBINFO}/${_DESTINATION}/${_LIB_NAME_RELEASE}>
-		COMMENT "Copying ${_FILE} into ${_DESTINATION} folder"
 	)
 	install(
 		FILES ${_SOURCE_RELEASE}
@@ -52,6 +51,7 @@ function( _copy_target_files _TARGET _DESTINATION )# ARGN: The files
 			POST_BUILD
 			COMMAND ${CMAKE_COMMAND} -E make_directory ${PROJECTS_BINARIES_OUTPUT_DIR}/$<CONFIGURATION>/share/Castor3D/${_DESTINATION}
 			COMMAND ${CMAKE_COMMAND} -E copy_if_different ${_FILE} ${PROJECTS_BINARIES_OUTPUT_DIR}/$<CONFIGURATION>/share/Castor3D/${_DESTINATION}${_FILE_NAME}
+			COMMENT "Copying ${_FILE} into ${_DESTINATION} folder"
 		)
 	endforeach ()
 	install(
@@ -68,29 +68,53 @@ function( castor3d_copy_files _TARGET_NAME _TARGET_DIR_RELEASE _TARGET_DIR_RELWI
 			castor::CastorUtils
 			castor::Castor3D
 			castor::SceneExporter
+			ashes::ashes
+			ashes::ashesCommon
+			ashes::ashespp
+			ashes::ashesD3D11Renderer
+			ashes::ashesGlRenderer
+			ashes::ashesVkRenderer
+			ashes::ashesTestRenderer
+			sdw::ShaderAST
+			sdw::ShaderWriter
+			sdw::CompilerGlsl
+			sdw::CompilerSpirV
+			sdw::CompilerHlsl
+			crg::RenderGraph
 		)
 		foreach( castorTarget ${castorTargets} )
 			if ( TARGET ${castorTarget} )
 				get_target_property( TARGET_BIN_RELEASE ${castorTarget} IMPORTED_LOCATION_RELEASE )
 				get_target_property( TARGET_BIN_DEBUG ${castorTarget} IMPORTED_LOCATION_DEBUG )
-				_copy_files( ${_TARGET_NAME}
-					${_TARGET_DIR_RELEASE}
-					${_TARGET_DIR_RELWITHDEBINFO}
-					${_TARGET_DIR_DEBUG}
-					${TARGET_BIN_RELEASE}
-					${TARGET_BIN_DEBUG}
-					bin
-				)
 				get_target_property( TARGET_LIB_RELEASE ${castorTarget} IMPORTED_IMPLIB_RELEASE )
 				get_target_property( TARGET_LIB_DEBUG ${castorTarget} IMPORTED_IMPLIB_DEBUG )
-				_copy_files( ${_TARGET_NAME}
-					${_TARGET_DIR_RELEASE}
-					${_TARGET_DIR_RELWITHDEBINFO}
-					${_TARGET_DIR_DEBUG}
-					${TARGET_LIB_RELEASE}
-					${TARGET_LIB_DEBUG}
-					lib
-				)
+				if ( EXISTS ${TARGET_LIB_RELEASE} )
+					_copy_files( ${_TARGET_NAME}
+						${_TARGET_DIR_RELEASE}
+						${_TARGET_DIR_RELWITHDEBINFO}
+						${_TARGET_DIR_DEBUG}
+						${TARGET_BIN_RELEASE}
+						${TARGET_BIN_DEBUG}
+						bin
+					)
+					_copy_files( ${_TARGET_NAME}
+						${_TARGET_DIR_RELEASE}
+						${_TARGET_DIR_RELWITHDEBINFO}
+						${_TARGET_DIR_DEBUG}
+						${TARGET_LIB_RELEASE}
+						${TARGET_LIB_DEBUG}
+						lib
+					)
+				else ()
+					_copy_files( ${_TARGET_NAME}
+						${_TARGET_DIR_RELEASE}
+						${_TARGET_DIR_RELWITHDEBINFO}
+						${_TARGET_DIR_DEBUG}
+						${TARGET_BIN_RELEASE}
+						${TARGET_BIN_DEBUG}
+						lib
+					)
+				endif ()
 			endif ()
 		endforeach ()
 		set( castorPlugins
@@ -146,11 +170,16 @@ function( castor3d_copy_files _TARGET_NAME _TARGET_DIR_RELEASE _TARGET_DIR_RELWI
 			endif ()
 		endforeach ()
 	endif ()
-	set( Castor3D_SHARE_DIR "${Castor3D_ROOT_DIR}/share/Castor3D" )
-	file(
-		GLOB
-			CoreZipFiles
-			${Castor3D_SHARE_DIR}/*.zip
-	)
-	_copy_target_files( ${_TARGET_NAME} "" ${CoreZipFiles} )
+	if ( TARGET castor::Castor3D )
+		get_target_property( TARGET_BIN_RELEASE castor::Castor3D IMPORTED_LOCATION_RELEASE )
+		get_filename_component( TARGET_BIN_RELEASE ${TARGET_BIN_RELEASE} DIRECTORY )
+		get_filename_component( Castor3D_ROOT_DIR ${TARGET_BIN_RELEASE} DIRECTORY )
+		set( Castor3D_SHARE_DIR "${Castor3D_ROOT_DIR}/share/Castor3D" )
+		file(
+			GLOB
+				CoreZipFiles
+				${Castor3D_SHARE_DIR}/*.zip
+		)
+		_copy_target_files( ${_TARGET_NAME} "" ${CoreZipFiles} )
+	endif ()
 endfunction()
