@@ -17,6 +17,7 @@ macro( copy_languages_ex TARGET_NAME COMPONENT_NAME SRC_FOLDER DST_FOLDER LANGUA
 			FILES ${_FILE}
 			COMPONENT ${COMPONENT_NAME}
 			DESTINATION share/${DST_FOLDER}/${LANGUAGE}/
+			CONFIGURATIONS Release
 		)
 	endforeach()
 endmacro()

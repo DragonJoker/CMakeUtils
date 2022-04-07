@@ -16,6 +16,7 @@ function( copy_target_files_ex _TARGET _COMPONENT _DESTINATION )# ARGN: The file
 		FILES ${ARGN}
 		COMPONENT ${_COMPONENT}
 		DESTINATION share/${_TARGET}
+		CONFIGURATIONS Release
 	)
 endfunction()
 
@@ -35,6 +36,7 @@ function( copy_target_directory_ex _TARGET _COMPONENT _SOURCE ) #ARGV3: _DESTINA
 		DIRECTORY ${_SOURCE}
 		COMPONENT ${_COMPONENT}
 		DESTINATION share/${_TARGET}
+		CONFIGURATIONS Release
 	)
 endfunction()
 
