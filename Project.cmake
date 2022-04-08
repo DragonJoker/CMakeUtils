@@ -312,18 +312,20 @@ macro( install_target_ex TARGET_NAME COMPONENT_NAME TARGET_TYPE HDR_FOLDER )
 				ARCHIVE DESTINATION lib/Debug${SUB_FOLDER}
 				LIBRARY DESTINATION lib/Debug${SUB_FOLDER}
 			)
-			install(
-				FILES $<TARGET_PDB_FILE:${TARGET_NAME}>
-				COMPONENT ${COMPONENT_NAME}_dev
-				CONFIGURATIONS Debug
-				DESTINATION ${BIN_FOLDER}/Debug${SUB_FOLDER}
-			)
-			install(
-				FILES $<TARGET_PDB_FILE:${TARGET_NAME}>
-				COMPONENT ${COMPONENT_NAME}_dev
-				CONFIGURATIONS RelWithDebInfo
-				DESTINATION ${BIN_FOLDER}/RelWithDebInfo${SUB_FOLDER}
-			)
+			if ( MSVC )
+				install(
+					FILES $<TARGET_PDB_FILE:${TARGET_NAME}>
+					COMPONENT ${COMPONENT_NAME}_dev
+					CONFIGURATIONS Debug
+					DESTINATION ${BIN_FOLDER}/Debug${SUB_FOLDER}
+				)
+				install(
+					FILES $<TARGET_PDB_FILE:${TARGET_NAME}>
+					COMPONENT ${COMPONENT_NAME}_dev
+					CONFIGURATIONS RelWithDebInfo
+					DESTINATION ${BIN_FOLDER}/RelWithDebInfo${SUB_FOLDER}
+				)
+			endif ()
 		else ()
 			#We install each .so in <install_dir>/lib folder
 			install(
@@ -379,18 +381,20 @@ macro( install_target_ex TARGET_NAME COMPONENT_NAME TARGET_TYPE HDR_FOLDER )
 						CONFIGURATIONS Release
 						DESTINATION bin
 					)
-					install(
-						FILES $<TARGET_PDB_FILE:${TARGET_NAME}>
-						COMPONENT ${COMPONENT_NAME}_dev
-						CONFIGURATIONS Debug
-						DESTINATION bin/Debug
-					)
-					install(
-						FILES $<TARGET_PDB_FILE:${TARGET_NAME}>
-						COMPONENT ${COMPONENT_NAME}_dev
-						CONFIGURATIONS RelWithDebInfo
-						DESTINATION bin/RelWithDebInfo
-					)
+					if ( MSVC )
+						install(
+							FILES $<TARGET_PDB_FILE:${TARGET_NAME}>
+							COMPONENT ${COMPONENT_NAME}_dev
+							CONFIGURATIONS Debug
+							DESTINATION bin/Debug
+						)
+						install(
+							FILES $<TARGET_PDB_FILE:${TARGET_NAME}>
+							COMPONENT ${COMPONENT_NAME}_dev
+							CONFIGURATIONS RelWithDebInfo
+							DESTINATION bin/RelWithDebInfo
+						)
+					endif ()
 				endif ()
 			endif ()
 		endif ()
@@ -415,18 +419,20 @@ macro( install_target_ex TARGET_NAME COMPONENT_NAME TARGET_TYPE HDR_FOLDER )
 			CONFIGURATIONS Debug
 			RUNTIME DESTINATION bin/Debug
 		)
-		install(
-			FILES $<TARGET_PDB_FILE:${TARGET_NAME}>
-			COMPONENT ${COMPONENT_NAME}_dev
-			CONFIGURATIONS Debug
-			DESTINATION bin/Debug
-		)
-		install(
-			FILES $<TARGET_PDB_FILE:${TARGET_NAME}>
-			COMPONENT ${COMPONENT_NAME}_dev
-			CONFIGURATIONS RelWithDebInfo
-			DESTINATION bin/RelWithDebInfo
-		)
+		if ( MSVC )
+			install(
+				FILES $<TARGET_PDB_FILE:${TARGET_NAME}>
+				COMPONENT ${COMPONENT_NAME}_dev
+				CONFIGURATIONS Debug
+				DESTINATION bin/Debug
+			)
+			install(
+				FILES $<TARGET_PDB_FILE:${TARGET_NAME}>
+				COMPONENT ${COMPONENT_NAME}_dev
+				CONFIGURATIONS RelWithDebInfo
+				DESTINATION bin/RelWithDebInfo
+			)
+		endif()
 	elseif ( IS_LIB )
 		#We now build the install script
 		#We copy each lib in <install_dir>/lib folder
