@@ -20,6 +20,10 @@ if ( MSVC )
 	option( PROJECTS_COVERAGE "Activate code coverage or not" OFF )
 endif()
 
+if ( NOT DEFINED PROJECTS_UNITY_BUILD )
+	option( PROJECTS_UNITY_BUILD "Build projects using Unity (Jumbo) build method" OFF )
+endif ()
+
 get_filename_component( CMAKE_PARENT_DIR ${CMAKE_CURRENT_SOURCE_DIR} PATH )
 
 set( PROJECTS_TEMPLATES_DIR ${CMAKE_CURRENT_SOURCE_DIR}/CMake/Templates )
@@ -627,6 +631,8 @@ function( add_target_min TARGET_NAME TARGET_TYPE )# ARGV2=PCH_HEADER ARGV3=PCH_S
 					VERSION ${PROJECTS_VERSION}
 					SOVERSION ${PROJECTS_SOVERSION}
 					CXX_STANDARD 20
+					CXX_EXTENSIONS OFF
+					UNITY_BUILD ${PROJECTS_UNITY_BUILD}
 			)
 		elseif ( IS_BINARY )
 			if ( WIN32 AND NOT IS_BIN_DOS )
@@ -649,6 +655,8 @@ function( add_target_min TARGET_NAME TARGET_TYPE )# ARGV2=PCH_HEADER ARGV3=PCH_S
 				PROPERTIES
 					VS_DEBUGGER_WORKING_DIRECTORY "$(OutDir)"
 					CXX_STANDARD 20
+					CXX_EXTENSIONS OFF
+					UNITY_BUILD ${PROJECTS_UNITY_BUILD}
 			)
 		elseif ( IS_LIB )
 			add_library( ${TARGET_NAME}
@@ -665,6 +673,8 @@ function( add_target_min TARGET_NAME TARGET_TYPE )# ARGV2=PCH_HEADER ARGV3=PCH_S
 			set_target_properties( ${TARGET_NAME}
 				PROPERTIES
 					CXX_STANDARD 20
+					CXX_EXTENSIONS OFF
+					UNITY_BUILD ${PROJECTS_UNITY_BUILD}
 			)
 		else()
 			message( FATAL_ERROR " Unknown target type : [${TARGET_TYPE}]" )
