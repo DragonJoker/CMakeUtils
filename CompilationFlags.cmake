@@ -200,6 +200,7 @@ function( compute_compiler_warning_flags C_DEFINITIONS C_FLAGS CXX_DEFINITIONS C
 			-Wno-unknown-pragmas
 			-Wno-unused-parameter
 			-Wno-unknown-warning-option
+			-Wno-extra-semi-stmt
 		)
 		if ( PROJECTS_WARNINGS_AS_ERRORS )
 			set( _C_FLAGS
