@@ -274,6 +274,8 @@ function( compute_compiler_warning_flags C_DEFINITIONS C_FLAGS CXX_DEFINITIONS C
 			/wd5027 # Move assignment operator implicitly deleted
 			/wd5039 # Pointer/ref to a potentially throwing function passed to an 'extern "C"' function (with -EHc)
 			/wd5220 # Non-static volatile member doesn't imply non-trivial move/copy ctor/operator=
+
+			/wd4599 # precompiled header argument does not match command line
 		)
 		if ( PROJECTS_WARNINGS_AS_ERRORS )
 			set( _CXX_FLAGS
