@@ -317,7 +317,10 @@ macro( install_target_ex TARGET_NAME EXPORT_NAME COMPONENT_NAME TARGET_TYPE HDR_
 		endif()
 		if ( IS_API )
 			#For API DLLs, we install headers to <install_dir>/include/${TARGET_NAME}
-			target_install_headers( ${TARGET_NAME} ${HDR_FOLDER} )
+			target_install_headers_ex( ${TARGET_NAME}
+				${COMPONENT_NAME}
+				${HDR_FOLDER}
+			)
 			if ( WIN32 )
 				if ( IS_API_PLUGIN )
 					get_target_property( TARGET_PREFIX ${TARGET_NAME} PREFIX )
@@ -378,7 +381,10 @@ macro( install_target_ex TARGET_NAME EXPORT_NAME COMPONENT_NAME TARGET_TYPE HDR_
 			ARCHIVE DESTINATION lib
 		)
 		#For libs, we install headers to <install_dir>/include/${TARGET_NAME}
-		target_install_headers_ex( ${TARGET_NAME} ${COMPONENT_NAME} ${HDR_FOLDER} )
+		target_install_headers_ex( ${TARGET_NAME}
+			${COMPONENT_NAME}
+			${HDR_FOLDER}
+		)
 	endif()
 endmacro()
 
