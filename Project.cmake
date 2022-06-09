@@ -95,7 +95,7 @@ macro( __target_install_headers TARGET_NAME COMPONENT_NAME SRCDIR DSTDIR )
 	)
 	install(
 		FILES ${_HEADERS}
-		COMPONENT ${COMPONENT_NAME}_dev
+		COMPONENT ${COMPONENT_NAME}
 		DESTINATION include/${DSTDIR}
 		CONFIGURATIONS Release
 	)
@@ -120,13 +120,10 @@ macro( target_install_dir_headers_ex TARGET_NAME COMPONENT_NAME SRCDIR DSTDIR )
 			${SRCDIR}/*.h
 			${SRCDIR}/*.hpp
 			${SRCDIR}/*.inl
-			${SRCDIR}/*.h
-			${SRCDIR}/*.hpp
-			${SRCDIR}/*.inl
 	)
 	install(
 		FILES ${_HEADERS}
-		COMPONENT ${COMPONENT_NAME}_dev
+		COMPONENT ${COMPONENT_NAME}
 		DESTINATION include/${DSTDIR}
 		CONFIGURATIONS Release
 	)
@@ -255,7 +252,7 @@ macro( find_rsc_file TARGET_NAME TARGET_TYPE )
 	endif ( WIN32 )
 endmacro()
 
-macro( install_target_ex TARGET_NAME COMPONENT_NAME TARGET_TYPE HDR_FOLDER )
+macro( install_target_ex TARGET_NAME EXPORT_NAME COMPONENT_NAME TARGET_TYPE HDR_FOLDER )
 	string( COMPARE EQUAL ${TARGET_TYPE} "dll" IS_DLL )
 	string( COMPARE EQUAL ${TARGET_TYPE} "api_dll" IS_API_DLL )
 	string( COMPARE EQUAL ${TARGET_TYPE} "lib" IS_LIB )
@@ -294,64 +291,28 @@ macro( install_target_ex TARGET_NAME COMPONENT_NAME TARGET_TYPE HDR_FOLDER )
 			#We install each .dll in <install_dir>/bin folder
 			install(
 				TARGETS ${TARGET_NAME}
+				EXPORT ${EXPORT_NAME}
 				COMPONENT ${COMPONENT_NAME}
-				CONFIGURATIONS Release
 				RUNTIME DESTINATION ${BIN_FOLDER}${SUB_FOLDER}
 				ARCHIVE DESTINATION lib${SUB_FOLDER}
 				LIBRARY DESTINATION lib${SUB_FOLDER}
 			)
-			install(
-				TARGETS ${TARGET_NAME}
-				COMPONENT ${COMPONENT_NAME}
-				CONFIGURATIONS RelWithDebInfo
-				RUNTIME DESTINATION ${BIN_FOLDER}/RelWithDebInfo${SUB_FOLDER}
-				ARCHIVE DESTINATION lib/RelWithDebInfo${SUB_FOLDER}
-				LIBRARY DESTINATION lib/RelWithDebInfo${SUB_FOLDER}
-			)
-			install(
-				TARGETS ${TARGET_NAME}
-				COMPONENT ${COMPONENT_NAME}
-				CONFIGURATIONS Debug
-				RUNTIME DESTINATION ${BIN_FOLDER}/Debug${SUB_FOLDER}
-				ARCHIVE DESTINATION lib/Debug${SUB_FOLDER}
-				LIBRARY DESTINATION lib/Debug${SUB_FOLDER}
-			)
 			if ( MSVC )
 				install(
 					FILES $<TARGET_PDB_FILE:${TARGET_NAME}>
-					COMPONENT ${COMPONENT_NAME}_dev
-					CONFIGURATIONS Debug
-					DESTINATION ${BIN_FOLDER}/Debug${SUB_FOLDER}
-				)
-				install(
-					FILES $<TARGET_PDB_FILE:${TARGET_NAME}>
-					COMPONENT ${COMPONENT_NAME}_dev
-					CONFIGURATIONS RelWithDebInfo
-					DESTINATION ${BIN_FOLDER}/RelWithDebInfo${SUB_FOLDER}
+					COMPONENT ${COMPONENT_NAME}
+					CONFIGURATIONS Debug RelWithDebInfo
+					DESTINATION ${BIN_FOLDER}${SUB_FOLDER}
 				)
 			endif ()
 		else ()
 			#We install each .so in <install_dir>/lib folder
 			install(
 				TARGETS ${TARGET_NAME}
+				EXPORT ${EXPORT_NAME}
 				COMPONENT ${COMPONENT_NAME}
-				CONFIGURATIONS Release
 				LIBRARY DESTINATION lib/${SUB_FOLDER}
 				ARCHIVE DESTINATION lib/${SUB_FOLDER}
-			)
-			install(
-				TARGETS ${TARGET_NAME}
-				COMPONENT ${COMPONENT_NAME}
-				CONFIGURATIONS RelWithDebInfo
-				LIBRARY DESTINATION lib/RelWithDebInfo/${SUB_FOLDER}
-				ARCHIVE DESTINATION lib/RelWithDebInfo/${SUB_FOLDER}
-			)
-			install(
-				TARGETS ${TARGET_NAME}
-				COMPONENT ${COMPONENT_NAME}
-				CONFIGURATIONS Debug
-				LIBRARY DESTINATION lib/Debug/${SUB_FOLDER}
-				ARCHIVE DESTINATION lib/Debug/${SUB_FOLDER}
 			)
 		endif()
 		if ( IS_API )
@@ -371,32 +332,20 @@ macro( install_target_ex TARGET_NAME COMPONENT_NAME TARGET_TYPE HDR_FOLDER )
 						FILES ${CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG}${TARGET_FILE_NAME}d.dll
 						COMPONENT ${COMPONENT_NAME}
 						CONFIGURATIONS Debug
-						DESTINATION bin/Debug
+						DESTINATION bin
 					)
 					install(
 						FILES ${CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE}${TARGET_FILE_NAME}.dll
 						COMPONENT ${COMPONENT_NAME}
-						CONFIGURATIONS RelWithDebInfo
-						DESTINATION bin/RelWithDebInfo
-					)
-					install(
-						FILES ${CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE}${TARGET_FILE_NAME}.dll
-						COMPONENT ${COMPONENT_NAME}
-						CONFIGURATIONS Release
+						CONFIGURATIONS Release RelWithDebInfo
 						DESTINATION bin
 					)
 					if ( MSVC )
 						install(
 							FILES $<TARGET_PDB_FILE:${TARGET_NAME}>
-							COMPONENT ${COMPONENT_NAME}_dev
-							CONFIGURATIONS Debug
-							DESTINATION bin/Debug
-						)
-						install(
-							FILES $<TARGET_PDB_FILE:${TARGET_NAME}>
-							COMPONENT ${COMPONENT_NAME}_dev
-							CONFIGURATIONS RelWithDebInfo
-							DESTINATION bin/RelWithDebInfo
+							COMPONENT ${COMPONENT_NAME}
+							CONFIGURATIONS Debug RelWithDebInfo
+							DESTINATION bin
 						)
 					endif ()
 				endif ()
@@ -407,34 +356,16 @@ macro( install_target_ex TARGET_NAME COMPONENT_NAME TARGET_TYPE HDR_FOLDER )
 		#We copy each exe in <install_dir>/bin folder
 		install(
 			TARGETS ${TARGET_NAME}
+			EXPORT ${EXPORT_NAME}
 			COMPONENT ${COMPONENT_NAME}
-			CONFIGURATIONS Release
 			RUNTIME DESTINATION bin
-		)
-		install(
-			TARGETS ${TARGET_NAME}
-			COMPONENT ${COMPONENT_NAME}
-			CONFIGURATIONS RelWithDebInfo
-			RUNTIME DESTINATION bin/RelWithDebInfo
-		)
-		install(
-			TARGETS ${TARGET_NAME}
-			COMPONENT ${COMPONENT_NAME}
-			CONFIGURATIONS Debug
-			RUNTIME DESTINATION bin/Debug
 		)
 		if ( MSVC )
 			install(
 				FILES $<TARGET_PDB_FILE:${TARGET_NAME}>
-				COMPONENT ${COMPONENT_NAME}_dev
-				CONFIGURATIONS Debug
-				DESTINATION bin/Debug
-			)
-			install(
-				FILES $<TARGET_PDB_FILE:${TARGET_NAME}>
-				COMPONENT ${COMPONENT_NAME}_dev
-				CONFIGURATIONS RelWithDebInfo
-				DESTINATION bin/RelWithDebInfo
+				COMPONENT ${COMPONENT_NAME}
+				CONFIGURATIONS Debug RelWithDebInfo
+				DESTINATION bin
 			)
 		endif()
 	elseif ( IS_LIB )
@@ -442,21 +373,9 @@ macro( install_target_ex TARGET_NAME COMPONENT_NAME TARGET_TYPE HDR_FOLDER )
 		#We copy each lib in <install_dir>/lib folder
 		install(
 			TARGETS ${TARGET_NAME}
-			COMPONENT ${COMPONENT_NAME}_dev
-			CONFIGURATIONS Release
+			EXPORT ${EXPORT_NAME}
+			COMPONENT ${COMPONENT_NAME}
 			ARCHIVE DESTINATION lib
-		)
-		install(
-			TARGETS ${TARGET_NAME}
-			COMPONENT ${COMPONENT_NAME}_dev
-			CONFIGURATIONS RelWithDebInfo
-			ARCHIVE DESTINATION lib/RelWithDebInfo
-		)
-		install(
-			TARGETS ${TARGET_NAME}
-			COMPONENT ${COMPONENT_NAME}_dev
-			CONFIGURATIONS Debug
-			ARCHIVE DESTINATION lib/Debug
 		)
 		#For libs, we install headers to <install_dir>/include/${TARGET_NAME}
 		target_install_headers_ex( ${TARGET_NAME} ${COMPONENT_NAME} ${HDR_FOLDER} )
@@ -582,9 +501,6 @@ function( add_target_min TARGET_NAME TARGET_TYPE )# ARGV2=PCH_HEADER ARGV3=PCH_S
 				endif ()
 			endif ()
 		endif ()
-		set( CMAKE_DEBUG_POSTFIX "${TARGET_ABI_NAME}${TARGET_ABI_NAME_DEBUG}" CACHE STRING "" FORCE )
-		set( CMAKE_RELEASE_POSTFIX "${TARGET_ABI_NAME}" CACHE STRING "" FORCE )
-		set( CMAKE_RELWITHDEBINFO_POSTFIX "${TARGET_ABI_NAME}" CACHE STRING "" FORCE )
 		if ( NOT ${PROJECT_NAME}_WXWIDGET )
 			set( ${PROJECT_NAME}_WXWIDGET 0 )
 		endif ()
@@ -712,6 +628,12 @@ function( add_target_min TARGET_NAME TARGET_TYPE )# ARGV2=PCH_HEADER ARGV3=PCH_S
 		target_link_options( ${TARGET_NAME}
 			PUBLIC
 				${TARGET_LINK_FLAGS}
+		)
+		set_target_properties( ${TARGET_NAME}
+			PROPERTIES
+				DEBUG_POSTFIX "${TARGET_ABI_NAME}${TARGET_ABI_NAME_DEBUG}"
+				RELEASE_POSTFIX "${TARGET_ABI_NAME}"
+				RELWITHDEBINFO_POSTFIX "${TARGET_ABI_NAME}"
 		)
 		msg_debug( "TARGET_COMPILE_FLAGS:        ${TARGET_COMPILE_FLAGS}" )
 		msg_debug( "TARGET_COMPILE_DEFINITIONS:  ${TARGET_COMPILE_DEFINITIONS}" )
