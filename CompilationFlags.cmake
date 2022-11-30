@@ -3,6 +3,9 @@ set( PROJECTS_COMPILER "Unknown" )
 option( PROJECTS_WARNINGS_AS_ERRORS "Turns compiler warnings to errors" OFF )
 
 if ( MSVC AND NOT CMAKE_CXX_COMPILER_ID MATCHES "Clang" )
+	if ( NOT DEFINED PROJECTS_USE_MP )
+		option( PROJECTS_USE_MP "Enable multi-processes compilation" ON )
+	endif ()
 	set( PROJECTS_COMPILER "MSVC" )
 	set( PROJECTS_COMPILER_MSVC ON )
 elseif ( CMAKE_CXX_COMPILER_ID MATCHES "Clang" )
@@ -243,7 +246,6 @@ function( compute_compiler_warning_flags C_DEFINITIONS C_FLAGS CXX_DEFINITIONS C
 	elseif ( PROJECTS_COMPILER_MSVC )
 		set( _CXX_FLAGS
 			/Wall
-			/MP # Enabling multi-processes compilation
 
 			/wd4061 # Enum value in a switch not explicitly handled by a case label
 			/wd4068 # Unknown pragma
@@ -274,9 +276,16 @@ function( compute_compiler_warning_flags C_DEFINITIONS C_FLAGS CXX_DEFINITIONS C
 			/wd5027 # Move assignment operator implicitly deleted
 			/wd5039 # Pointer/ref to a potentially throwing function passed to an 'extern "C"' function (with -EHc)
 			/wd5220 # Non-static volatile member doesn't imply non-trivial move/copy ctor/operator=
+			/wd5264 # 'const' variable is not used
 
 			/wd4599 # precompiled header argument does not match command line
 		)
+		if ( PROJECTS_USE_MP )
+			set( _CXX_FLAGS
+				${_CXX_FLAGS}
+				/MP # Enabling multi-processes compilation
+			)
+		endif ()
 		if ( PROJECTS_WARNINGS_AS_ERRORS )
 			set( _CXX_FLAGS
 				${_CXX_FLAGS}
