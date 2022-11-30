@@ -247,6 +247,8 @@ function( compute_compiler_warning_flags C_DEFINITIONS C_FLAGS CXX_DEFINITIONS C
 		set( _CXX_FLAGS
 			/Wall
 
+			/wd4619 # there is no warning number 'XXXX'
+
 			/wd4061 # Enum value in a switch not explicitly handled by a case label
 			/wd4068 # Unknown pragma
 			/wd4100 # Unused parameter.
