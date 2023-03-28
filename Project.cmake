@@ -24,6 +24,10 @@ if ( NOT DEFINED PROJECTS_UNITY_BUILD )
 	option( PROJECTS_UNITY_BUILD "Build projects using Unity (Jumbo) build method" OFF )
 endif ()
 
+if ( NOT DEFINED PROJECTS_ALLOW_DEBUG_INSTALL_HEADERS )
+	option( PROJECTS_ALLOW_DEBUG_INSTALL_HEADERS "Allow headers installation for Debug builds." OFF )
+endif ()
+
 get_filename_component( CMAKE_PARENT_DIR ${CMAKE_CURRENT_SOURCE_DIR} PATH )
 
 set( PROJECTS_TEMPLATES_DIR ${CMAKE_CURRENT_SOURCE_DIR}/CMake/Templates )
@@ -93,12 +97,20 @@ macro( __target_install_headers TARGET_NAME COMPONENT_NAME SRCDIR DSTDIR )
 			${SRCDIR}/*.hpp
 			${SRCDIR}/*.inl
 	)
-	install(
-		FILES ${_HEADERS}
-		COMPONENT ${COMPONENT_NAME}
-		DESTINATION include/${DSTDIR}
-		CONFIGURATIONS Release
-	)
+	if ( PROJECTS_ALLOW_DEBUG_INSTALL_HEADERS )
+		install(
+			FILES ${_HEADERS}
+			COMPONENT ${COMPONENT_NAME}
+			DESTINATION include/${DSTDIR}
+		)
+	else ()
+		install(
+			FILES ${_HEADERS}
+			COMPONENT ${COMPONENT_NAME}
+			DESTINATION include/${DSTDIR}
+			CONFIGURATIONS Release
+		)
+	endif ()
 endmacro()
 
 macro( target_install_subdir_headers_ex TARGET_NAME COMPONENT_NAME SRCDIR SUBDIR CURDIR )
@@ -121,12 +133,20 @@ macro( target_install_dir_headers_ex TARGET_NAME COMPONENT_NAME SRCDIR DSTDIR )
 			${SRCDIR}/*.hpp
 			${SRCDIR}/*.inl
 	)
-	install(
-		FILES ${_HEADERS}
-		COMPONENT ${COMPONENT_NAME}
-		DESTINATION include/${DSTDIR}
-		CONFIGURATIONS Release
-	)
+	if ( PROJECTS_ALLOW_DEBUG_INSTALL_HEADERS )
+		install(
+			FILES ${_HEADERS}
+			COMPONENT ${COMPONENT_NAME}
+			DESTINATION include/${DSTDIR}
+		)
+	else ()
+		install(
+			FILES ${_HEADERS}
+			COMPONENT ${COMPONENT_NAME}
+			DESTINATION include/${DSTDIR}
+			CONFIGURATIONS Release
+		)
+	endif ()
 endmacro()
 
 macro( target_install_dir_headers TARGET_NAME SRCDIR DSTDIR )
