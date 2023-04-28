@@ -1,7 +1,7 @@
 find_package( PackageHandleStandardArgs )
 
 if ( MSVC )
-	if ( NOT VC_DIR )
+	if ( NOT ATL_DIR )
 		if ( MSVC14 )
 			get_filename_component( VS_DIR "[HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\VisualStudio\\14.0\\Setup\\VS;ProductDir]" REALPATH )
 		elseif ( MSVC12 )
@@ -14,17 +14,17 @@ if ( MSVC )
 			message( STATUS "!! Could not find a compatible Visual Studio directory!" )
 		endif()
 		if ( VS_DIR )
-			set( VC_DIR ${VS_DIR}/VC )
+			set( ATL_DIR ${VS_DIR}/VC )
 		endif ()
 	endif()
 
-	if ( VC_DIR )
+	if ( ATL_DIR )
 		FIND_PATH( ATL_ROOT_DIR include/atlbase.h
 			HINTS
 			PATH_SUFFIXES
 				atlmfc
 			PATHS
-				${VC_DIR}
+				${ATL_DIR}
 		)
 
 		FIND_PATH( ATL_INCLUDE_DIR atlbase.h 
