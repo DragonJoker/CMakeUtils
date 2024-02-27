@@ -17,7 +17,6 @@ endif()
 #--------------------------------------------------------------------------------------------------
 if ( MSVC )
 	option( PROJECTS_PROFILING "Activate code profiling or not" OFF )
-	option( PROJECTS_COVERAGE "Activate code coverage or not" OFF )
 endif()
 
 if ( NOT DEFINED PROJECTS_UNITY_BUILD )
