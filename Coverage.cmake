@@ -60,20 +60,25 @@ if ( PROJECTS_COVERAGE )
 					math( EXPR counter "${counter} + 1" )
 				endif ()
 				set( outputFile ${CMAKE_CURRENT_BINARY_DIR}/Coverage/cov-${counter}-${target}.bin )
+				set( configFile ${CMAKE_CURRENT_BINARY_DIR}/Coverage/cov-${counter}-${target}.cfg )
 				set_property( GLOBAL PROPERTY COVERAGE_COUNTER "${counter}" )
 				set_property( GLOBAL APPEND PROPERTY COVERAGE_SOURCES "${outputFile}" )
+				set_property( GLOBAL APPEND PROPERTY COVERAGE_TARGETS "${target}" )
 
 				if ( NOT ARG_WORKING_DIRECTORY )
 					set( ARG_WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} )
 				endif ()
 				if ( NOT ARG_SOURCES )
-					file( TO_NATIVE_PATH ${PROJECT_SOURCE_DIR} ARG_SOURCES )
+					set( ARG_SOURCES ${PROJECT_SOURCE_DIR} )
 				endif ()
 				if ( NOT ARG_MODULES )
-					file( TO_NATIVE_PATH ${PROJECT_BINARY_DIR} ARG_MODULES )
+					set( ARG_SOURCES ${PROJECT_BINARY_DIR} )
 				endif ()
 
-				set( args "" )
+				file( WRITE ${configFile} "export_type=binary:${outputFile}\n" )
+				file( APPEND ${configFile} "cover_children=true\n" )
+				set( args --working_dir $<TARGET_FILE_DIR:${target}> )
+				list( APPEND args --config_file ${configFile} )
 				if ( ARG_VERBOSE )
 					list( APPEND args --verbose )
 				else ()
@@ -89,15 +94,11 @@ if ( PROJECTS_COVERAGE )
 					list( APPEND args --modules ${el} )
 				endforeach ()
 				file( TO_NATIVE_PATH "${args}" args )
-				add_custom_command( OUTPUT ${outputFile}
-					DEPENDS ${target}
+
+				add_custom_command( TARGET ${target}
+					POST_BUILD
 					COMMENT "Creating coverage for ${target}"
-					COMMAND ${COVERAGE_TOOL_BINARY}
-						--working_dir $<TARGET_FILE_DIR:${target}>
-						--export_type binary:${outputFile}
-						--cover_children
-						${args}
-						-- $<TARGET_FILE:${target}> ${ARG_ARGS}
+					COMMAND ${COVERAGE_TOOL_BINARY} ${args} -- $<TARGET_FILE:${target}> ${ARG_ARGS}
 					VERBATIM
 				)
 			endfunction()
@@ -110,37 +111,39 @@ if ( PROJECTS_COVERAGE )
 					set( ARG_FORMAT cobertura )
 				endif ()
 
+				get_property( targets GLOBAL PROPERTY COVERAGE_TARGETS )
+				set_property( GLOBAL PROPERTY COVERAGE_TARGETS "" )
 				get_property( sources GLOBAL PROPERTY COVERAGE_SOURCES )
 				set_property( GLOBAL PROPERTY COVERAGE_SOURCES "" )
 				get_filename_component( outputFile ${outputFile} ABSOLUTE BASE_DIR ${CMAKE_CURRENT_BINARY_DIR} )
-				set( args "" )
+
+				set( configFile ${CMAKE_BINARY_DIR}/${target}Config.cfg )
+				if ( PROJECTS_COVERAGE_HTML_RESULTS )
+					set( commandOutput ${outputFile}/index.html )
+					file( WRITE ${configFile} "export_type=html:${outputFile}\n" )
+				else ()
+					set( commandOutput ${outputFile}.xml )
+					file( WRITE ${configFile} "export_type=cobertura:${commandOutput}\n" )
+				endif ()
+				set( args --config_file ${configFile} )
 				if ( ARG_VERBOSE )
 					list( APPEND args --verbose )
+				else ()
+					list( APPEND args --quiet )
 				endif ()
 				foreach( source IN LISTS sources )
-					list( APPEND args --input_coverage=${source} )
+					file( APPEND ${configFile} "input_coverage=${source}\n" )
 				endforeach ()
-				if ( PROJECTS_COVERAGE_HTML_RESULTS )
-					add_custom_command( OUTPUT ${outputFile}
-						DEPENDS ${sources}
-						COMMENT "Merging coverage data"
-						COMMAND ${COVERAGE_TOOL_BINARY}
-							--export_type html:${outputFile}
-							${args}
-						VERBATIM
-					)
-					add_custom_target( ${target} DEPENDS ${outputFile} )
-				else ()
-					add_custom_command( OUTPUT ${outputFile}.xml
-						DEPENDS ${sources}
-						COMMENT "Merging coverage data"
-						COMMAND ${COVERAGE_TOOL_BINARY}
-							--export_type cobertura:${outputFile}.xml
-							${args}
-						VERBATIM
-					)
-					add_custom_target( ${target} DEPENDS ${outputFile}.xml )
-				endif ()
+				add_custom_command( OUTPUT ${commandOutput}
+					DEPENDS ${sources}
+					DEPENDS ${targets}
+					COMMENT "Merging coverage data"
+					COMMAND ${COVERAGE_TOOL_BINARY} ${args}
+					VERBATIM
+				)
+				add_custom_target( ${target}
+					DEPENDS ${commandOutput}
+				)
 			endfunction()
 		endif ()
 	else ()
@@ -165,8 +168,10 @@ if ( PROJECTS_COVERAGE )
 					math( EXPR counter "${counter} + 1" )
 				endif ()
 				set( outputFile ${CMAKE_CURRENT_BINARY_DIR}/Coverage/cov-${counter}-${target}.json )
+				set( configFile ${CMAKE_CURRENT_BINARY_DIR}/Coverage/cov-${counter}-${target}.cfg )
 				set_property( GLOBAL PROPERTY COVERAGE_COUNTER "${counter}" )
 				set_property( GLOBAL APPEND PROPERTY COVERAGE_SOURCES "${outputFile}" )
+				set_property( GLOBAL APPEND PROPERTY COVERAGE_TARGETS "${target}" )
 
 				if ( NOT ARG_WORKING_DIRECTORY )
 					set( ARG_WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} )
@@ -185,67 +190,65 @@ if ( PROJECTS_COVERAGE )
 				endforeach()
 				list( REMOVE_DUPLICATES GCOVR_EXCLUDES )
 
-				set( args "" )
+				file( WRITE ${configFile} "root = ${PROJECT_SOURCE_DIR}\n" )
+				file( APPEND ${configFile} "json = yes\n" )
+				file( APPEND ${configFile} "output = ${outputFile}\n" )
 				if ( ARG_VERBOSE )
-					list( APPEND args --verbose )
+					file( APPEND ${configFile} "verbose = yes\n" )
 				endif ()
+				set( args ${PROJECT_BINARY_DIR} --config ${configFile} )
 				foreach( el IN LISTS GCOVR_EXCLUDES )
 					list( APPEND args --exclude ${el} )
 				endforeach ()
 				foreach( el IN LISTS ARG_SOURCES )
+					file( TO_NATIVE_PATH "${el}" el )
 					list( APPEND args --filter ${el} )
 				endforeach ()
 				file( TO_NATIVE_PATH "${args}" args )
-				add_custom_command( OUTPUT ${outputFile}
-					DEPENDS ${target}
+				add_custom_command( TARGET ${target}
+					POST_BUILD
 					COMMENT "Creating coverage for ${target}"
 					COMMAND $<TARGET_FILE:${target}> ${ARG_ARGS}
 					COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/Coverage
-					COMMAND ${COVERAGE_TOOL_BINARY}
-						--root ${PROJECT_SOURCE_DIR}
-						${PROJECT_BINARY_DIR}
-						--json ${outputFile}
-						${args}
+					COMMAND ${COVERAGE_TOOL_BINARY} ${args}
 					VERBATIM
 				)
 			endfunction()
 
 			function( coverage_add_merge_target target outputFile )
 				cmake_parse_arguments( PARSE_ARGV 2 ARG "VERBOSE" "" "" )
+				get_property( targets GLOBAL PROPERTY COVERAGE_TARGETS )
+				set_property( GLOBAL PROPERTY COVERAGE_TARGETS "" )
 				get_property( sources GLOBAL PROPERTY COVERAGE_SOURCES )
 				set_property( GLOBAL PROPERTY COVERAGE_SOURCES "" )
+				set( configFile ${CMAKE_BINARY_DIR}/${target}Config.cfg )
 				get_filename_component( outputFile ${outputFile} ABSOLUTE BASE_DIR ${CMAKE_CURRENT_BINARY_DIR} )
-				set( args "" )
+
+				file( WRITE ${configFile} "root = ${PROJECT_SOURCE_DIR}\n" )
+				if ( PROJECTS_COVERAGE_HTML_RESULTS )
+					set( commandOutput ${outputFile}/index.html )
+					file( APPEND ${configFile} "html-details = yes\n" )
+				else ()
+					set( commandOutput ${outputFile}.xml )
+					file( APPEND ${configFile} "xml = yes\n" )
+				endif ()
+				file( APPEND ${configFile} "output = ${commandOutput}\n" )
 				if ( ARG_VERBOSE )
-					list( APPEND args --verbose )
+					file( APPEND ${configFile} "verbose = yes\n" )
 				endif ()
 				foreach( source IN LISTS sources )
-					list( APPEND args --add-tracefile ${source} )
+					file( APPEND ${configFile} "add-tracefile = ${source}\n" )
 				endforeach ()
-				if ( PROJECTS_COVERAGE_HTML_RESULTS )
-					add_custom_command( OUTPUT ${outputFile}/index.html
-						DEPENDS ${sources}
-						COMMENT "Merging coverage data"
-						COMMAND ${CMAKE_COMMAND} -E make_directory ${outputFile}
-						COMMAND ${COVERAGE_TOOL_BINARY}
-							--root ${PROJECT_SOURCE_DIR}
-							--html-details ${outputFile}/index.html
-							${args}
-						VERBATIM
-					)
-					add_custom_target( ${target} DEPENDS ${outputFile}/index.html )
-				else ()
-					add_custom_command( OUTPUT ${outputFile}.xml
-						DEPENDS ${sources}
-						COMMENT "Merging coverage data"
-						COMMAND ${COVERAGE_TOOL_BINARY}
-							--root ${PROJECT_SOURCE_DIR}
-							--xml ${outputFile}.xml
-							${args}
-						VERBATIM
-					)
-					add_custom_target( ${target} DEPENDS ${outputFile}.xml )
-				endif ()
+				add_custom_command( OUTPUT ${commandOutput}
+					DEPENDS ${targets}
+					COMMENT "Merging coverage data"
+					COMMAND ${CMAKE_COMMAND} -E make_directory ${outputFile}
+					COMMAND ${COVERAGE_TOOL_BINARY} --config ${configFile}
+					VERBATIM
+				)
+				add_custom_target( ${target}
+					DEPENDS ${commandOutput}
+				)
 			endfunction()
 		endif ()
 	endif ()
