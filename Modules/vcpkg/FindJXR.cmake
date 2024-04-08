@@ -1,0 +1,23 @@
+set( VCPKG_TRIPLET_DIR
+	${_VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}
+)
+set( JXR_INCLUDE_DIRS
+	${VCPKG_TRIPLET_DIR}/include
+)
+mark_as_advanced(JXR_INCLUDE_DIRS)
+
+include(SelectLibraryConfigurations)
+
+find_library(JPEGXR_LIBRARY_RELEASE NAMES jpegxr PATH_SUFFIXES lib PATHS ${VCPKG_TRIPLET_DIR})
+find_library(JPEGXR_LIBRARY_DEBUG NAMES jpegxrd PATH_SUFFIXES lib PATHS ${VCPKG_TRIPLET_DIR}/debug)
+select_library_configurations(JPEGXR)
+
+find_library(JXRGLUE_LIBRARY_RELEASE NAMES jxrglue PATH_SUFFIXES lib PATHS ${VCPKG_TRIPLET_DIR})
+find_library(JXRGLUE_LIBRARY_DEBUG NAMES jxrglued PATH_SUFFIXES lib PATHS ${VCPKG_TRIPLET_DIR}/debug)
+select_library_configurations(JXRGLUE)
+
+set(JXR_LIBRARIES ${JXRGLUE_LIBRARY} ${JPEGXR_LIBRARY})
+mark_as_advanced(JXR_LIBRARIES)
+
+include( FindPackageHandleStandardArgs )
+FIND_PACKAGE_HANDLE_STANDARD_ARGS( JXR DEFAULT_MSG JXR_INCLUDE_DIRS JXR_LIBRARIES )
