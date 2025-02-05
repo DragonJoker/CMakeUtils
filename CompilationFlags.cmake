@@ -248,6 +248,12 @@ function( compute_compiler_warning_flags C_DEFINITIONS C_FLAGS CXX_DEFINITIONS C
 				-Wno-inconsistent-missing-destructor-override
 			)
 		endif ()
+		if ( CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 16 )
+			set( _CXX_FLAGS
+				${_CXX_FLAGS}
+				-Wno-unsafe-buffer-usage
+			)
+		endif ()
 	elseif ( PROJECTS_COMPILER_MSVC )
 		set( _CXX_FLAGS
 			/Wall
