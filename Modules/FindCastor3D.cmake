@@ -172,14 +172,16 @@ function( castor3d_copy_files _TARGET_NAME _TARGET_DIR_RELEASE _TARGET_DIR_RELWI
 	endif ()
 	if ( TARGET castor::Castor3D )
 		get_target_property( TARGET_BIN_RELEASE castor::Castor3D IMPORTED_LOCATION_RELEASE )
-		get_filename_component( TARGET_BIN_RELEASE ${TARGET_BIN_RELEASE} DIRECTORY )
-		get_filename_component( Castor3D_ROOT_DIR ${TARGET_BIN_RELEASE} DIRECTORY )
-		set( Castor3D_SHARE_DIR "${Castor3D_ROOT_DIR}/share/Castor3D" )
-		file(
-			GLOB
-				CoreZipFiles
-				${Castor3D_SHARE_DIR}/*.zip
-		)
-		_copy_target_files( ${_TARGET_NAME} "" ${CoreZipFiles} )
+		if ( TARGET_BIN_RELEASE )
+			get_filename_component( TARGET_BIN_RELEASE ${TARGET_BIN_RELEASE} DIRECTORY )
+			get_filename_component( Castor3D_ROOT_DIR ${TARGET_BIN_RELEASE} DIRECTORY )
+			set( Castor3D_SHARE_DIR "${Castor3D_ROOT_DIR}/share/Castor3D" )
+			file(
+				GLOB
+					CoreZipFiles
+					${Castor3D_SHARE_DIR}/*.zip
+			)
+			_copy_target_files( ${_TARGET_NAME} "" ${CoreZipFiles} )
+		endif ()
 	endif ()
 endfunction()
