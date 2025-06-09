@@ -46,7 +46,7 @@ endmacro( add_com_interfaces )
 #
 # Syntax: add_com_interop( <target_name> <idl1> [<idl2> [...]] )
 # Notes:
-#   For each provided IDL file, creates a library which to ling to C# projects,
+#   For each provided IDL file, creates a library to link to C# projects,
 #   to be able to use the classes described in the IDL.
 #
 #******************************************************************************
@@ -98,8 +98,17 @@ macro( add_com_interop _TARGET_NAME )
 			DEPENDS ${OUT_HEADER} ${TLBIMP_OUTPUT}
 			SOURCES ${IDL_FILE}
 		)
-		add_library( ${TLBIMP_OUTPUT_NAME} SHARED IMPORTED GLOBAL )
-		add_dependencies( ${TLBIMP_OUTPUT_NAME} ${IDL_FILENAME_WE}TlbImp )
+		set_target_properties( ${IDL_FILENAME_WE}TlbImp
+			PROPERTIES
+				FOLDER "Interop"
+		)
+		add_library( ${TLBIMP_OUTPUT_NAME}
+			SHARED
+			IMPORTED GLOBAL
+		)
+		add_dependencies( ${TLBIMP_OUTPUT_NAME}
+			${IDL_FILENAME_WE}TlbImp
+		)
 		set_target_properties( ${TLBIMP_OUTPUT_NAME}
 			PROPERTIES
 				IMPORTED_LOCATION_DEBUG "${TLBIMP_LOCATION_PATH}/${TLBIMP_OUTPUT_NAME}.dll"
