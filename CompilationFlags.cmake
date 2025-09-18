@@ -209,6 +209,7 @@ function( compute_compiler_warning_flags C_DEFINITIONS C_FLAGS CXX_DEFINITIONS C
 			-Wno-unused-parameter
 			-Wno-unknown-warning-option
 			-Wno-extra-semi-stmt
+			-Wno-poison-system-directories
 		)
 		if ( PROJECTS_WARNINGS_AS_ERRORS )
 			set( _C_FLAGS
@@ -226,6 +227,7 @@ function( compute_compiler_warning_flags C_DEFINITIONS C_FLAGS CXX_DEFINITIONS C
 			-Wno-sign-conversion
 			-Wno-weak-vtables
 			-Wno-weak-vtables
+			-Wno-poison-system-directories
 		)
 		if ( PROJECTS_COMPILER_CLANG_CL )
 			set( _CXX_FLAGS
