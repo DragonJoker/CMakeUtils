@@ -14,9 +14,26 @@
 
 if ( NOT FbxSDK_ROOT_DIR )
 	set( LOOKUP_PATHS
+		C:/Program\ Files/Autodesk/FBX/FBX\ SDK/2020.3.7
+		C:/Program\ Files/Autodesk/FBX/FBX\ SDK/2020.3.4
+		C:/Program\ Files/Autodesk/FBX/FBX\ SDK/2020.3.2
+		C:/Program\ Files/Autodesk/FBX/FBX\ SDK/2020.3.1
+		C:/Program\ Files/Autodesk/FBX/FBX\ SDK/2020.2
+		C:/Program\ Files/Autodesk/FBX/FBX\ SDK/2020.0
+		C:/Program\ Files/Autodesk/FBX/FBX\ SDK/2019.5
+		C:/Program\ Files/Autodesk/FBX/FBX\ SDK/2019.2
+		C:/Program\ Files/Autodesk/FBX/FBX\ SDK/2019.0
+		C:/Program\ Files/Autodesk/FBX/FBX\ SDK/2018.1.1
+		C:/Program\ Files/Autodesk/FBX/FBX\ SDK/2018.0
+		C:/Program\ Files/Autodesk/FBX/FBX\ SDK/2017.1
+		C:/Program\ Files/Autodesk/FBX/FBX\ SDK/2017.0.1
 		C:/Program\ Files/Autodesk/FBX/FBX\ SDK/2016.1.2
+		C:/Program\ Files/Autodesk/FBX/FBX\ SDK/2016.1
+		C:/Program\ Files/Autodesk/FBX/FBX\ SDK/2015.1
+		C:/Program\ Files/Autodesk/FBX/FBX\ SDK/2014.2.1
+		C:/Program\ Files/Autodesk/FBX/FBX\ SDK/2013.3
 	)
-	FIND_PATH(FbxSDK_ROOT_DIR include/fbxsdk.h 
+	find_path(FbxSDK_ROOT_DIR include/fbxsdk.h 
 		HINTS
 		PATHS
 			${LOOKUP_PATHS}
@@ -25,7 +42,7 @@ if ( NOT FbxSDK_ROOT_DIR )
 	)
 endif ()
 
-FIND_PATH(FbxSDK_INCLUDE_DIR fbxsdk.h 
+find_path(FbxSDK_INCLUDE_DIR fbxsdk.h 
 	HINTS
 	PATH_SUFFIXES
 		include
@@ -35,9 +52,9 @@ FIND_PATH(FbxSDK_INCLUDE_DIR fbxsdk.h
 		/usr/include
 )
 
-if (CMAKE_CL_64 OR CMAKE_GENERATOR MATCHES Win64)
-	if( MSVC )
-		FIND_PATH(FbxSDK_LIBRARY_RELEASE_DIR libfbxsdk-md.lib
+if ( MSVC )
+	if ( CMAKE_CL_64 OR CMAKE_GENERATOR MATCHES Win64 )
+		find_path(FbxSDK_SDK_LIBRARY_RELEASE_DIR libfbxsdk.lib
 			HINTS
 			PATH_SUFFIXES
 				lib/vs2015/x64/release
@@ -45,8 +62,7 @@ if (CMAKE_CL_64 OR CMAKE_GENERATOR MATCHES Win64)
 			PATHS
 				${FbxSDK_ROOT_DIR}
 		)
-
-		FIND_PATH(FbxSDK_LIBRARY_DEBUG_DIR libfbxsdk-md.lib
+		find_path(FbxSDK_SDK_LIBRARY_DEBUG_DIR libfbxsdk.lib
 			HINTS
 			PATH_SUFFIXES
 				lib/vs2015/x64/debug
@@ -55,303 +71,133 @@ if (CMAKE_CL_64 OR CMAKE_GENERATOR MATCHES Win64)
 			PATHS
 				${FbxSDK_ROOT_DIR}
 		)
-
-		FIND_LIBRARY(FbxSDK_LIBRARY_RELEASE
-			NAMES
-				libfbxsdk-md.lib
-			HINTS
-			PATHS
-				${FbxSDK_LIBRARY_RELEASE_DIR}
-		)
-
-		FIND_LIBRARY(FbxSDK_LIBRARY_DEBUG
-			NAMES
-				libfbxsdk-md.lib
-			HINTS
-			PATHS
-				${FbxSDK_LIBRARY_DEBUG_DIR}
-		)
-	elseif ( CMAKE_COMPILER_IS_GNUCXX )
-		FIND_PATH(FbxSDK_LIBRARY_RELEASE_DIR libfbxsdk.so libfbxsdk.lib
+	else ()
+		find_path(FbxSDK_SDK_LIBRARY_RELEASE_DIR libfbxsdk.lib
 			HINTS
 			PATH_SUFFIXES
-				lib/gcc4/x64/debug
-				lib/x64/debug
-			PATHS
-				${FbxSDK_ROOT_DIR}
-		)
-
-		FIND_PATH(FbxSDK_LIBRARY_DEBUG_DIR libfbxsdk.so libfbxsdk.lib
-			HINTS
-			PATH_SUFFIXES
-				lib/gcc4/x64/release
-				lib/x64/release
-			PATHS
-				${FbxSDK_ROOT_DIR}
-		)
-
-		FIND_LIBRARY(FbxSDK_LIBRARY_RELEASE
-			NAMES
-				libfbxsdk.so
-				libfbxsdk.lib
-			HINTS
-			PATHS
-				${FbxSDK_LIBRARY_RELEASE_DIR}
-		)
-
-		FIND_LIBRARY(FbxSDK_LIBRARY_DEBUG
-			NAMES
-				libfbxsdk.so
-				libfbxsdk.lib
-			HINTS
-			PATHS
-				${FbxSDK_LIBRARY_DEBUG_DIR}
-		)
-	else()
-		FIND_PATH(FbxSDK_LIBRARY_RELEASE_DIR libfbxsdk.so libfbxsdk.lib
-			HINTS
-			PATH_SUFFIXES
-				lib64
-				lib/x64/Release
-				lib/Release/x64
-				lib/x64
-				lib
-			PATHS
-				${FbxSDK_ROOT_DIR}
-		)
-
-		FIND_PATH(FbxSDK_LIBRARY_DEBUG_DIR libfbxsdk.so libfbxsdk.lib
-			HINTS
-			PATH_SUFFIXES
-				lib64
-				lib/x64/Debug
-				lib/Debug/x64
-				lib/x64
-				lib
-			PATHS
-				${FbxSDK_ROOT_DIR}
-		)
-
-		FIND_LIBRARY(FbxSDK_LIBRARY_RELEASE
-			NAMES
-				libfbxsdk.so
-				libfbxsdk.lib
-			HINTS
-			PATHS
-				${FbxSDK_LIBRARY_RELEASE_DIR}
-		)
-
-		FIND_LIBRARY(FbxSDK_LIBRARY_DEBUG
-			NAMES
-				libfbxsdk.so
-				libfbxsdk.lib
-			HINTS
-			PATHS
-				${FbxSDK_LIBRARY_DEBUG_DIR}
-		)
-	endif()
-else()
-	if( MSVC )
-		FIND_PATH(FbxSDK_LIBRARY_RELEASE_DIR libfbxsdk-md.lib
-		HINTS
-		PATH_SUFFIXES
 				lib/vs2015/x86/release
 				lib/x86/release
-		PATHS
-			${FbxSDK_ROOT_DIR}
+			PATHS
+				${FbxSDK_ROOT_DIR}
 		)
-
-		FIND_PATH(FbxSDK_LIBRARY_DEBUG_DIR libfbxsdk-md.lib
-		HINTS
-		PATH_SUFFIXES
+		find_path(FbxSDK_SDK_LIBRARY_DEBUG_DIR libfbxsdk.lib
+			HINTS
+			PATH_SUFFIXES
 				lib/vs2015/x86/debug
 				lib/x86/debug
+				lib
+			PATHS
+				${FbxSDK_ROOT_DIR}
+		)
+	endif ()
+elseif ( CMAKE_COMPILER_IS_GNUCXX AND (${CMAKE_SIZEOF_VOID_P} EQUAL 8) )
+	find_path(FbxSDK_SDK_LIBRARY_RELEASE_DIR libfbxsdk.so libfbxsdk.lib
+		HINTS
+		PATH_SUFFIXES
+			lib/gcc4/x64/debug
+			lib/x64/debug
+			lib64
+			lib/x64/Release
+			lib/Release/x64
+			lib/x64
+			lib
 		PATHS
 			${FbxSDK_ROOT_DIR}
-		)
+	)
+	find_path(FbxSDK_SDK_LIBRARY_DEBUG_DIR libfbxsdk.so libfbxsdk.lib
+		HINTS
+		PATH_SUFFIXES
+			lib/gcc4/x64/release
+			lib/x64/release
+			lib64
+			lib/x64/Debug
+			lib/Debug/x64
+			lib/x64
+			lib
+		PATHS
+			${FbxSDK_ROOT_DIR}
+	)
+else()
+	find_path(FbxSDK_SDK_LIBRARY_RELEASE_DIR libfbxsdk.so libfbxsdk.lib
+		HINTS
+		PATH_SUFFIXES
+			lib/x86
+			lib/x86/Release
+			lib/Release/x86
+			lib
+		PATHS
+			${FbxSDK_ROOT_DIR}
+	)
+	find_path(FbxSDK_SDK_LIBRARY_DEBUG_DIR libfbxsdk.so libfbxsdk.lib
+		HINTS
+		PATH_SUFFIXES
+			lib/x86
+			lib/x86/Debug
+			lib/Debug/x86
+			lib
+		PATHS
+			${FbxSDK_ROOT_DIR}
+	)
+endif ()
 
-		FIND_LIBRARY(FbxSDK_LIBRARY_RELEASE
-			NAMES
-				libfbxsdk-md.lib
-			HINTS
-			PATHS
-				${FbxSDK_LIBRARY_RELEASE_DIR}
-		)
-
-		FIND_LIBRARY(FbxSDK_LIBRARY_DEBUG
-			NAMES
-				libfbxsdk-md.lib
-			HINTS
-			PATHS
-				${FbxSDK_LIBRARY_DEBUG_DIR}
-		)
-	elseif( MINGW )
-		FIND_PATH(FbxSDK_LIBRARY_RELEASE_DIR libfbxsdk.lib
-			HINTS
-			PATH_SUFFIXES
-				lib/x86
-				lib/x86/Release
-				lib/Release/x86
-				lib
-			PATHS
-				${FbxSDK_ROOT_DIR}
-		)
-
-		FIND_PATH(FbxSDK_LIBRARY_DEBUG_DIR libfbxsdk.lib
-			HINTS
-			PATH_SUFFIXES
-				lib/x86
-				lib/x86/Debug
-				lib/Debug/x86
-				lib
-			PATHS
-				${FbxSDK_ROOT_DIR}
-		)
-
-		FIND_LIBRARY(FbxSDK_LIBRARY_RELEASE
-			NAMES
-				libfbxsdk.lib
-			HINTS
-			PATHS
-				${FbxSDK_LIBRARY_RELEASE_DIR}
-		)
-
-		FIND_LIBRARY(FbxSDK_LIBRARY_DEBUG
-			NAMES
-				libfbxsdk.lib
-			HINTS
-			PATHS
-				${FbxSDK_LIBRARY_DEBUG_DIR}
-		)
-	elseif ( CMAKE_COMPILER_IS_GNUCXX AND (${CMAKE_SIZEOF_VOID_P} EQUAL 8) )
-		FIND_PATH(FbxSDK_LIBRARY_RELEASE_DIR libfbxsdk.so libfbxsdk.lib
-			HINTS
-			PATH_SUFFIXES
-				lib/gcc4/x64/release
-				lib/x64/release
-			PATHS
-				${FbxSDK_ROOT_DIR}
-		)
-
-		FIND_PATH(FbxSDK_LIBRARY_DEBUG_DIR libfbxsdk.so libfbxsdk.lib
-			HINTS
-			PATH_SUFFIXES
-				lib/gcc4/x64/debug
-				lib/x64/debug
-			PATHS
-				${FbxSDK_ROOT_DIR}
-		)
-
-		FIND_LIBRARY(FbxSDK_LIBRARY_RELEASE
-			NAMES
-				libfbxsdk.so
-				libfbxsdk.lib
-			HINTS
-			PATHS
-				${FbxSDK_LIBRARY_RELEASE_DIR}
-		)
-
-		FIND_LIBRARY(FbxSDK_LIBRARY_DEBUG
-			NAMES
-				libfbxsdk.so
-				libfbxsdk.lib
-			HINTS
-			PATHS
-				${FbxSDK_LIBRARY_DEBUG_DIR}
-		)
-	elseif ( CMAKE_COMPILER_IS_GNUCXX )
-		FIND_PATH(FbxSDK_LIBRARY_RELEASE_DIR libfbxsdk.so libfbxsdk.lib
-			HINTS
-			PATH_SUFFIXES
-				lib/gcc4/x86/release
-				lib/x86/release
-			PATHS
-				${FbxSDK_ROOT_DIR}
-		)
-
-		FIND_PATH(FbxSDK_LIBRARY_DEBUG_DIR libfbxsdk.so libfbxsdk.lib
-			HINTS
-			PATH_SUFFIXES
-				lib/gcc4/x86/debug
-				lib/x86/debug
-			PATHS
-				${FbxSDK_ROOT_DIR}
-		)
-
-		FIND_LIBRARY(FbxSDK_LIBRARY_RELEASE
-			NAMES
-				libfbxsdk.so
-				libfbxsdk.lib
-			HINTS
-			PATHS
-				${FbxSDK_LIBRARY_RELEASE_DIR}
-		)
-
-		FIND_LIBRARY(FbxSDK_LIBRARY_DEBUG
-			NAMES
-				libfbxsdk.so
-				libfbxsdk.lib
-			HINTS
-			PATHS
-				${FbxSDK_LIBRARY_DEBUG_DIR}
-		)
-	else()
-		FIND_PATH(FbxSDK_LIBRARY_RELEASE_DIR libfbxsdk.so
-			HINTS
-			PATH_SUFFIXES
-				lib
-			PATHS
-				${FbxSDK_ROOT_DIR}
-		)
-
-		FIND_PATH(FbxSDK_LIBRARY_DEBUG_DIR libfbxsdk.so
-			HINTS
-			PATH_SUFFIXES
-				lib
-			PATHS
-				${FbxSDK_ROOT_DIR}
-		)
-
-		FIND_LIBRARY(FbxSDK_LIBRARY_RELEASE
-			NAMES
-				libfbxsdk.so
-			HINTS
-			PATHS
-				${FbxSDK_LIBRARY_RELEASE_DIR}
-		)
-
-		FIND_LIBRARY(FbxSDK_LIBRARY_DEBUG
-			NAMES
-				libfbxsdk.so
-			HINTS
-			PATHS
-				${FbxSDK_LIBRARY_DEBUG_DIR}
-		)
-	endif()
+if( MSVC )
+	find_library(FbxSDK_SDK_LIBRARY_RELEASE
+		NAMES
+			libfbxsdk.lib
+		HINTS
+		PATHS
+			${FbxSDK_SDK_LIBRARY_RELEASE_DIR}
+	)
+	find_library(FbxSDK_SDK_LIBRARY_DEBUG
+		NAMES
+			libfbxsdk.lib
+		HINTS
+		PATHS
+			${FbxSDK_SDK_LIBRARY_DEBUG_DIR}
+	)
+else()
+	find_library(FbxSDK_SDK_LIBRARY_RELEASE
+		NAMES
+			libfbxsdk.so
+			libfbxsdk.lib
+		HINTS
+		PATHS
+			${FbxSDK_SDK_LIBRARY_RELEASE_DIR}
+	)
+	find_library(FbxSDK_SDK_LIBRARY_DEBUG
+		NAMES
+			libfbxsdk.so
+			libfbxsdk.lib
+		HINTS
+		PATHS
+			${FbxSDK_SDK_LIBRARY_DEBUG_DIR}
+	)
 endif()
 
-MARK_AS_ADVANCED( FbxSDK_LIBRARY_RELEASE_DIR )
-MARK_AS_ADVANCED( FbxSDK_LIBRARY_DEBUG_DIR )
-MARK_AS_ADVANCED( FbxSDK_LIBRARY_RELEASE )
-MARK_AS_ADVANCED( FbxSDK_LIBRARY_DEBUG_DIR )
-find_package_handle_standard_args( FbxSDK DEFAULT_MSG FbxSDK_LIBRARY_RELEASE FbxSDK_INCLUDE_DIR )
+mark_as_advanced( FbxSDK_SDK_LIBRARY_RELEASE_DIR )
+mark_as_advanced( FbxSDK_SDK_LIBRARY_DEBUG_DIR )
+mark_as_advanced( FbxSDK_SDK_LIBRARY_RELEASE )
+mark_as_advanced( FbxSDK_SDK_LIBRARY_DEBUG )
+find_package_handle_standard_args( FbxSDK DEFAULT_MSG FbxSDK_SDK_LIBRARY_RELEASE FbxSDK_INCLUDE_DIR )
 
-IF ( FbxSDK_FOUND )
-	IF (MSVC)
-		if ( FbxSDK_LIBRARY_DEBUG )
-			SET(FbxSDK_LIBRARIES optimized ${FbxSDK_LIBRARY_RELEASE} debug ${FbxSDK_LIBRARY_DEBUG} CACHE STRING "FBX SDK libraries")
-			SET(FbxSDK_LIBRARY_DIRS ${FbxSDK_LIBRARY_RELEASE_DIR} ${FbxSDK_LIBRARY_DEBUG_DIR})
-		else()
-			SET(FbxSDK_LIBRARIES ${FbxSDK_LIBRARY_RELEASE} CACHE STRING "FBX SDK libraries")
-			SET(FbxSDK_LIBRARY_DIRS ${FbxSDK_LIBRARY_RELEASE_DIR})
+if ( FbxSDK_FOUND )
+	if ( NOT TARGET FbxSDK::FbxSDK )
+		add_library( FbxSDK::FbxSDK UNKNOWN IMPORTED )
+		if ( MSVC )
+			target_compile_definitions( FbxSDK::FbxSDK INTERFACE "FBXSDK_SHARED" )
+		endif ()
+		set_target_properties( FbxSDK::FbxSDK PROPERTIES
+			INTERFACE_INCLUDE_DIRECTORIES "${FbxSDK_INCLUDE_DIR}"
+			IMPORTED_LINK_INTERFACE_LANGUAGES "C" )
+		if ( FbxSDK_SDK_LIBRARY_DEBUG )
+			set_target_properties( FbxSDK::FbxSDK PROPERTIES
+				IMPORTED_LOCATION_DEBUG ${FbxSDK_SDK_LIBRARY_DEBUG} )
 		endif()
-	ELSE ()
-		if ( FbxSDK_LIBRARY_DEBUG )
-			SET(FbxSDK_LIBRARIES optimized ${FbxSDK_LIBRARY_RELEASE} debug ${FbxSDK_LIBRARY_DEBUG} CACHE STRING "FBX SDK libraries")
-			SET(FbxSDK_LIBRARY_DIRS ${FbxSDK_LIBRARY_RELEASE_DIR} ${FbxSDK_LIBRARY_DEBUG_DIR})
-		else()
-			SET(FbxSDK_LIBRARIES ${FbxSDK_LIBRARY_RELEASE} CACHE STRING "FBX SDK libraries")
-			SET(FbxSDK_LIBRARY_DIRS ${FbxSDK_LIBRARY_RELEASE_DIR})
+		if ( FbxSDK_SDK_LIBRARY_RELEASE )
+			set_target_properties( FbxSDK::FbxSDK PROPERTIES
+				IMPORTED_LOCATION_RELEASE ${FbxSDK_SDK_LIBRARY_RELEASE}
+				IMPORTED_LOCATION_MINSIZEREL ${FbxSDK_SDK_LIBRARY_RELEASE}
+				IMPORTED_LOCATION_RELWITHDEBINFO ${FbxSDK_SDK_LIBRARY_RELEASE} )
 		endif()
-	ENDIF ()
-ENDIF ()
+	endif()
+endif ()
