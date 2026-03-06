@@ -1,3 +1,5 @@
+include(ProcessorCount)
+
 set( PROJECTS_COMPILER "Unknown" )
 
 option( PROJECTS_WARNINGS_AS_ERRORS "Turns compiler warnings to errors" OFF )
@@ -296,9 +298,11 @@ function( compute_compiler_warning_flags C_DEFINITIONS C_FLAGS CXX_DEFINITIONS C
 			/wd4599 # precompiled header argument does not match command line
 		)
 		if ( PROJECTS_USE_MP )
+			ProcessorCount( _CPU_COUNT )
+			set( PROJECTS_MP_COUNT "${_CPU_COUNT}" CACHE STRING "Multi-processes compilation process count" )
 			set( _CXX_FLAGS
 				${_CXX_FLAGS}
-				/MP # Enabling multi-processes compilation
+				/MP${PROJECTS_MP_COUNT} # Enabling multi-processes compilation
 			)
 		endif ()
 		if ( PROJECTS_WARNINGS_AS_ERRORS )
