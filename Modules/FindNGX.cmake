@@ -9,7 +9,7 @@
 #
 #   ngx target to link against
 #
-set( NGX_DIR NGX_DIR-ROOT-NOTFOUND CACHE STRING "NGX SDK Root Directory")
+set( NGX_DIR NGX_DIR-ROOT-NOTFOUND CACHE PATH "NGX SDK Root Directory")
 
 if ( "${NGX_DIR}" STREQUAL "NGX_DIR-ROOT-NOTFOUND" )
 	message(FATAL_ERROR "NGX_DIR not set - please set it and rerun CMAKE Configure" )
