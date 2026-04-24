@@ -1,17 +1,17 @@
 if( WIN32 )
-	find_path( DXC_ROOT_DIR inc/dxcapi.h
+	find_path( DXC_ROOT_DIR inc/dxcapi.h include/dxc/dxcapi.h
 	  HINTS
 		ENV DXSDK_DIR
 	)
 	find_path( DXC_INCLUDE_DIR dxcapi.h 
 		HINTS
-		PATH_SUFFIXES inc
+		PATH_SUFFIXES inc include/dxc
 		PATHS
 		${DXC_ROOT_DIR}
 	)
 	find_path( DXC_LIBRARY_DIR dxcompiler.lib
 		HINTS
-		PATH_SUFFIXES lib/x64
+		PATH_SUFFIXES lib lib/x64
 		PATHS
 		${DXC_ROOT_DIR}
 	)
